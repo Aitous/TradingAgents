@@ -836,6 +836,18 @@ def run_discovery_analysis(selections):
     # Set config globally for route_to_vendor
     set_config(config)
     
+    
+    # Generate run timestamp
+    import datetime
+    run_timestamp = datetime.datetime.now().strftime("%H_%M_%S")
+    
+    # Create results directory with run timestamp
+    results_dir = Path(config["results_dir"]) / "discovery" / selections["analysis_date"] / f"run_{run_timestamp}"
+    results_dir.mkdir(parents=True, exist_ok=True)
+    
+    # Add results dir to config so graph can use it for logging
+    config["discovery_run_dir"] = str(results_dir)
+    
     console.print(f"[dim]Using {config['llm_provider'].upper()} - Shallow: {config['quick_think_llm']}, Deep: {config['deep_think_llm']}[/dim]")
     
     # Initialize Discovery Graph (LLMs initialized internally like TradingAgentsGraph)
@@ -849,12 +861,9 @@ def run_discovery_analysis(selections):
         "tickers": [],
         "filtered_tickers": [],
         "opportunities": [],
+        "tool_logs": [],
         "status": "start"
     })
-    
-    # Create results directory
-    results_dir = Path(config["results_dir"]) / "discovery" / selections["analysis_date"]
-    results_dir.mkdir(parents=True, exist_ok=True)
     
     # Save discovery results
     final_ranking = result.get("final_ranking", "No ranking available")
@@ -1046,7 +1055,7 @@ def run_trading_analysis(selections):
     )
 
     # Create result directory
-    results_dir = Path(config["results_dir"]) / selections["ticker"] / selections["analysis_date"]
+    results_dir = Path(config["results_dir"]) / "trading" / selections["analysis_date"] / selections["ticker"]
     results_dir.mkdir(parents=True, exist_ok=True)
     report_dir = results_dir / "reports"
     report_dir.mkdir(parents=True, exist_ok=True)
@@ -1392,6 +1401,189 @@ def run_trading_analysis(selections):
         display_complete_report(final_state)
 
         update_display(layout)
+
+
+@app.command()
+def build_memories(
+    start_date: str = typer.Option(
+        "2023-01-01",
+        "--start-date",
+        "-s",
+        help="Start date for scanning high movers (YYYY-MM-DD)"
+    ),
+    end_date: str = typer.Option(
+        "2024-12-01",
+        "--end-date",
+        "-e",
+        help="End date for scanning high movers (YYYY-MM-DD)"
+    ),
+    tickers: str = typer.Option(
+        None,
+        "--tickers",
+        "-t",
+        help="Comma-separated list of tickers to scan (overrides --use-alpha-vantage)"
+    ),
+    use_alpha_vantage: bool = typer.Option(
+        False,
+        "--use-alpha-vantage",
+        "-a",
+        help="Use Alpha Vantage top gainers/losers to get ticker list"
+    ),
+    av_limit: int = typer.Option(
+        20,
+        "--av-limit",
+        help="Number of tickers to get from each Alpha Vantage category (gainers/losers)"
+    ),
+    min_move_pct: float = typer.Option(
+        15.0,
+        "--min-move",
+        "-m",
+        help="Minimum percentage move to qualify as high mover"
+    ),
+    analysis_windows: str = typer.Option(
+        "7,30",
+        "--windows",
+        "-w",
+        help="Comma-separated list of days before move to analyze (e.g., '7,30')"
+    ),
+    max_samples: int = typer.Option(
+        20,
+        "--max-samples",
+        help="Maximum number of high movers to analyze (reduces runtime)"
+    ),
+    sample_strategy: str = typer.Option(
+        "diverse",
+        "--strategy",
+        help="Sampling strategy: diverse, largest, recent, or random"
+    ),
+):
+    """
+    Build historical memories from high movers.
+
+    This command:
+    1. Scans for stocks with significant moves (>15% in 5 days by default)
+    2. Runs retrospective trading analyses at T-7 and T-30 days before the move
+    3. Stores situations, outcomes, and agent correctness in ChromaDB
+    4. Creates a memory bank for future trading decisions
+
+    Examples:
+        # Use Alpha Vantage top movers
+        python cli/main.py build-memories --use-alpha-vantage
+
+        # Use specific tickers
+        python cli/main.py build-memories --tickers "AAPL,NVDA,TSLA"
+
+        # Customize date range and parameters
+        python cli/main.py build-memories --use-alpha-vantage --start-date 2023-01-01 --min-move 20.0
+    """
+    console.print("\n[bold cyan]═══════════════════════════════════════════════════════[/bold cyan]")
+    console.print("[bold cyan]      TRADINGAGENTS MEMORY BUILDER[/bold cyan]")
+    console.print("[bold cyan]═══════════════════════════════════════════════════════[/bold cyan]\n")
+
+    # Determine ticker source
+    if use_alpha_vantage and not tickers:
+        console.print("[bold yellow]📡 Using Alpha Vantage to fetch top movers...[/bold yellow]")
+        try:
+            from tradingagents.agents.utils.historical_memory_builder import HistoricalMemoryBuilder
+            builder_temp = HistoricalMemoryBuilder(DEFAULT_CONFIG)
+            ticker_list = builder_temp.get_tickers_from_alpha_vantage(limit=av_limit)
+
+            if not ticker_list:
+                console.print("\n[bold red]❌ No tickers found from Alpha Vantage. Please check your API key or try --tickers instead.[/bold red]\n")
+                raise typer.Exit(code=1)
+        except Exception as e:
+            console.print(f"\n[bold red]❌ Error fetching from Alpha Vantage: {e}[/bold red]")
+            console.print("[yellow]Please use --tickers to specify tickers manually.[/yellow]\n")
+            raise typer.Exit(code=1)
+    elif tickers:
+        ticker_list = [t.strip().upper() for t in tickers.split(",")]
+        console.print(f"[bold]Using {len(ticker_list)} specified tickers[/bold]")
+    else:
+        # Default tickers if neither option specified
+        default_tickers = "AAPL,MSFT,GOOGL,NVDA,TSLA,META,AMZN,AMD,NFLX,DIS"
+        ticker_list = [t.strip().upper() for t in default_tickers.split(",")]
+        console.print(f"[bold yellow]No ticker source specified. Using default list.[/bold yellow]")
+        console.print(f"[dim]Tip: Use --use-alpha-vantage for dynamic ticker discovery or --tickers for custom list[/dim]")
+
+    window_list = [int(w.strip()) for w in analysis_windows.split(",")]
+
+    console.print(f"\n[bold]Configuration:[/bold]")
+    console.print(f"  Ticker Source: {'Alpha Vantage' if use_alpha_vantage else 'Manual/Default'}")
+    console.print(f"  Date Range: {start_date} to {end_date}")
+    console.print(f"  Tickers: {len(ticker_list)} stocks")
+    console.print(f"  Min Move: {min_move_pct}%")
+    console.print(f"  Max Samples: {max_samples}")
+    console.print(f"  Sampling Strategy: {sample_strategy}")
+    console.print(f"  Analysis Windows: {window_list} days before move")
+    console.print()
+
+    try:
+        # Import here to avoid circular imports
+        from tradingagents.agents.utils.historical_memory_builder import HistoricalMemoryBuilder
+
+        # Create builder
+        builder = HistoricalMemoryBuilder(DEFAULT_CONFIG)
+
+        # Build memories
+        memories = builder.build_memories_from_high_movers(
+            tickers=ticker_list,
+            start_date=start_date,
+            end_date=end_date,
+            min_move_pct=min_move_pct,
+            analysis_windows=window_list,
+            max_samples=max_samples,
+            sample_strategy=sample_strategy
+        )
+
+        if not memories:
+            console.print("\n[bold yellow]⚠️  No memories created. Try adjusting parameters.[/bold yellow]\n")
+            return
+
+        # Display summary table
+        console.print("\n[bold green]✅ Memory building complete![/bold green]\n")
+
+        table = Table(title="Memory Bank Summary", box=box.ROUNDED)
+        table.add_column("Agent Type", style="cyan", no_wrap=True)
+        table.add_column("Total Memories", justify="right", style="magenta")
+        table.add_column("Accuracy Rate", justify="right", style="green")
+        table.add_column("Avg Move %", justify="right", style="yellow")
+
+        for agent_type, memory in memories.items():
+            stats = memory.get_statistics()
+            table.add_row(
+                agent_type.upper(),
+                str(stats['total_memories']),
+                f"{stats['accuracy_rate']:.1f}%",
+                f"{stats['avg_move_pct']:.1f}%"
+            )
+
+        console.print(table)
+        console.print()
+
+        # Test memory retrieval
+        console.print("[bold]Testing Memory Retrieval:[/bold]")
+        test_situation = """
+        Strong earnings beat with positive sentiment and bullish technical indicators.
+        Volume spike detected. Analyst upgrades present. News sentiment is positive.
+        """
+
+        console.print(f"  Query: '{test_situation.strip()[:100]}...'\n")
+
+        for agent_type, memory in list(memories.items())[:2]:  # Test first 2 agents
+            results = memory.get_memories(test_situation, n_matches=1)
+            if results:
+                console.print(f"  [cyan]{agent_type.upper()}[/cyan]: Found {len(results)} relevant memory")
+                console.print(f"    Similarity: {results[0]['similarity_score']:.2f}")
+
+        console.print("\n[bold green]🎉 Memory bank ready for use![/bold green]")
+        console.print("\n[dim]Note: These memories will be used automatically in future trading analyses when memory is enabled in config.[/dim]\n")
+
+    except Exception as e:
+        console.print(f"\n[bold red]❌ Error building memories:[/bold red]")
+        console.print(f"[red]{str(e)}[/red]\n")
+        import traceback
+        console.print(f"[dim]{traceback.format_exc()}[/dim]")
+        raise typer.Exit(code=1)
 
 
 @app.command()

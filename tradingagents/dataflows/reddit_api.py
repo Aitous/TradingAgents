@@ -186,7 +186,7 @@ def get_reddit_global_news(
         start_dt = curr_dt - timedelta(days=look_back_days)
         
         # Subreddits for global news
-        subreddits = "worldnews+economics+finance"
+        subreddits = "financenews+finance+economics+stockmarket"
         
         posts = []
         subreddit = reddit.subreddit(subreddits)

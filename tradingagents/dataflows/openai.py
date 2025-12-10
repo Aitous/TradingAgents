@@ -1,3 +1,4 @@
+import os
 from openai import OpenAI
 from .config import get_config
 
@@ -20,8 +21,7 @@ def get_stock_news_openai(query=None, ticker=None, start_date=None, end_date=Non
     else:
         raise ValueError("Must provide either 'query' or 'ticker' parameter")
 
-    config = get_config()
-    client = OpenAI(base_url=config["backend_url"])
+    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
     try:
         response = client.responses.create(
@@ -35,14 +35,13 @@ def get_stock_news_openai(query=None, ticker=None, start_date=None, end_date=Non
 
 
 def get_global_news_openai(date, look_back_days=7, limit=5):
-    config = get_config()
-    client = OpenAI(base_url=config["backend_url"])
+    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
     try:
         response = client.responses.create(
             model="gpt-4o-mini",
             tools=[{"type": "web_search_preview"}],
-            input=f"Search global or macroeconomics news from {look_back_days} days before {date} to {date} that would be informative for trading purposes. Make sure you only get the data posted during that period. Limit the results to {limit} articles."
+            input=f"Search global or macroeconomics news from {look_back_days} days before {date} that would be informative for trading purposes. Make sure you only get the data posted during that period. Limit the results to {limit} articles."
         )
         return response.output_text
     except Exception as e:
@@ -50,8 +49,7 @@ def get_global_news_openai(date, look_back_days=7, limit=5):
 
 
 def get_fundamentals_openai(ticker, curr_date):
-    config = get_config()
-    client = OpenAI(base_url=config["backend_url"])
+    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
     try:
         response = client.responses.create(

@@ -9,21 +9,27 @@ DEFAULT_CONFIG = {
         "dataflows/data_cache",
     ),
     # LLM settings
-    "llm_provider": "openai",
-    "deep_think_llm": "gpt-4o",           # For Google: gemini-2.0-flash or gemini-1.5-pro-latest
-    "quick_think_llm": "gpt-4o-mini",     # For Google: gemini-2.0-flash or gemini-1.5-flash-latest
-    "backend_url": "https://api.openai.com/v1",
+    "llm_provider": "google",
+    "deep_think_llm": "gemini-3-pro-preview",           # For Google: gemini-2.0-flash or gemini-1.5-pro-latest
+    "quick_think_llm": "gemini-2.5-flash-lite",     # For Google: gemini-2.0-flash or gemini-1.5-flash-latest
+    "backend_url": "https://api.google.com/v1",
     # Debate and discussion settings
     "max_debate_rounds": 1,
     "max_risk_discuss_rounds": 1,
     "max_recur_limit": 100,
     # Discovery settings
     "discovery": {
-        "reddit_trending_limit": 30,      # Number of trending tickers to fetch from Reddit
-        "market_movers_limit": 20,        # Number of top gainers/losers to fetch
-        "max_candidates_to_analyze": 20,  # Maximum candidates for deep dive analysis
-        "news_lookback_days": 7,          # Days of news history to analyze
-        "final_recommendations": 10,       # Number of final opportunities to recommend
+        "reddit_trending_limit": 30,        # Number of trending tickers to fetch from Reddit
+        "market_movers_limit": 20,          # Number of top gainers/losers to fetch
+        "max_candidates_to_analyze": 20,    # Maximum candidates for deep dive analysis
+        "news_lookback_days": 7,            # Days of news history to analyze
+        "final_recommendations": 10,        # Number of final opportunities to recommend
+        # New data source settings
+        "unusual_volume_multiple": 3.0,     # Minimum volume multiple for unusual volume detection
+        "unusual_options_volume_multiple": 2.0,  # Minimum options volume multiple
+        "analyst_lookback_days": 7,         # Days to look back for analyst rating changes
+        "min_short_interest_pct": 15.0,     # Minimum short interest % for squeeze candidates
+        "min_days_to_cover": 2.0,           # Minimum days to cover ratio
     },
     # Memory settings
     "enable_memory": False,                   # Enable/disable embeddings and memory system

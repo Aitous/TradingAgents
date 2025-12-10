@@ -3,6 +3,8 @@
 from .llm_outputs import (
     TradeDecision,
     TickerList,
+    TickerWithContext,
+    TickerContextList,
     ThemeList,
     MarketMover,
     MarketMovers,
@@ -15,6 +17,8 @@ from .llm_outputs import (
 __all__ = [
     "TradeDecision",
     "TickerList",
+    "TickerWithContext",
+    "TickerContextList",
     "ThemeList",
     "MarketMovers",
     "MarketMover",

@@ -22,31 +22,72 @@ def create_bear_researcher(llm, memory):
         else:
             past_memories = []
 
-        past_memory_str = ""
-        for i, rec in enumerate(past_memories, 1):
-            past_memory_str += rec["recommendation"] + "\n\n"
 
-        prompt = f"""You are a Bear Analyst making the case against investing in the stock. Your goal is to present a well-reasoned argument emphasizing risks, challenges, and negative indicators. Leverage the provided research and data to highlight potential downsides and counter bullish arguments effectively.
+        if past_memories:
+            past_memory_str = "### Past Lessons Applied\n**Reflections from Similar Situations:**\n"
+            for i, rec in enumerate(past_memories, 1):
+                past_memory_str += rec["recommendation"] + "\n\n"
+            past_memory_str += "\n\n**How I'm Using These Lessons:**\n"
+            past_memory_str += "- [Specific adjustment based on past mistake/success]\n"
+            past_memory_str += "- [Impact on current conviction level]\n"
+        else:
+            past_memory_str = ""
 
-Key points to focus on:
+        prompt = f"""You are the Bear Analyst making the case for SHORT-TERM SELL/AVOID (1-2 weeks).
 
-- Risks and Challenges: Highlight factors like market saturation, financial instability, or macroeconomic threats that could hinder the stock's performance.
-- Competitive Weaknesses: Emphasize vulnerabilities such as weaker market positioning, declining innovation, or threats from competitors.
-- Negative Indicators: Use evidence from financial data, market trends, or recent adverse news to support your position.
-- Bull Counterpoints: Critically analyze the bull argument with specific data and sound reasoning, exposing weaknesses or over-optimistic assumptions.
-- Engagement: Present your argument in a conversational style, directly engaging with the bull analyst's points and debating effectively rather than simply listing facts.
+## YOUR OBJECTIVE
+Build evidence-based bear case emphasizing SHORT-TERM risks and refute Bull claims.
 
-Resources available:
+## STRUCTURE
 
-Market research report: {market_research_report}
-Social media sentiment report: {sentiment_report}
-Latest world affairs news: {news_report}
-Company fundamentals report: {fundamentals_report}
-Conversation history of the debate: {history}
-Last bull argument: {current_response}
-Reflections from similar situations and lessons learned: {past_memory_str}
-Use this information to deliver a compelling bear argument, refute the bull's claims, and engage in a dynamic debate that demonstrates the risks and weaknesses of investing in the stock. You must also address reflections and learn from lessons and mistakes you made in the past.
-"""
+### Core Thesis (2-3 sentences)
+Why this is SELL/AVOID for short-term traders NOW.
+
+### Key Bearish Points (3-4 max)
+For each:
+- **Risk:** [Bearish argument]
+- **Evidence:** [Specific data - numbers, dates]
+- **Short-Term Impact:** [Impact in next 1-2 weeks]
+- **Probability:** [High/Med/Low]
+
+### Bull Rebuttals
+For EACH Bull claim:
+- **Bull Says:** "[Quote]"
+- **Counter:** [Why they're wrong]
+- **Flaw:** [Weakness in their logic]
+
+### Strengths I Acknowledge
+- [1-2 legitimate Bull points]
+- [Why risks still dominate]
+
+## EVIDENCE PRIORITY
+1. Disappointing results, guidance cuts
+2. Technical breakdown, fading momentum
+3. Near-term risk (next 1-2 weeks)
+4. Insider selling, downgrades
+
+## RULES
+- ✅ Specific numbers and dates
+- ✅ Engage with Bull points
+- ✅ Short-term focus (1-2 weeks)
+- ❌ Don't exaggerate
+- ❌ Don't ignore Bull strengths
+
+---
+
+**DATA:**
+Technical: {market_research_report}
+Sentiment: {sentiment_report}
+News: {news_report}
+Fundamentals: {fundamentals_report}
+
+**DEBATE:**
+History: {history}
+Last Bull: {current_response}
+
+**LESSONS:** {past_memory_str}
+
+Apply lessons: How are you adjusting?"""
 
         response = llm.invoke(prompt)
 

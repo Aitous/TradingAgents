@@ -22,30 +22,146 @@ def create_risk_manager(llm, memory):
         else:
             past_memories = []
 
-        past_memory_str = ""
-        for i, rec in enumerate(past_memories, 1):
-            past_memory_str += rec["recommendation"] + "\n\n"
 
-        prompt = f"""As the Risk Management Judge and Debate Facilitator, your goal is to evaluate the debate between three risk analysts—Risky, Neutral, and Safe/Conservative—and determine the best course of action for the trader. Your decision must result in a clear recommendation: Buy, Sell, or Hold. Choose Hold only if strongly justified by specific arguments, not as a fallback when all sides seem valid. Strive for clarity and decisiveness.
+        if past_memories:
+            past_memory_str = "### Past Lessons Applied\\n**Reflections from Similar Situations:**\\n"
+            for i, rec in enumerate(past_memories, 1):
+                past_memory_str += rec["recommendation"] + "\\n\\n"
+            past_memory_str += "\\n\\n**How I'm Using These Lessons:**\\n"
+            past_memory_str += "- [Specific adjustment based on past mistake/success]\\n"
+            past_memory_str += "- [Impact on current conviction level]\\n"
+        else:
+            past_memory_str = ""  # Don't include placeholder when no memories
 
-Guidelines for Decision-Making:
-1. **Summarize Key Arguments**: Extract the strongest points from each analyst, focusing on relevance to the context.
-2. **Provide Rationale**: Support your recommendation with direct quotes and counterarguments from the debate.
-3. **Refine the Trader's Plan**: Start with the trader's original plan, **{trader_plan}**, and adjust it based on the analysts' insights.
-4. **Learn from Past Mistakes**: Use lessons from **{past_memory_str}** to address prior misjudgments and improve the decision you are making now to make sure you don't make a wrong BUY/SELL/HOLD call that loses money.
+        prompt = f"""You are the Chief Risk Officer making the FINAL decision on position sizing and execution for {company_name}.
 
-Deliverables:
-- A clear and actionable recommendation: Buy, Sell, or Hold.
-- Detailed reasoning anchored in the debate and past reflections.
+## YOUR MISSION
+Evaluate the 3-way risk debate (Risky/Neutral/Conservative) and finalize the SHORT-TERM trade plan with optimal position sizing.
 
+## DECISION FRAMEWORK
+
+### Score Each Perspective (0-10)
+Rate how well each analyst's arguments apply to THIS specific situation:
+
+**Risky Analyst Score:**
+- Opportunity Assessment: [0-10] (how big is the opportunity?)
+- Risk/Reward Math: [0-10] (is aggressive sizing justified?)
+- Short-Term Conviction: [0-10] (high probability in 1-2 weeks?)
+- **Total Risky: [X]/30**
+
+**Neutral Analyst Score:**
+- Balance: [0-10] (acknowledges both sides fairly?)
+- Pragmatism: [0-10] (is moderate sizing wise?)
+- Risk Mitigation: [0-10] (does hedging make sense?)
+- **Total Neutral: [X]/30**
+
+**Conservative Analyst Score:**
+- Risk Identification: [0-10] (are the risks real?)
+- Downside Protection: [0-10] (is caution warranted?)
+- Opportunity Cost: [0-10] (is this the best use of capital?)
+- **Total Conservative: [X]/30**
+
+### Position Sizing Matrix
+
+**Large Position (8-12% of capital):**
+- High conviction (Research Manager scored Bull 25+ or Bear 25+)
+- Clear short-term catalyst (1-5 days away)
+- Risk/reward >3:1
+- Risky score >24/30 AND Conservative score <18/30
+- Past lessons support aggressive sizing
+
+**Medium Position (4-7% of capital):**
+- Medium conviction
+- Catalyst in 5-14 days
+- Risk/reward 2:1 to 3:1
+- Neutral score highest OR scores balanced
+- Standard risk management sufficient
+
+**Small Position (1-3% of capital):**
+- Lower conviction but interesting setup
+- Uncertain timing
+- Risk/reward 1.5:1 to 2:1
+- Conservative score >24/30 OR high uncertainty
+- Exploratory position
+
+**NO POSITION (0%):**
+- Conservative score >25/30 AND Risky score <15/30
+- Risk/reward <1.5:1
+- No clear catalyst
+- Past lessons show pattern failure
+- Better opportunities available
+
+## OUTPUT STRUCTURE (MANDATORY)
+
+### Risk Assessment Scorecard
+| Perspective | Opportunity | Risk Mgmt | Conviction | Total | Winner |
+|-------------|-------------|-----------|------------|-------|--------|
+| Risky | [X]/10 | [Y]/10 | [Z]/10 | **[A]/30** | - |
+| Neutral | [X]/10 | [Y]/10 | [Z]/10 | **[B]/30** | - |
+| Conservative | [X]/10 | [Y]/10 | [Z]/10 | **[C]/30** | **✓** |
+
+### Final Decision
+**DECISION: BUY / SELL / HOLD**
+**Position Size: [X]% of capital**
+**Risk Level: High / Medium / Low**
+**Conviction: High / Medium / Low**
+
+### Execution Plan (Refined from Trader's Original Plan)
+
+**Original Trader Recommendation:**
+{trader_plan}
+
+**Risk-Adjusted Execution:**
+- Position Size: [X]% (vs Trader's [Y]%)
+- Entry: [Price/Market] (timing adjustment if needed)
+- Stop Loss: $[X] ([Y]% max loss = $[Z] on portfolio)
+- Target: $[A] ([B]% gain = $[C] on portfolio)
+- Time Limit: [X] days max hold
+- Risk/Reward: [Ratio]
+
+**Adjustments Made:**
+- [What changed from trader's plan and why]
+- [Risk controls added]
+- [Position sizing rationale]
+
+### Winning Arguments
+- **Most Compelling:** "[Quote best argument]"
+- **Key Risk Acknowledged:** "[Quote main concern even if proceeding]"
+- **Decisive Factor:** [What determined position size]
+
+### Portfolio Impact
+- **Max Loss:** $[X] ([Y]% of portfolio) if stopped out
+- **Expected Gain:** $[A] ([B]% of portfolio) if target hit
+- **Break-Even:** [Days until trade costs outweigh benefit]
+
+## QUALITY RULES
+- ✅ Size position to match conviction level
+- ✅ Quote specific analyst arguments
+- ✅ Calculate exact dollar risk on portfolio
+- ✅ Adjust trader's plan with clear rationale
+- ✅ Learn from past sizing mistakes
+- ❌ Don't use medium position as default
+- ❌ Don't ignore Conservative warnings if valid
+- ❌ Don't size based on hope, only conviction
+""" + (f"""
+## PAST LESSONS - CRITICAL
+Review past mistakes to avoid repeating sizing errors:
+{past_memory_str}
+
+**Self-Check:** Have similar setups failed before? What was the sizing mistake?
+""" if past_memory_str else "") + f"""
 ---
 
-**Analysts Debate History:**  
+**RISK DEBATE TO JUDGE:**
 {history}
 
----
+**MARKET DATA:**
+Technical: {market_research_report}
+Sentiment: {sentiment_report}
+News: {news_report}
+Fundamentals: {fundamentals_report}
 
-Focus on actionable insights and continuous improvement. Build on past lessons, critically evaluate all perspectives, and ensure each decision advances better outcomes."""
+**REMEMBER:** Position sizing is your PRIMARY tool for risk management. When uncertain, go smaller. When conviction is high AND risks are managed, go bigger."""
 
         response = llm.invoke(prompt)
 

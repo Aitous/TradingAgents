@@ -21,6 +21,8 @@ from tradingagents.dataflows.y_finance import (
     get_income_statement as get_yfinance_income_statement,
     get_insider_transactions as get_yfinance_insider_transactions,
     validate_ticker as validate_ticker_yfinance,
+    get_fundamentals as get_yfinance_fundamentals,
+    get_options_activity as get_yfinance_options_activity,
 )
 from tradingagents.dataflows.alpha_vantage import (
     get_stock as get_alpha_vantage_stock,
@@ -59,6 +61,18 @@ from tradingagents.dataflows.finnhub_api import (
 from tradingagents.dataflows.twitter_data import (
     get_tweets as get_twitter_tweets,
 )
+from tradingagents.dataflows.alpha_vantage_volume import (
+    get_alpha_vantage_unusual_volume,
+)
+from tradingagents.dataflows.alpha_vantage_analysts import (
+    get_alpha_vantage_analyst_changes,
+)
+from tradingagents.dataflows.tradier_api import (
+    get_tradier_unusual_options,
+)
+from tradingagents.dataflows.finviz_scraper import (
+    get_finviz_short_interest,
+)
 
 
 # ============================================================================
@@ -77,7 +91,7 @@ TOOL_REGISTRY: Dict[str, Dict[str, Any]] = {
             "yfinance": get_YFin_data_online,
             "alpha_vantage": get_alpha_vantage_stock,
         },
-        "vendor_priority": ["yfinance", "alpha_vantage"],
+        "vendor_priority": ["yfinance"],
         "parameters": {
             "symbol": {"type": "str", "description": "Ticker symbol of the company (e.g., AAPL)"},
             "start_date": {"type": "str", "description": "Start date in yyyy-mm-dd format"},
@@ -110,9 +124,9 @@ TOOL_REGISTRY: Dict[str, Dict[str, Any]] = {
             "yfinance": get_stock_stats_indicators_window,
             "alpha_vantage": get_alpha_vantage_indicator,
         },
-        "vendor_priority": ["yfinance", "alpha_vantage"],
+        "vendor_priority": ["yfinance"],
         "execution_mode": "aggregate",
-        "aggregate_vendors": ["yfinance", "alpha_vantage"],
+        "aggregate_vendors": ["yfinance"],
         "parameters": {
             "symbol": {"type": "str", "description": "Ticker symbol"},
             "indicator": {"type": "str", "description": "Technical indicator (rsi, macd, sma, ema, etc.)"},
@@ -129,10 +143,11 @@ TOOL_REGISTRY: Dict[str, Dict[str, Any]] = {
         "category": "fundamental_data",
         "agents": ["fundamentals"],
         "vendors": {
+            "yfinance": get_yfinance_fundamentals,
             "alpha_vantage": get_alpha_vantage_fundamentals,
             "openai": get_fundamentals_openai,
         },
-        "vendor_priority": ["alpha_vantage", "openai"],
+        "vendor_priority": ["yfinance", "openai"],
         "parameters": {
             "ticker": {"type": "str", "description": "Ticker symbol"},
             "curr_date": {"type": "str", "description": "Current date, yyyy-mm-dd"},
@@ -232,7 +247,7 @@ TOOL_REGISTRY: Dict[str, Dict[str, Any]] = {
             "reddit": get_reddit_api_global_news,
             "alpha_vantage": get_alpha_vantage_global_news,
         },
-        "vendor_priority": ["openai", "google", "reddit", "alpha_vantage"],
+        "vendor_priority": ["openai", "google", "reddit"],
         "execution_mode": "aggregate",
         "parameters": {
             "date": {"type": "str", "description": "Date for news, yyyy-mm-dd"},
@@ -347,6 +362,72 @@ TOOL_REGISTRY: Dict[str, Dict[str, Any]] = {
         "returns": "str: Formatted IPO calendar with pricing and share details",
     },
 
+    "get_unusual_volume": {
+        "description": "Find stocks with unusual volume but minimal price movement (accumulation signal)",
+        "category": "discovery",
+        "agents": [],
+        "vendors": {
+            "alpha_vantage": get_alpha_vantage_unusual_volume,
+        },
+        "vendor_priority": ["alpha_vantage"],
+        "parameters": {
+            "date": {"type": "str", "description": "Analysis date in yyyy-mm-dd format", "default": None},
+            "min_volume_multiple": {"type": "float", "description": "Minimum volume multiple vs average", "default": 3.0},
+            "max_price_change": {"type": "float", "description": "Maximum price change percentage", "default": 5.0},
+            "top_n": {"type": "int", "description": "Number of top results to return", "default": 20},
+        },
+        "returns": "str: Formatted report of stocks with unusual volume patterns",
+    },
+
+    "get_unusual_options_activity": {
+        "description": "Analyze options activity for specific tickers as confirmation signal (not for primary discovery)",
+        "category": "discovery",
+        "agents": [],
+        "vendors": {
+            "yfinance": get_yfinance_options_activity,
+            "tradier": get_tradier_unusual_options,
+        },
+        "vendor_priority": ["yfinance"],
+        "parameters": {
+            "ticker": {"type": "str", "description": "Ticker symbol to analyze"},
+            "num_expirations": {"type": "int", "description": "Number of nearest expiration dates to analyze", "default": 3},
+            "curr_date": {"type": "str", "description": "Analysis date for reference", "default": None},
+        },
+        "returns": "str: Formatted report of options activity with put/call ratios",
+    },
+
+    "get_analyst_rating_changes": {
+        "description": "Track recent analyst upgrades/downgrades and price target changes",
+        "category": "discovery",
+        "agents": [],
+        "vendors": {
+            "alpha_vantage": get_alpha_vantage_analyst_changes,
+        },
+        "vendor_priority": ["alpha_vantage"],
+        "parameters": {
+            "lookback_days": {"type": "int", "description": "Number of days to look back", "default": 7},
+            "change_types": {"type": "list", "description": "Types of changes to track", "default": ["upgrade", "downgrade", "initiated"]},
+            "top_n": {"type": "int", "description": "Number of top results", "default": 20},
+        },
+        "returns": "str: Formatted report of recent analyst rating changes with freshness indicators",
+    },
+
+    "get_short_interest": {
+        "description": "Discover stocks with high short interest by scraping Finviz screener (squeeze candidates)",
+        "category": "discovery",
+        "agents": [],
+        "vendors": {
+            "finviz": get_finviz_short_interest,
+        },
+        "vendor_priority": ["finviz"],
+        "parameters": {
+            "min_short_interest_pct": {"type": "float", "description": "Minimum short interest % of float", "default": 10.0},
+            "min_days_to_cover": {"type": "float", "description": "Minimum days to cover ratio", "default": 2.0},
+            "top_n": {"type": "int", "description": "Number of top results", "default": 20},
+        },
+        "returns": "str: Formatted report of discovered high short interest stocks with squeeze potential",
+    },
+
     "get_reddit_discussions": {
         "description": "Get Reddit discussions about a specific ticker",
         "category": "news_data",
@@ -361,6 +442,23 @@ TOOL_REGISTRY: Dict[str, Dict[str, Any]] = {
             "to_date": {"type": "str", "description": "End date, yyyy-mm-dd"},
         },
         "returns": "str: Reddit discussions and sentiment",
+    },
+
+    "get_options_activity": {
+        "description": "Get options activity for a specific ticker (volume, open interest, put/call ratios, unusual activity)",
+        "category": "discovery",
+        "agents": ["fundamentals"],
+        "vendors": {
+            "yfinance": get_yfinance_options_activity,
+            "tradier": get_tradier_unusual_options,
+        },
+        "vendor_priority": ["yfinance"],
+        "parameters": {
+            "ticker": {"type": "str", "description": "Ticker symbol"},
+            "num_expirations": {"type": "int", "description": "Number of nearest expiration dates to analyze", "default": 3},
+            "curr_date": {"type": "str", "description": "Current date for reference", "default": None},
+        },
+        "returns": "str: Options activity report with volume, OI, P/C ratios, and unusual activity",
     },
 }
 

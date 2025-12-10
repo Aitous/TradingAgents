@@ -19,27 +19,131 @@ def create_research_manager(llm, memory):
         else:
             past_memories = []
 
-        past_memory_str = ""
-        for i, rec in enumerate(past_memories, 1):
-            past_memory_str += rec["recommendation"] + "\n\n"
 
-        prompt = f"""As the portfolio manager and debate facilitator, your role is to critically evaluate this round of debate and make a definitive decision: align with the bear analyst, the bull analyst, or choose Hold only if it is strongly justified based on the arguments presented.
+        if past_memories:
+            past_memory_str = "### Past Lessons Applied\\n**Reflections from Similar Situations:**\\n"
+            for i, rec in enumerate(past_memories, 1):
+                past_memory_str += rec["recommendation"] + "\\n\\n"
+            past_memory_str += "\\n\\n**How I'm Using These Lessons:**\\n"
+            past_memory_str += "- [Specific adjustment based on past mistake/success]\\n"
+            past_memory_str += "- [Impact on current conviction level]\\n"
+        else:
+            past_memory_str = ""  # Don't include placeholder when no memories
 
-Summarize the key points from both sides concisely, focusing on the most compelling evidence or reasoning. Your recommendation—Buy, Sell, or Hold—must be clear and actionable. Avoid defaulting to Hold simply because both sides have valid points; commit to a stance grounded in the debate's strongest arguments.
+        prompt = f"""You are the Portfolio Manager judging the Bull vs Bear debate. Make a definitive SHORT-TERM decision: BUY, SELL, or HOLD (rare).
 
-Additionally, develop a detailed investment plan for the trader. This should include:
+## YOUR MISSION
+Analyze the debate objectively and make a decisive SHORT-TERM (1-2 week) trading decision backed by evidence.
 
-Your Recommendation: A decisive stance supported by the most convincing arguments.
-Rationale: An explanation of why these arguments lead to your conclusion.
-Strategic Actions: Concrete steps for implementing the recommendation.
-Take into account your past mistakes on similar situations. Use these insights to refine your decision-making and ensure you are learning and improving. Present your analysis conversationally, as if speaking naturally, without special formatting. 
+## DECISION FRAMEWORK
 
-Here are your past reflections on mistakes:
-\"{past_memory_str}\"
+### Score Each Side (0-10)
+Evaluate both Bull and Bear arguments:
 
-Here is the debate:
-Debate History:
-{history}"""
+**Bull Score:**
+- Evidence Strength: [0-10] (hard data vs speculation)
+- Logic: [0-10] (sound reasoning?)
+- Short-Term Relevance: [0-10] (matters in 1-2 weeks?)
+- **Total Bull: [X]/30**
+
+**Bear Score:**
+- Evidence Strength: [0-10] (hard data vs speculation)
+- Logic: [0-10] (sound reasoning?)
+- Short-Term Relevance: [0-10] (matters in 1-2 weeks?)
+- **Total Bear: [X]/30**
+
+### Decision Matrix
+
+**BUY if:**
+- Bull score > Bear score by 3+ points
+- Clear short-term catalyst (next 1-2 weeks)
+- Risk/reward ratio >2:1
+- Technical setup supports entry
+- Past lessons don't show pattern failure
+
+**SELL if:**
+- Bear score > Bull score by 3+ points
+- Significant near-term risks
+- Catalyst already priced in
+- Risk/reward ratio <1:1
+- Technical breakdown evident
+
+**HOLD if (ALL must apply - should be RARE):**
+- Scores within 2 points (truly balanced)
+- Major catalyst imminent (1-3 days away)
+- Waiting provides significant option value
+- Current position is optimal
+
+## OUTPUT STRUCTURE (MANDATORY)
+
+### Debate Scorecard
+| Criterion | Bull | Bear | Winner |
+|-----------|------|------|--------|
+| Evidence | [X]/10 | [Y]/10 | [Bull/Bear] |
+| Logic | [X]/10 | [Y]/10 | [Bull/Bear] |
+| Short-Term | [X]/10 | [Y]/10 | [Bull/Bear] |
+| **TOTAL** | **[X]** | **[Y]** | **[Winner] +[Diff]** |
+
+### Decision Summary
+**DECISION: BUY / SELL / HOLD**
+**Conviction: High / Medium / Low**
+**Time Horizon: [X] days (typically 5-14 days)**
+**Recommended Position Size: [X]% of capital**
+
+### Winning Arguments
+- **Bull's Strongest:** [Quote best Bull point if buying]
+- **Bear's Strongest:** [Quote best Bear point even if buying - acknowledge risk]
+- **Decisive Factor:** [What tipped the scale]
+
+### Investment Plan for Trader
+**Execution Strategy:**
+- Entry: [When and at what price]
+- Stop Loss: [Specific level and % risk]
+- Target: [Specific level and % gain]
+- Risk/Reward: [Ratio]
+- Time Limit: [Max holding period]
+
+**If BUY:**
+- Why Bull won the debate
+- Key catalyst timeline
+- Exit strategy (both profit and loss)
+
+**If SELL:**
+- Why Bear won the debate
+- Key risk timeline
+- When to reassess
+
+**If HOLD (rare):**
+- Why waiting is optimal
+- What event we're waiting for (date)
+- Decision trigger (when to reassess)
+
+## QUALITY RULES
+- ✅ Be decisive (avoid fence-sitting)
+- ✅ Score objectively with numbers
+- ✅ Quote specific arguments from debate
+- ✅ Focus on 1-2 week horizon
+- ✅ Learn from past mistakes
+- ❌ Don't default to HOLD to avoid deciding
+- ❌ Don't ignore strong opposing arguments
+- ❌ Don't make long-term arguments
+""" + (f"""
+## PAST LESSONS
+Here are reflections on past mistakes - apply these lessons:
+{past_memory_str}
+
+**Learning Check:** How are you adjusting based on these past situations?
+""" if past_memory_str else "") + f"""
+---
+
+**DEBATE TO JUDGE:**
+{history}
+
+**MARKET DATA:**
+Technical: {market_research_report}
+Sentiment: {sentiment_report}
+News: {news_report}
+Fundamentals: {fundamentals_report}"""
         response = llm.invoke(prompt)
 
         new_investment_debate_state = {

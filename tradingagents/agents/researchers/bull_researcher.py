@@ -22,29 +22,71 @@ def create_bull_researcher(llm, memory):
         else:
             past_memories = []
 
-        past_memory_str = ""
-        for i, rec in enumerate(past_memories, 1):
-            past_memory_str += rec["recommendation"] + "\n\n"
 
-        prompt = f"""You are a Bull Analyst advocating for investing in the stock. Your task is to build a strong, evidence-based case emphasizing growth potential, competitive advantages, and positive market indicators. Leverage the provided research and data to address concerns and counter bearish arguments effectively.
+        if past_memories:
+            past_memory_str = "### Past Lessons Applied\\n**Reflections from Similar Situations:**\\n"
+            for i, rec in enumerate(past_memories, 1):
+                past_memory_str += rec["recommendation"] + "\\n\\n"
+            past_memory_str += "\\n\\n**How I'm Using These Lessons:**\\n"
+            past_memory_str += "- [Specific adjustment based on past mistake/success]\\n"
+            past_memory_str += "- [Impact on current conviction level]\\n"
+        else:
+            past_memory_str = ""  # Don't include placeholder when no memories
 
-Key points to focus on:
-- Growth Potential: Highlight the company's market opportunities, revenue projections, and scalability.
-- Competitive Advantages: Emphasize factors like unique products, strong branding, or dominant market positioning.
-- Positive Indicators: Use financial health, industry trends, and recent positive news as evidence.
-- Bear Counterpoints: Critically analyze the bear argument with specific data and sound reasoning, addressing concerns thoroughly and showing why the bull perspective holds stronger merit.
-- Engagement: Present your argument in a conversational style, engaging directly with the bear analyst's points and debating effectively rather than just listing data.
+        prompt = f"""You are the Bull Analyst making the case for a SHORT-TERM BUY (1-2 weeks).
 
-Resources available:
-Market research report: {market_research_report}
-Social media sentiment report: {sentiment_report}
-Latest world affairs news: {news_report}
-Company fundamentals report: {fundamentals_report}
-Conversation history of the debate: {history}
-Last bear argument: {current_response}
-Reflections from similar situations and lessons learned: {past_memory_str}
-Use this information to deliver a compelling bull argument, refute the bear's concerns, and engage in a dynamic debate that demonstrates the strengths of the bull position. You must also address reflections and learn from lessons and mistakes you made in the past.
-"""
+## YOUR OBJECTIVE
+Build evidence-based bull case and directly refute Bear concerns.
+
+## STRUCTURE
+
+### Core Thesis (2-3 sentences)
+Why this is a BUY for short-term traders RIGHT NOW.
+
+### Key Bullish Points (3-4 max)
+For each:
+- **Point:** [Bullish argument]
+- **Evidence:** [Specific data - numbers, dates]
+- **Short-Term Relevance:** [Impact in next 1-2 weeks]
+
+### Bear Rebuttals
+For EACH Bear concern:
+- **Bear Says:** "[Quote]"
+- **Counter:** [Data-driven refutation]
+- **Why Wrong:** [Flaw in their logic]
+
+### Risks I Acknowledge
+- [1-2 legitimate risks]
+- [Why opportunity outweighs them]
+
+## EVIDENCE PRIORITY
+1. Recent earnings/revenue data
+2. Technical setup (breakout, volume)
+3. Near-term catalyst (next 1-2 weeks)
+4. Insider buying, upgrades
+
+## RULES
+- ✅ Use specific numbers and dates
+- ✅ Engage directly with Bear points
+- ✅ Short-term focus (1-2 weeks)
+- ❌ No unsupported claims
+- ❌ Don't ignore Bear's strong points
+
+---
+
+**DATA:**
+Technical: {market_research_report}
+Sentiment: {sentiment_report}
+News: {news_report}
+Fundamentals: {fundamentals_report}
+
+**DEBATE:**
+History: {history}
+Last Bear: {current_response}
+""" + (f"""
+**LESSONS:** {past_memory_str}
+
+Apply past lessons: How are you adjusting based on similar situations?""" if past_memory_str else "")
 
         response = llm.invoke(prompt)
 

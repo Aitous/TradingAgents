@@ -11,7 +11,7 @@ from tradingagents.agents.utils.agent_utils import (
     get_indicators
 )
 from tradingagents.tools.executor import execute_tool
-from tradingagents.schemas import TickerList, MarketMovers, ThemeList
+from tradingagents.schemas import TickerList, TickerContextList, MarketMovers, ThemeList
 
 class DiscoveryGraph:
     def __init__(self, config=None):
@@ -52,7 +52,93 @@ class DiscoveryGraph:
         self.max_candidates_to_analyze = discovery_config.get("max_candidates_to_analyze", 10)
         self.news_lookback_days = discovery_config.get("news_lookback_days", 7)
         self.final_recommendations = discovery_config.get("final_recommendations", 3)
+        
+        # Store run directory for saving results
+        self.run_dir = self.config.get("discovery_run_dir", None)
+        
         self.graph = self._create_graph()
+
+    def _log_tool_call(self, tool_logs: list, node: str, step_name: str, tool_name: str, params: dict, output: str, context: str = ""):
+        """Log a tool call with metadata for debugging and analysis."""
+        from datetime import datetime
+        
+        log_entry = {
+            "timestamp": datetime.now().isoformat(),
+            "node": node,
+            "step": step_name,
+            "tool": tool_name,
+            "parameters": params,
+            "context": context,
+            "output": output[:1000] + "..." if len(output) > 1000 else output,
+            "output_length": len(output)
+        }
+        tool_logs.append(log_entry)
+        return log_entry
+
+    def _save_results(self, state: dict, trade_date: str):
+        """Save discovery results and tool logs to files."""
+        from pathlib import Path
+        from datetime import datetime
+        import json
+        
+        # Get or create results directory
+        if self.run_dir:
+            results_dir = Path(self.run_dir)
+        else:
+            run_timestamp = datetime.now().strftime("%H_%M_%S")
+            results_dir = Path(self.config.get("results_dir", "./results")) / "discovery" / trade_date / f"run_{run_timestamp}"
+            results_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Save main results as markdown
+        try:
+            with open(results_dir / "discovery_results.md", "w") as f:
+                f.write(f"# Discovery Results - {trade_date}\n\n")
+                f.write(f"## Final Ranking\n\n")
+                f.write(state.get("final_ranking", "No ranking available"))
+                f.write("\n\n## Candidates Analyzed\n\n")
+                for opp in state.get("opportunities", []):
+                    f.write(f"### {opp['ticker']} ({opp['strategy']})\n\n")
+        except Exception as e:
+            print(f"   Error saving results: {e}")
+        
+        # Save as JSON
+        try:
+            with open(results_dir / "discovery_result.json", "w") as f:
+                json_state = {
+                    "trade_date": trade_date,
+                    "tickers": state.get("tickers", []),
+                    "filtered_tickers": state.get("filtered_tickers", []),
+                    "final_ranking": state.get("final_ranking", ""),
+                    "status": state.get("status", "")
+                }
+                json.dump(json_state, f, indent=2)
+        except Exception as e:
+            print(f"   Error saving JSON: {e}")
+        
+        # Save tool logs
+        tool_logs = state.get("tool_logs", [])
+        if tool_logs:
+            try:
+                with open(results_dir / "tool_execution_logs.json", "w") as f:
+                    json.dump(tool_logs, f, indent=2)
+                
+                with open(results_dir / "tool_execution_logs.md", "w") as f:
+                    f.write(f"# Tool Execution Logs - {trade_date}\n\n")
+                    for i, log in enumerate(tool_logs, 1):
+                        f.write(f"## {i}. {log['step']}\n\n")
+                        f.write(f"- **Tool:** `{log['tool']}`\n")
+                        f.write(f"- **Node:** {log['node']}\n")
+                        f.write(f"- **Timestamp:** {log['timestamp']}\n")
+                        if log.get('context'):
+                            f.write(f"- **Context:** {log['context']}\n")
+                        f.write(f"- **Parameters:** `{log['parameters']}`\n")
+                        f.write(f"- **Output Length:** {log['output_length']} chars\n\n")
+                        f.write(f"### Output\n```\n{log['output']}\n```\n\n")
+                        f.write("---\n\n")
+            except Exception as e:
+                print(f"   Error saving tool logs: {e}")
+        
+        print(f"   Results saved to: {results_dir}")
 
     def _create_graph(self):
         workflow = StateGraph(DiscoveryState)
@@ -75,156 +161,79 @@ class DiscoveryGraph:
         print("🔍 Scanning market for opportunities...")
         
         candidates = []
+        tool_logs = state.get("tool_logs", [])
         
-        # 0. Macro Theme Discovery (Top-Down)
-        try:
-            from datetime import datetime
-            today = datetime.now().strftime("%Y-%m-%d")
-            
-            # Get Global News
-            global_news = execute_tool("get_global_news", date=today, limit=5)
-            
-            # Extract Themes
-            prompt = f"""Based on this global news, identify 3 trending market themes or sectors (e.g., 'Artificial Intelligence', 'Oil', 'Biotech').
-            Return a JSON object with a 'themes' array of strings.
-            
-            News:
-            {global_news}
-            """
-            
-            structured_llm = self.quick_thinking_llm.with_structured_output(
-                schema=ThemeList.model_json_schema(),
-                method="json_schema"
-            )
-            response = structured_llm.invoke([HumanMessage(content=prompt)])
-            themes = response.get("themes", [])
-            
-            print(f"   Identified Macro Themes: {themes}")
-            
-            # Find tickers for each theme
-            for theme in themes:
-                try:
-                    tweets_report = execute_tool("get_tweets", query=f"{theme} stocks", count=15)
-                    
-                    prompt = f"""Extract ONLY valid stock ticker symbols related to the theme '{theme}' from this report.
-                    Return a comma-separated list of tickers (1-5 uppercase letters).
-                    
-                    Report:
-                    {tweets_report}
-                    
-                    Return a JSON object with a 'tickers' array."""
-                    
-                    structured_llm = self.quick_thinking_llm.with_structured_output(
-                        schema=TickerList.model_json_schema(),
-                        method="json_schema"
-                    )
-                    response = structured_llm.invoke([HumanMessage(content=prompt)])
-                    theme_tickers = response.get("tickers", [])
-                    
-                    for t in theme_tickers:
-                        t = t.upper().strip()
-                        if re.match(r'^[A-Z]{1,5}$', t):
-                             # Use validate_ticker tool logic (via execute_tool)
-                            try:
-                                if execute_tool("validate_ticker", symbol=t):
-                                    candidates.append({"ticker": t, "source": f"macro_theme_{theme}", "sentiment": "unknown"})
-                            except Exception:
-                                continue
-                except Exception as e:
-                    print(f"   Error fetching tickers for theme {theme}: {e}")
-                    
-        except Exception as e:
-            print(f"   Error in Macro Theme Discovery: {e}")
+        # 0. Macro Theme Discovery (Top-Down) - DISABLED
+        # This section used Twitter API which has rate limit issues
+        # try:
+        #     from datetime import datetime
+        #     today = datetime.now().strftime("%Y-%m-%d")
+        #     global_news = execute_tool("get_global_news", date=today, limit=5)
+        #     ... (macro theme code disabled)
+        # except Exception as e:
+        #     print(f"   Error in Macro Theme Discovery: {e}")
 
         # 1. Get Reddit Trending (Social Sentiment)
         try:
             reddit_report = execute_tool("get_trending_tickers", limit=self.reddit_trending_limit)
-            # Use LLM to extract tickers
-            prompt = """Extract ONLY valid stock ticker symbols from this Reddit report.
-Return a comma-separated list of tickers (1-5 uppercase letters).
-Do not include currencies (like RMB), cryptocurrencies (like BTC unless it's an ETF), or explanations.
-Only include actual stock tickers.
+            # Use LLM to extract tickers WITH context
+            prompt = """Extract valid stock ticker symbols from this Reddit report, along with context about why they're trending.
 
-Examples of valid tickers: AAPL, GOOGL, MSFT, TSLA, NVDA
-Examples of invalid: RMB (currency), BTC (crypto)
+For each ticker, include:
+- ticker: The stock symbol (1-5 uppercase letters)
+- context: Brief description of sentiment, mentions, or key discussion points
+
+Do not include currencies (RMB), cryptocurrencies (BTC), or invalid symbols.
 
 Report:
 {report}
 
-Return a JSON object with a 'tickers' array containing only valid stock ticker symbols.""".format(report=reddit_report)
+Return a JSON object with a 'candidates' array of objects, each having 'ticker' and 'context' fields.""".format(report=reddit_report)
             
-            # Use structured output for ticker extraction
+            # Use structured output for ticker+context extraction
             structured_llm = self.quick_thinking_llm.with_structured_output(
-                schema=TickerList.model_json_schema(),
+                schema=TickerContextList.model_json_schema(),
                 method="json_schema"
             )
             response = structured_llm.invoke([HumanMessage(content=prompt)])
             
-            # Validate and add tickers
-            reddit_tickers = response.get("tickers", [])
-            for t in reddit_tickers:
-                t = t.upper().strip()
+            # Validate and add tickers with context
+            reddit_candidates = response.get("candidates", [])
+            for c in reddit_candidates:
+                ticker = c.get("ticker", "").upper().strip()
+                context = c.get("context", "Trending on Reddit")
                 # Validate ticker format (1-5 uppercase letters)
-                if re.match(r'^[A-Z]{1,5}$', t):
-                    candidates.append({"ticker": t, "source": "social_trending", "sentiment": "unknown"})
+                if re.match(r'^[A-Z]{1,5}$', ticker):
+                    candidates.append({"ticker": ticker, "source": "social_trending", "context": context, "sentiment": "unknown"})
         except Exception as e:
             print(f"   Error fetching Reddit tickers: {e}")
 
-        # 2. Get Twitter Trending (Social Sentiment)
-        try:
-            # Search for general market discussions
-            tweets_report = execute_tool("get_tweets", query="stocks to watch", count=20)
-            
-            # Use LLM to extract tickers
-            prompt = """Extract ONLY valid stock ticker symbols from this Twitter report.
-Return a comma-separated list of tickers (1-5 uppercase letters).
-Do not include currencies (like RMB), cryptocurrencies (like BTC unless it's an ETF), or explanations.
-Only include actual stock tickers.
-
-Examples of valid tickers: AAPL, GOOGL, MSFT, TSLA, NVDA
-Examples of invalid: RMB (currency), BTC (crypto)
-
-Report:
-{report}
-
-Return a JSON object with a 'tickers' array containing only valid stock ticker symbols.""".format(report=tweets_report)
-            
-            # Use structured output for ticker extraction
-            structured_llm = self.quick_thinking_llm.with_structured_output(
-                schema=TickerList.model_json_schema(),
-                method="json_schema"
-            )
-            response = structured_llm.invoke([HumanMessage(content=prompt)])
-            
-            # Validate and add tickers
-            twitter_tickers = response.get("tickers", [])
-            valid_twitter_tickers = []
-            for t in twitter_tickers:
-                t = t.upper().strip()
-                # Validate ticker format (1-5 uppercase letters)
-                if re.match(r'^[A-Z]{1,5}$', t):
-                    # Use validate_ticker tool logic (via execute_tool)
-                    try:
-                        if execute_tool("validate_ticker", symbol=t):
-                            valid_twitter_tickers.append(t)
-                    except Exception:
-                        continue
-
-            for t in valid_twitter_tickers:
-                candidates.append({"ticker": t, "source": "twitter_sentiment", "sentiment": "unknown"})
-        except Exception as e:
-            print(f"   Error fetching Twitter tickers: {e}")
+        # 2. Get Twitter Trending (Social Sentiment) - DISABLED due to API issues
+        # try:
+        #     # Search for general market discussions
+        #     tweets_report = execute_tool("get_tweets", query="stocks to watch", count=20)
+        #     
+        #     # Use LLM to extract tickers
+        #     prompt = """Extract ONLY valid stock ticker symbols from this Twitter report.
+        # ... (Twitter extraction code disabled)
+        # except Exception as e:
+        #     print(f"   Error fetching Twitter tickers: {e}")
 
         # 2. Get Market Movers (Gainers & Losers)
         try:
             movers_report = execute_tool("get_market_movers", limit=self.market_movers_limit)
-            # We need to parse this to separate Gainers vs Losers
-            # Since it's a markdown report, we'll use LLM to structure it
-            prompt = f"""Based on the following market movers data, extract the top {self.market_movers_limit} tickers.
-Return a JSON object with a 'movers' array containing objects with 'ticker' and 'type' (either 'gainer' or 'loser') fields.
+            # Use LLM to extract movers with context
+            prompt = f"""Extract stock tickers from this market movers data with context about their performance.
+
+For each ticker, include:
+- ticker: The stock symbol (1-5 uppercase letters)
+- type: Either 'gainer' or 'loser'
+- reason: Brief description of the price movement (%, volume, catalyst if mentioned)
 
 Data:
-{movers_report}"""
+{movers_report}
+
+Return a JSON object with a 'movers' array containing objects with 'ticker', 'type', and 'reason' fields."""
             
             # Use structured output for market movers
             structured_llm = self.quick_thinking_llm.with_structured_output(
@@ -233,16 +242,17 @@ Data:
             )
             response = structured_llm.invoke([HumanMessage(content=prompt)])
             
-            # Validate and add tickers
+            # Validate and add tickers with context
             movers = response.get("movers", [])
             for m in movers:
                 ticker = m.get('ticker', '').upper().strip()
-                # Only add valid tickers (1-5 uppercase letters)
                 if ticker and re.match(r'^[A-Z]{1,5}$', ticker):
                     mover_type = m.get('type', 'gainer')
+                    reason = m.get('reason', f"Top {mover_type}")
                     candidates.append({
                         "ticker": ticker,
                         "source": mover_type,
+                        "context": reason,
                         "sentiment": "negative" if mover_type == "loser" else "positive"
                     })
 
@@ -258,27 +268,30 @@ Data:
 
             earnings_report = execute_tool("get_earnings_calendar", from_date=from_date, to_date=to_date)
 
-            # Extract tickers from earnings calendar
-            prompt = """Extract ONLY valid stock ticker symbols from this earnings calendar.
-Return a comma-separated list of tickers (1-5 uppercase letters).
-Only include actual stock tickers, not indexes or other symbols.
+            # Extract tickers with earnings context
+            prompt = """Extract stock tickers from this earnings calendar with context about their upcoming earnings.
+
+For each ticker, include:
+- ticker: The stock symbol (1-5 uppercase letters)
+- context: Earnings date, expected EPS, and any other relevant info
 
 Earnings Calendar:
 {report}
 
-Return a JSON object with a 'tickers' array containing only valid stock ticker symbols.""".format(report=earnings_report)
+Return a JSON object with a 'candidates' array of objects, each having 'ticker' and 'context' fields.""".format(report=earnings_report)
 
             structured_llm = self.quick_thinking_llm.with_structured_output(
-                schema=TickerList.model_json_schema(),
+                schema=TickerContextList.model_json_schema(),
                 method="json_schema"
             )
             response = structured_llm.invoke([HumanMessage(content=prompt)])
 
-            earnings_tickers = response.get("tickers", [])
-            for t in earnings_tickers:
-                t = t.upper().strip()
-                if re.match(r'^[A-Z]{1,5}$', t):
-                    candidates.append({"ticker": t, "source": "earnings_catalyst", "sentiment": "unknown"})
+            earnings_candidates = response.get("candidates", [])
+            for c in earnings_candidates:
+                ticker = c.get("ticker", "").upper().strip()
+                context = c.get("context", "Upcoming earnings")
+                if re.match(r'^[A-Z]{1,5}$', ticker):
+                    candidates.append({"ticker": ticker, "source": "earnings_catalyst", "context": context, "sentiment": "unknown"})
         except Exception as e:
             print(f"   Error fetching Earnings Calendar: {e}")
 
@@ -291,29 +304,71 @@ Return a JSON object with a 'tickers' array containing only valid stock ticker s
 
             ipo_report = execute_tool("get_ipo_calendar", from_date=from_date, to_date=to_date)
 
-            # Extract tickers from IPO calendar
-            prompt = """Extract ONLY valid stock ticker symbols from this IPO calendar.
-Return a comma-separated list of tickers (1-5 uppercase letters).
-Only include actual stock tickers that are listed or about to be listed.
+            # Extract tickers with IPO context
+            prompt = """Extract stock tickers from this IPO calendar with context about the offering.
+
+For each ticker, include:
+- ticker: The stock symbol (1-5 uppercase letters)
+- context: IPO date, price range, shares offered, and company description
 
 IPO Calendar:
 {report}
 
-Return a JSON object with a 'tickers' array containing only valid stock ticker symbols.""".format(report=ipo_report)
+Return a JSON object with a 'candidates' array of objects, each having 'ticker' and 'context' fields.""".format(report=ipo_report)
 
             structured_llm = self.quick_thinking_llm.with_structured_output(
-                schema=TickerList.model_json_schema(),
+                schema=TickerContextList.model_json_schema(),
                 method="json_schema"
             )
             response = structured_llm.invoke([HumanMessage(content=prompt)])
 
-            ipo_tickers = response.get("tickers", [])
-            for t in ipo_tickers:
-                t = t.upper().strip()
-                if re.match(r'^[A-Z]{1,5}$', t):
-                    candidates.append({"ticker": t, "source": "ipo_listing", "sentiment": "unknown"})
+            ipo_candidates = response.get("candidates", [])
+            for c in ipo_candidates:
+                ticker = c.get("ticker", "").upper().strip()
+                context = c.get("context", "Recent/upcoming IPO")
+                if re.match(r'^[A-Z]{1,5}$', ticker):
+                    candidates.append({"ticker": ticker, "source": "ipo_listing", "context": context, "sentiment": "unknown"})
         except Exception as e:
             print(f"   Error fetching IPO Calendar: {e}")
+
+        # 5. Short Squeeze Detection (High Short Interest)
+        try:
+            # Get stocks with high short interest - potential squeeze candidates
+            short_interest_report = execute_tool(
+                "get_short_interest",
+                min_short_interest_pct=15.0,  # 15%+ short interest
+                min_days_to_cover=3.0,        # 3+ days to cover
+                top_n=15
+            )
+            
+            # Extract tickers with short squeeze context
+            prompt = """Extract stock tickers from this short interest report with context about squeeze potential.
+
+For each ticker, include:
+- ticker: The stock symbol (1-5 uppercase letters)
+- context: Short interest %, days to cover, squeeze potential rating, and any other relevant metrics
+
+Short Interest Report:
+{report}
+
+Return a JSON object with a 'candidates' array of objects, each having 'ticker' and 'context' fields.""".format(report=short_interest_report)
+
+            structured_llm = self.quick_thinking_llm.with_structured_output(
+                schema=TickerContextList.model_json_schema(),
+                method="json_schema"
+            )
+            response = structured_llm.invoke([HumanMessage(content=prompt)])
+
+            short_candidates = response.get("candidates", [])
+            for c in short_candidates:
+                ticker = c.get("ticker", "").upper().strip()
+                context = c.get("context", "High short interest")
+                if re.match(r'^[A-Z]{1,5}$', ticker):
+                    candidates.append({"ticker": ticker, "source": "short_squeeze", "context": context, "sentiment": "unknown"})
+            
+            print(f"   Found {len(short_candidates)} short squeeze candidates")
+        except Exception as e:
+            print(f"   Error fetching Short Interest: {e}")
 
         # Deduplicate
         unique_candidates = {}
@@ -323,7 +378,7 @@ Return a JSON object with a 'tickers' array containing only valid stock ticker s
         
         final_candidates = list(unique_candidates.values())
         print(f"   Found {len(final_candidates)} unique candidates.")
-        return {"tickers": [c['ticker'] for c in final_candidates], "candidate_metadata": final_candidates, "status": "scanned"}
+        return {"tickers": [c['ticker'] for c in final_candidates], "candidate_metadata": final_candidates, "tool_logs": tool_logs, "status": "scanned"}
 
     def filter_node(self, state: DiscoveryState):
         """Filter candidates based on strategy (Contrarian vs Momentum)."""
@@ -451,6 +506,8 @@ Return a JSON object with a 'tickers' array containing only valid stock ticker s
 
     def ranker_node(self, state: DiscoveryState):
         """Rank opportunities and select the best ones."""
+        from datetime import datetime
+        
         opportunities = state["opportunities"]
         print("🔍 Ranking opportunities...")
         
@@ -490,4 +547,17 @@ Return a JSON object with a 'tickers' array containing only valid stock ticker s
         response = self.deep_thinking_llm.invoke([HumanMessage(content=prompt)])
         
         print("   Ranking complete.")
-        return {"status": "complete", "opportunities": opportunities, "final_ranking": response.content}
+        
+        # Build result state
+        result_state = {
+            "status": "complete", 
+            "opportunities": opportunities, 
+            "final_ranking": response.content,
+            "tool_logs": state.get("tool_logs", [])
+        }
+        
+        # Save results to files
+        trade_date = state.get("trade_date", datetime.now().strftime("%Y-%m-%d"))
+        self._save_results(result_state, trade_date)
+        
+        return result_state

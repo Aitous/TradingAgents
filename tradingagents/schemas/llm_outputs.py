@@ -35,6 +35,25 @@ class TickerList(BaseModel):
     )
 
 
+class TickerWithContext(BaseModel):
+    """Individual ticker with context description."""
+    
+    ticker: str = Field(
+        description="Stock ticker symbol (1-5 uppercase letters)"
+    )
+    context: str = Field(
+        description="Brief description of why this ticker is relevant (key metrics, catalyst, etc.)"
+    )
+
+
+class TickerContextList(BaseModel):
+    """Structured output for tickers with context."""
+    
+    candidates: List[TickerWithContext] = Field(
+        description="List of stock tickers with context explaining their relevance"
+    )
+
+
 class ThemeList(BaseModel):
     """Structured output for market themes."""
     

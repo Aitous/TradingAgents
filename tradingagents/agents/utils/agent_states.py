@@ -84,4 +84,5 @@ class DiscoveryState(TypedDict):
     opportunities: Annotated[list[dict], "List of final opportunities with rationale"]
     final_ranking: Annotated[str, "Final ranking from LLM"]
     status: Annotated[str, "Current status of discovery"]
+    tool_logs: Annotated[list[dict], "Detailed logs of all tool calls across all nodes (scanner, filter, deep_dive)"]
 
