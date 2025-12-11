@@ -16,6 +16,7 @@ from typing import Dict, List, Optional, Callable, Any
 from tradingagents.dataflows.y_finance import (
     get_YFin_data_online,
     get_stock_stats_indicators_window,
+    get_technical_analysis,
     get_balance_sheet as get_yfinance_balance_sheet,
     get_cashflow as get_yfinance_cashflow,
     get_income_statement as get_yfinance_income_statement,
@@ -116,24 +117,34 @@ TOOL_REGISTRY: Dict[str, Dict[str, Any]] = {
 
     # ========== TECHNICAL INDICATORS ==========
 
+    # "get_indicators": {
+    #     "description": "Get concise technical analysis with signals, trends, and key indicator interpretations",
+    #     "category": "technical_indicators",
+    #     "agents": ["market"],
+    #     "vendors": {
+    #         "yfinance": get_technical_analysis,
+    #     },
+    #     "vendor_priority": ["yfinance"],
+    #     "parameters": {
+    #         "symbol": {"type": "str", "description": "Ticker symbol"},
+    #         "curr_date": {"type": "str", "description": "Current trading date, YYYY-mm-dd"},
+    #     },
+    #     "returns": "str: Concise analysis with RSI signals, MACD crossovers, MA trends, Bollinger position, and ATR volatility",
+    # },
+
     "get_indicators": {
-        "description": "Retrieve technical indicators for a given ticker symbol",
+        "description": "Get concise technical analysis with signals, trends, and key indicator interpretations",
         "category": "technical_indicators",
         "agents": ["market"],
         "vendors": {
-            "yfinance": get_stock_stats_indicators_window,
-            "alpha_vantage": get_alpha_vantage_indicator,
+            "yfinance": get_technical_analysis,
         },
         "vendor_priority": ["yfinance"],
-        "execution_mode": "aggregate",
-        "aggregate_vendors": ["yfinance"],
         "parameters": {
             "symbol": {"type": "str", "description": "Ticker symbol"},
-            "indicator": {"type": "str", "description": "Technical indicator (rsi, macd, sma, ema, etc.)"},
             "curr_date": {"type": "str", "description": "Current trading date, YYYY-mm-dd"},
-            "look_back_days": {"type": "int", "description": "Days to look back", "default": 30},
         },
-        "returns": "str: Formatted report containing technical indicators",
+        "returns": "str: Concise analysis with RSI signals, MACD crossovers, MA trends, Bollinger position, and ATR volatility",
     },
 
     # ========== FUNDAMENTAL DATA ==========
@@ -226,9 +237,9 @@ TOOL_REGISTRY: Dict[str, Dict[str, Any]] = {
             "openai": get_stock_news_openai,
             "google": get_google_news,
         },
-        "vendor_priority": ["alpha_vantage", "reddit", "openai", "google"],
+        "vendor_priority": ["reddit", "openai", "google"],
         "execution_mode": "aggregate",
-        "aggregate_vendors": ["alpha_vantage", "reddit", "google"],
+        "aggregate_vendors": ["reddit", "openai", "google"],
         "parameters": {
             "query": {"type": "str", "description": "Search query or ticker symbol"},
             "start_date": {"type": "str", "description": "Start date, yyyy-mm-dd"},
@@ -262,9 +273,10 @@ TOOL_REGISTRY: Dict[str, Dict[str, Any]] = {
         "category": "news_data",
         "agents": ["news"],
         "vendors": {
+            "yfinance": get_yfinance_insider_transactions,
             "alpha_vantage": get_alpha_vantage_insider_transactions,
         },
-        "vendor_priority": ["alpha_vantage"],
+        "vendor_priority": ["yfinance"],
         "parameters": {
             "ticker": {"type": "str", "description": "Ticker symbol"},
         },

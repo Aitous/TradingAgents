@@ -50,7 +50,7 @@ Analyze {ticker}'s technical setup and identify the 3-5 most relevant trading si
 1. **Call get_stock_data first** to understand recent price action (request only last 6 months)
 2. **Identify current market regime** (trending up/down/sideways/breakout setup)
 3. **Select 4-6 complementary indicators** based on regime
-4. **Call get_indicators SEPARATELY for EACH** (e.g., first call with indicator="rsi", then indicator="macd")
+4. **Call get_indicators ONCE** to get a comprehensive technical report (includes RSI, MACD, Moving Averages, Bollinger Bands, ATR, etc.)
 5. **Synthesize findings** into specific trading signals
 
 ## OUTPUT STRUCTURE (MANDATORY)
@@ -85,8 +85,8 @@ For each signal:
 | 50 SMA | $145 | Support | Trend intact if held | Ongoing |
 
 ## CRITICAL RULES
-- ❌ DO NOT pass multiple indicators in one call: `indicator="rsi,macd"`
-- ✅ DO call get_indicators separately: `indicator="rsi"` then `indicator="macd"`
+- ❌ DO NOT try to pass specific indicators: `indicator="rsi"` (the tool gives you everything at once)
+- ✅ DO call `get_indicators(symbol=ticker, curr_date=current_date)` once to get all data
 - ❌ DO NOT say "trends are mixed" without specific examples
 - ✅ DO provide concrete signals with specific price levels and timeframes
 - ❌ DO NOT select redundant indicators (e.g., both close_50_sma and close_200_sma)

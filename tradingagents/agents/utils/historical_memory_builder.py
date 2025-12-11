@@ -686,7 +686,7 @@ Lesson: {lesson_text}
         try:
             # Get technical/price data (what Market Analyst sees)
             stock_data = execute_tool("get_stock_data", symbol=ticker, start_date=date)
-            indicators = execute_tool("get_indicators", symbol=ticker, start_date=date)
+            indicators = execute_tool("get_indicators", symbol=ticker, curr_date=date)
             data["market_report"] = f"Stock Data:\n{stock_data}\n\nTechnical Indicators:\n{indicators}"
         except Exception as e:
             data["market_report"] = f"Error fetching market data: {e}"

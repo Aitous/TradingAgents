@@ -202,9 +202,12 @@ Return a JSON object with a 'candidates' array of objects, each having 'ticker' 
             for c in reddit_candidates:
                 ticker = c.get("ticker", "").upper().strip()
                 context = c.get("context", "Trending on Reddit")
-                # Validate ticker format (1-5 uppercase letters)
+                # Validate ticker - Exclude garbage, verify existence
                 if re.match(r'^[A-Z]{1,5}$', ticker):
-                    candidates.append({"ticker": ticker, "source": "social_trending", "context": context, "sentiment": "unknown"})
+                    try:
+                        if execute_tool("validate_ticker", symbol=ticker):
+                             candidates.append({"ticker": ticker, "source": "social_trending", "context": context})
+                    except: pass
         except Exception as e:
             print(f"   Error fetching Reddit tickers: {e}")
 
@@ -247,14 +250,16 @@ Return a JSON object with a 'movers' array containing objects with 'ticker', 'ty
             for m in movers:
                 ticker = m.get('ticker', '').upper().strip()
                 if ticker and re.match(r'^[A-Z]{1,5}$', ticker):
-                    mover_type = m.get('type', 'gainer')
-                    reason = m.get('reason', f"Top {mover_type}")
-                    candidates.append({
-                        "ticker": ticker,
-                        "source": mover_type,
-                        "context": reason,
-                        "sentiment": "negative" if mover_type == "loser" else "positive"
-                    })
+                    try:
+                        if execute_tool("validate_ticker", symbol=ticker):
+                            mover_type = m.get('type', 'gainer')
+                            reason = m.get('reason', f"Top {mover_type}")
+                            candidates.append({
+                                "ticker": ticker, 
+                                "source": "market_mover", 
+                                "context": f"{reason} ({m.get('change_percent', 0)}%)"
+                            })
+                    except: pass
 
         except Exception as e:
             print(f"   Error fetching Market Movers: {e}")
@@ -291,7 +296,10 @@ Return a JSON object with a 'candidates' array of objects, each having 'ticker' 
                 ticker = c.get("ticker", "").upper().strip()
                 context = c.get("context", "Upcoming earnings")
                 if re.match(r'^[A-Z]{1,5}$', ticker):
-                    candidates.append({"ticker": ticker, "source": "earnings_catalyst", "context": context, "sentiment": "unknown"})
+                     try:
+                        if execute_tool("validate_ticker", symbol=ticker):
+                            candidates.append({"ticker": ticker, "source": "earnings_catalyst", "context": context})
+                     except: pass
         except Exception as e:
             print(f"   Error fetching Earnings Calendar: {e}")
 
@@ -327,7 +335,10 @@ Return a JSON object with a 'candidates' array of objects, each having 'ticker' 
                 ticker = c.get("ticker", "").upper().strip()
                 context = c.get("context", "Recent/upcoming IPO")
                 if re.match(r'^[A-Z]{1,5}$', ticker):
-                    candidates.append({"ticker": ticker, "source": "ipo_listing", "context": context, "sentiment": "unknown"})
+                     try:
+                        if execute_tool("validate_ticker", symbol=ticker):
+                            candidates.append({"ticker": ticker, "source": "ipo_listing", "context": context})
+                     except: pass
         except Exception as e:
             print(f"   Error fetching IPO Calendar: {e}")
 
@@ -364,11 +375,100 @@ Return a JSON object with a 'candidates' array of objects, each having 'ticker' 
                 ticker = c.get("ticker", "").upper().strip()
                 context = c.get("context", "High short interest")
                 if re.match(r'^[A-Z]{1,5}$', ticker):
-                    candidates.append({"ticker": ticker, "source": "short_squeeze", "context": context, "sentiment": "unknown"})
+                     try:
+                        if execute_tool("validate_ticker", symbol=ticker):
+                            candidates.append({"ticker": ticker, "source": "short_squeeze", "context": context})
+                     except: pass
             
             print(f"   Found {len(short_candidates)} short squeeze candidates")
         except Exception as e:
             print(f"   Error fetching Short Interest: {e}")
+
+        # 6. Unusual Volume Detection (Accumulation Signal)
+        try:
+            from datetime import datetime
+            today = datetime.now().strftime("%Y-%m-%d")
+            
+            volume_report = execute_tool(
+                "get_unusual_volume",
+                date=today,
+                min_volume_multiple=3.0,  # 3x average volume
+                max_price_change=5.0,     # Less than 5% price change
+                top_n=15
+            )
+            
+            # Extract tickers with volume context
+            prompt = """Extract stock tickers from this unusual volume report with context about the accumulation pattern.
+
+For each ticker, include:
+- ticker: The stock symbol (1-5 uppercase letters)
+- context: Volume multiple, price change, and any interpretation of the pattern
+
+Unusual Volume Report:
+{report}
+
+Return a JSON object with a 'candidates' array of objects, each having 'ticker' and 'context' fields.""".format(report=volume_report)
+
+            structured_llm = self.quick_thinking_llm.with_structured_output(
+                schema=TickerContextList.model_json_schema(),
+                method="json_schema"
+            )
+            response = structured_llm.invoke([HumanMessage(content=prompt)])
+
+            volume_candidates = response.get("candidates", [])
+            for c in volume_candidates:
+                ticker = c.get("ticker", "").upper().strip()
+                context = c.get("context", "Unusual volume pattern")
+                if re.match(r'^[A-Z]{1,5}$', ticker):
+                     try:
+                        if execute_tool("validate_ticker", symbol=ticker):
+                            candidates.append({"ticker": ticker, "source": "unusual_volume", "context": context})
+                     except: pass
+            
+            print(f"   Found {len(volume_candidates)} unusual volume candidates")
+        except Exception as e:
+            print(f"   Error fetching Unusual Volume: {e}")
+
+        # 7. Analyst Rating Changes (Institutional Catalyst)
+        try:
+            analyst_report = execute_tool(
+                "get_analyst_rating_changes",
+                lookback_days=7,
+                change_types=["upgrade", "initiated"],  # Focus on positive catalysts
+                top_n=15
+            )
+            
+            # Extract tickers with analyst context
+            prompt = """Extract stock tickers from this analyst rating changes report with context about the rating action.
+
+For each ticker, include:
+- ticker: The stock symbol (1-5 uppercase letters)
+- context: Type of change (upgrade/initiated), analyst firm, price target, and any other relevant details
+
+Analyst Rating Changes:
+{report}
+
+Return a JSON object with a 'candidates' array of objects, each having 'ticker' and 'context' fields.""".format(report=analyst_report)
+
+            structured_llm = self.quick_thinking_llm.with_structured_output(
+                schema=TickerContextList.model_json_schema(),
+                method="json_schema"
+            )
+            response = structured_llm.invoke([HumanMessage(content=prompt)])
+
+            analyst_candidates = response.get("candidates", [])
+            for c in analyst_candidates:
+                ticker = c.get("ticker", "").upper().strip()
+                context = c.get("context", "Recent analyst action")
+                if re.match(r'^[A-Z]{1,5}$', ticker):
+                    try:
+                        if execute_tool("validate_ticker", symbol=ticker):
+                            candidates.append({"ticker": ticker, "source": "analyst_upgrade", "context": context})
+                    except: pass
+            
+            print(f"   Found {len(analyst_candidates)} analyst upgrade candidates")
+        except Exception as e:
+            print(f"   Error fetching Analyst Ratings: {e}")
 
         # Deduplicate
         unique_candidates = {}
@@ -425,8 +525,8 @@ Return a JSON object with a 'candidates' array of objects, each having 'ticker' 
                     from datetime import datetime
                     today = datetime.now().strftime("%Y-%m-%d")
                     
-                    # Get RSI
-                    rsi_data = execute_tool("get_indicators", symbol=ticker, indicator="rsi", curr_date=today, look_back_days=14)
+                    # Get RSI (and other indicators)
+                    rsi_data = execute_tool("get_indicators", symbol=ticker, curr_date=today)
                     
                     # Simple parsing of the string report to find the latest value
                     # The report format is usually "## rsi values...\n\nDATE: VALUE"

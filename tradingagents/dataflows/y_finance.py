@@ -294,6 +294,415 @@ def get_stockstats_indicator(
     return str(indicator_value)
 
 
+def get_technical_analysis(
+    symbol: Annotated[str, "ticker symbol of the company"],
+    curr_date: Annotated[str, "The current trading date, YYYY-mm-dd"],
+) -> str:
+    """
+    Get a concise technical analysis summary with key indicators, signals, and trend interpretation.
+    
+    Returns analysis-ready output instead of verbose day-by-day data.
+    """
+    from .config import get_config
+    from stockstats import wrap
+    
+    # Default indicators to analyze
+    indicators = ["rsi", "stoch", "macd", "adx", "close_20_ema", "close_50_sma", "close_200_sma", "boll", "atr", "obv", "vwap", "fib"]
+    
+    # Fetch price data (last 60 days for indicator calculation)
+    curr_date_dt = pd.to_datetime(curr_date)
+    start_date = curr_date_dt - pd.DateOffset(days=200)  # Need enough history for 200 SMA
+    
+    try:
+        data = yf.download(
+            symbol,
+            start=start_date.strftime("%Y-%m-%d"),
+            end=curr_date_dt.strftime("%Y-%m-%d"),
+            multi_level_index=False,
+            progress=False,
+            auto_adjust=True,
+        )
+        
+        if data.empty:
+            return f"No data found for {symbol}"
+        
+        data = data.reset_index()
+        df = wrap(data)
+        
+        # Get latest values
+        latest = df.iloc[-1]
+        prev = df.iloc[-2] if len(df) > 1 else latest
+        prev_5 = df.iloc[-5] if len(df) > 5 else latest
+        
+        current_price = float(latest['close'])
+        
+        # Build analysis
+        analysis = []
+        analysis.append(f"# Technical Analysis for {symbol.upper()}")
+        analysis.append(f"**Date:** {curr_date}")
+        analysis.append(f"**Current Price:** ${current_price:.2f}")
+        analysis.append("")
+        
+        # Price action summary
+        daily_change = ((current_price - float(prev['close'])) / float(prev['close'])) * 100
+        weekly_change = ((current_price - float(prev_5['close'])) / float(prev_5['close'])) * 100
+        analysis.append(f"## Price Action")
+        analysis.append(f"- **Daily Change:** {daily_change:+.2f}%")
+        analysis.append(f"- **5-Day Change:** {weekly_change:+.2f}%")
+        analysis.append("")
+        
+        # RSI Analysis
+        if 'rsi' in indicators:
+            try:
+                df['rsi']  # Trigger calculation
+                rsi = float(df.iloc[-1]['rsi'])
+                rsi_prev = float(df.iloc[-5]['rsi']) if len(df) > 5 else rsi
+                
+                if rsi > 70:
+                    rsi_signal = "OVERBOUGHT ⚠️"
+                elif rsi < 30:
+                    rsi_signal = "OVERSOLD ⚡"
+                elif rsi > 50:
+                    rsi_signal = "Bullish"
+                else:
+                    rsi_signal = "Bearish"
+                    
+                rsi_trend = "↑" if rsi > rsi_prev else "↓"
+                analysis.append(f"## RSI (14)")
+                analysis.append(f"- **Value:** {rsi:.1f} {rsi_trend}")
+                analysis.append(f"- **Signal:** {rsi_signal}")
+                analysis.append("")
+            except Exception as e:
+                pass
+        
+        # MACD Analysis
+        if 'macd' in indicators:
+            try:
+                df['macd']
+                df['macds']
+                df['macdh']
+                macd = float(df.iloc[-1]['macd'])
+                signal = float(df.iloc[-1]['macds'])
+                histogram = float(df.iloc[-1]['macdh'])
+                hist_prev = float(df.iloc[-2]['macdh']) if len(df) > 1 else histogram
+                
+                if macd > signal and histogram > 0:
+                    macd_signal = "BULLISH CROSSOVER ⚡" if histogram > hist_prev else "Bullish"
+                elif macd < signal and histogram < 0:
+                    macd_signal = "BEARISH CROSSOVER ⚠️" if histogram < hist_prev else "Bearish"
+                else:
+                    macd_signal = "Neutral"
+                
+                momentum = "Strengthening ↑" if abs(histogram) > abs(hist_prev) else "Weakening ↓"
+                analysis.append(f"## MACD")
+                analysis.append(f"- **MACD Line:** {macd:.3f}")
+                analysis.append(f"- **Signal Line:** {signal:.3f}")
+                analysis.append(f"- **Histogram:** {histogram:.3f} ({momentum})")
+                analysis.append(f"- **Signal:** {macd_signal}")
+                analysis.append("")
+            except Exception as e:
+                pass
+        
+        # Moving Averages
+        if 'close_50_sma' in indicators or 'close_200_sma' in indicators:
+            try:
+                df['close_50_sma']
+                df['close_200_sma']
+                sma_50 = float(df.iloc[-1]['close_50_sma'])
+                sma_200 = float(df.iloc[-1]['close_200_sma'])
+                
+                # Trend determination
+                if current_price > sma_50 > sma_200:
+                    trend = "STRONG UPTREND ⚡"
+                elif current_price > sma_50:
+                    trend = "Uptrend"
+                elif current_price < sma_50 < sma_200:
+                    trend = "STRONG DOWNTREND ⚠️"
+                elif current_price < sma_50:
+                    trend = "Downtrend"
+                else:
+                    trend = "Sideways"
+                
+                # Golden/Death cross detection
+                sma_50_prev = float(df.iloc[-5]['close_50_sma']) if len(df) > 5 else sma_50
+                sma_200_prev = float(df.iloc[-5]['close_200_sma']) if len(df) > 5 else sma_200
+                
+                cross = ""
+                if sma_50 > sma_200 and sma_50_prev < sma_200_prev:
+                    cross = " (GOLDEN CROSS ⚡)"
+                elif sma_50 < sma_200 and sma_50_prev > sma_200_prev:
+                    cross = " (DEATH CROSS ⚠️)"
+                
+                analysis.append(f"## Moving Averages")
+                analysis.append(f"- **50 SMA:** ${sma_50:.2f} ({'+' if current_price > sma_50 else ''}{((current_price - sma_50) / sma_50 * 100):.1f}% from price)")
+                analysis.append(f"- **200 SMA:** ${sma_200:.2f} ({'+' if current_price > sma_200 else ''}{((current_price - sma_200) / sma_200 * 100):.1f}% from price)")
+                analysis.append(f"- **Trend:** {trend}{cross}")
+                analysis.append("")
+            except Exception as e:
+                pass
+        
+        # Bollinger Bands
+        if 'boll' in indicators:
+            try:
+                df['boll']
+                df['boll_ub']
+                df['boll_lb']
+                middle = float(df.iloc[-1]['boll'])
+                upper = float(df.iloc[-1]['boll_ub'])
+                lower = float(df.iloc[-1]['boll_lb'])
+                
+                # Position within bands (0 = lower, 1 = upper)
+                band_position = (current_price - lower) / (upper - lower) if upper != lower else 0.5
+                
+                if band_position > 0.95:
+                    bb_signal = "AT UPPER BAND - Potential reversal ⚠️"
+                elif band_position < 0.05:
+                    bb_signal = "AT LOWER BAND - Potential bounce ⚡"
+                elif band_position > 0.8:
+                    bb_signal = "Near upper band"
+                elif band_position < 0.2:
+                    bb_signal = "Near lower band"
+                else:
+                    bb_signal = "Within bands"
+                
+                bandwidth = ((upper - lower) / middle) * 100
+                analysis.append(f"## Bollinger Bands (20,2)")
+                analysis.append(f"- **Upper:** ${upper:.2f}")
+                analysis.append(f"- **Middle:** ${middle:.2f}")
+                analysis.append(f"- **Lower:** ${lower:.2f}")
+                analysis.append(f"- **Band Position:** {band_position:.0%}")
+                analysis.append(f"- **Bandwidth:** {bandwidth:.1f}% (volatility indicator)")
+                analysis.append(f"- **Signal:** {bb_signal}")
+                analysis.append("")
+            except Exception as e:
+                pass
+        
+        # ATR (Volatility)
+        if 'atr' in indicators:
+            try:
+                df['atr']
+                atr = float(df.iloc[-1]['atr'])
+                atr_pct = (atr / current_price) * 100
+                
+                if atr_pct > 5:
+                    vol_level = "HIGH VOLATILITY ⚠️"
+                elif atr_pct > 2:
+                    vol_level = "Moderate volatility"
+                else:
+                    vol_level = "Low volatility"
+                
+                analysis.append(f"## ATR (Volatility)")
+                analysis.append(f"- **ATR:** ${atr:.2f} ({atr_pct:.1f}% of price)")
+                analysis.append(f"- **Level:** {vol_level}")
+                analysis.append(f"- **Suggested Stop-Loss:** ${current_price - (1.5 * atr):.2f} (1.5x ATR)")
+                analysis.append("")
+            except Exception as e:
+                pass
+        
+        # Stochastic Oscillator
+        if 'stoch' in indicators:
+            try:
+                df['kdjk']  # Stochastic %K
+                df['kdjd']  # Stochastic %D
+                stoch_k = float(df.iloc[-1]['kdjk'])
+                stoch_d = float(df.iloc[-1]['kdjd'])
+                stoch_k_prev = float(df.iloc[-2]['kdjk']) if len(df) > 1 else stoch_k
+                
+                if stoch_k > 80 and stoch_d > 80:
+                    stoch_signal = "OVERBOUGHT ⚠️"
+                elif stoch_k < 20 and stoch_d < 20:
+                    stoch_signal = "OVERSOLD ⚡"
+                elif stoch_k > stoch_d and stoch_k_prev < stoch_d:
+                    stoch_signal = "Bullish crossover ⚡"
+                elif stoch_k < stoch_d and stoch_k_prev > stoch_d:
+                    stoch_signal = "Bearish crossover ⚠️"
+                elif stoch_k > 50:
+                    stoch_signal = "Bullish"
+                else:
+                    stoch_signal = "Bearish"
+                
+                analysis.append(f"## Stochastic (14,3,3)")
+                analysis.append(f"- **%K:** {stoch_k:.1f}")
+                analysis.append(f"- **%D:** {stoch_d:.1f}")
+                analysis.append(f"- **Signal:** {stoch_signal}")
+                analysis.append("")
+            except Exception as e:
+                pass
+        
+        # ADX (Trend Strength)
+        if 'adx' in indicators:
+            try:
+                df['adx']
+                df['dx']  
+                adx = float(df.iloc[-1]['adx'])
+                adx_prev = float(df.iloc[-5]['adx']) if len(df) > 5 else adx
+                
+                if adx > 50:
+                    trend_strength = "VERY STRONG TREND ⚡"
+                elif adx > 25:
+                    trend_strength = "Strong trend"
+                elif adx > 20:
+                    trend_strength = "Trending"
+                else:
+                    trend_strength = "WEAK/NO TREND (range-bound) ⚠️"
+                
+                adx_direction = "Strengthening ↑" if adx > adx_prev else "Weakening ↓"
+                analysis.append(f"## ADX (Trend Strength)")
+                analysis.append(f"- **ADX:** {adx:.1f} ({adx_direction})")
+                analysis.append(f"- **Interpretation:** {trend_strength}")
+                analysis.append("")
+            except Exception as e:
+                pass
+        
+        # 20 EMA (Short-term trend)
+        if 'close_20_ema' in indicators:
+            try:
+                df['close_20_ema']
+                ema_20 = float(df.iloc[-1]['close_20_ema'])
+                
+                pct_from_ema = ((current_price - ema_20) / ema_20) * 100
+                if current_price > ema_20:
+                    ema_signal = "Price ABOVE 20 EMA (short-term bullish)"
+                else:
+                    ema_signal = "Price BELOW 20 EMA (short-term bearish)"
+                
+                analysis.append(f"## 20 EMA")
+                analysis.append(f"- **Value:** ${ema_20:.2f} ({pct_from_ema:+.1f}% from price)")
+                analysis.append(f"- **Signal:** {ema_signal}")
+                analysis.append("")
+            except Exception as e:
+                pass
+        
+        # OBV (On-Balance Volume)
+        if 'obv' in indicators:
+            try:
+                # Calculate OBV manually since stockstats may not have it
+                obv = 0
+                obv_values = [0]
+                for i in range(1, len(df)):
+                    if float(df.iloc[i]['close']) > float(df.iloc[i-1]['close']):
+                        obv += float(df.iloc[i]['volume'])
+                    elif float(df.iloc[i]['close']) < float(df.iloc[i-1]['close']):
+                        obv -= float(df.iloc[i]['volume'])
+                    obv_values.append(obv)
+                
+                current_obv = obv_values[-1]
+                obv_5_ago = obv_values[-5] if len(obv_values) > 5 else obv_values[0]
+                
+                if current_obv > obv_5_ago and current_price > float(df.iloc[-5]['close']):
+                    obv_signal = "Confirmed uptrend (price & volume rising)"
+                elif current_obv < obv_5_ago and current_price < float(df.iloc[-5]['close']):
+                    obv_signal = "Confirmed downtrend (price & volume falling)"
+                elif current_obv > obv_5_ago and current_price < float(df.iloc[-5]['close']):
+                    obv_signal = "BULLISH DIVERGENCE ⚡ (accumulation)"
+                elif current_obv < obv_5_ago and current_price > float(df.iloc[-5]['close']):
+                    obv_signal = "BEARISH DIVERGENCE ⚠️ (distribution)"
+                else:
+                    obv_signal = "Neutral"
+                
+                obv_formatted = f"{current_obv/1e6:.1f}M" if abs(current_obv) > 1e6 else f"{current_obv/1e3:.1f}K"
+                analysis.append(f"## OBV (On-Balance Volume)")
+                analysis.append(f"- **Value:** {obv_formatted}")
+                analysis.append(f"- **5-Day Trend:** {'Rising ↑' if current_obv > obv_5_ago else 'Falling ↓'}")
+                analysis.append(f"- **Signal:** {obv_signal}")
+                analysis.append("")
+            except Exception as e:
+                pass
+        
+        # VWAP (Volume Weighted Average Price)
+        if 'vwap' in indicators:
+            try:
+                # Calculate VWAP for today (simplified - using recent data)
+                typical_price = (float(df.iloc[-1]['high']) + float(df.iloc[-1]['low']) + float(df.iloc[-1]['close'])) / 3
+                
+                # Calculate cumulative VWAP (last 20 periods approximation)
+                recent_df = df.tail(20)
+                tp_vol = ((recent_df['high'] + recent_df['low'] + recent_df['close']) / 3) * recent_df['volume']
+                vwap = float(tp_vol.sum() / recent_df['volume'].sum())
+                
+                pct_from_vwap = ((current_price - vwap) / vwap) * 100
+                if current_price > vwap:
+                    vwap_signal = "Price ABOVE VWAP (institutional buying)"
+                else:
+                    vwap_signal = "Price BELOW VWAP (institutional selling)"
+                
+                analysis.append(f"## VWAP (20-period)")
+                analysis.append(f"- **VWAP:** ${vwap:.2f}")
+                analysis.append(f"- **Current vs VWAP:** {pct_from_vwap:+.1f}%")
+                analysis.append(f"- **Signal:** {vwap_signal}")
+                analysis.append("")
+            except Exception as e:
+                pass
+        
+        # Fibonacci Retracement Levels
+        if 'fib' in indicators:
+            try:
+                # Get high and low from last 50 periods
+                recent_high = float(df.tail(50)['high'].max())
+                recent_low = float(df.tail(50)['low'].min())
+                diff = recent_high - recent_low
+                
+                fib_levels = {
+                    "0.0% (High)": recent_high,
+                    "23.6%": recent_high - (diff * 0.236),
+                    "38.2%": recent_high - (diff * 0.382),
+                    "50.0%": recent_high - (diff * 0.5),
+                    "61.8%": recent_high - (diff * 0.618),
+                    "78.6%": recent_high - (diff * 0.786),
+                    "100% (Low)": recent_low,
+                }
+                
+                # Find nearest support and resistance
+                support = None
+                resistance = None
+                for level_name, level_price in fib_levels.items():
+                    if level_price < current_price and (support is None or level_price > support[1]):
+                        support = (level_name, level_price)
+                    if level_price > current_price and (resistance is None or level_price < resistance[1]):
+                        resistance = (level_name, level_price)
+                
+                analysis.append(f"## Fibonacci Levels (50-period)")
+                analysis.append(f"- **Recent High:** ${recent_high:.2f}")
+                analysis.append(f"- **Recent Low:** ${recent_low:.2f}")
+                if resistance:
+                    analysis.append(f"- **Next Resistance:** ${resistance[1]:.2f} ({resistance[0]})")
+                if support:
+                    analysis.append(f"- **Next Support:** ${support[1]:.2f} ({support[0]})")
+                analysis.append("")
+            except Exception as e:
+                pass
+        
+        # Overall Summary
+        analysis.append("## Summary")
+        signals = []
+        
+        # Collect all signals for summary
+        try:
+            rsi = float(df.iloc[-1]['rsi'])
+            if rsi > 70:
+                signals.append("RSI overbought")
+            elif rsi < 30:
+                signals.append("RSI oversold")
+        except:
+            pass
+            
+        try:
+            if current_price > float(df.iloc[-1]['close_50_sma']):
+                signals.append("Above 50 SMA")
+            else:
+                signals.append("Below 50 SMA")
+        except:
+            pass
+        
+        if signals:
+            analysis.append(f"- **Key Signals:** {', '.join(signals)}")
+        
+        return "\n".join(analysis)
+        
+    except Exception as e:
+        return f"Error analyzing {symbol}: {str(e)}"
+
+
 def get_balance_sheet(
     ticker: Annotated[str, "ticker symbol of the company"],
     freq: Annotated[str, "frequency of data: 'annual' or 'quarterly'"] = "quarterly",
@@ -388,20 +797,73 @@ def get_insider_transactions(
     ticker: Annotated[str, "ticker symbol of the company"],
     curr_date: Annotated[str, "current date (not used for yfinance)"] = None
 ):
-    """Get insider transactions data from yfinance."""
+    """Get insider transactions data from yfinance with parsed transaction types."""
     try:
         ticker_obj = yf.Ticker(ticker.upper())
         data = ticker_obj.insider_transactions
         
         if data is None or data.empty:
             return f"No insider transactions data found for symbol '{ticker}'"
-            
-        # Convert to CSV string for consistency with other functions
-        csv_string = data.to_csv()
         
-        # Add header information
-        header = f"# Insider Transactions data for {ticker.upper()}\n"
+        # Parse the Text column to populate Transaction type
+        def classify_transaction(text):
+            if pd.isna(text) or text == '':
+                return 'Unknown'
+            text_lower = str(text).lower()
+            if 'sale' in text_lower:
+                return 'Sale'
+            elif 'purchase' in text_lower or 'buy' in text_lower:
+                return 'Purchase'
+            elif 'gift' in text_lower:
+                return 'Gift'
+            elif 'exercise' in text_lower or 'option' in text_lower:
+                return 'Option Exercise'
+            elif 'award' in text_lower or 'grant' in text_lower:
+                return 'Award/Grant'
+            elif 'conversion' in text_lower:
+                return 'Conversion'
+            else:
+                return 'Other'
+        
+        # Apply classification
+        data['Transaction'] = data['Text'].apply(classify_transaction)
+        
+        # Calculate summary statistics
+        transaction_counts = data['Transaction'].value_counts().to_dict()
+        total_sales_value = data[data['Transaction'] == 'Sale']['Value'].sum()
+        total_purchases_value = data[data['Transaction'] == 'Purchase']['Value'].sum()
+        
+        # Determine insider sentiment
+        sales_count = transaction_counts.get('Sale', 0)
+        purchases_count = transaction_counts.get('Purchase', 0)
+        
+        if purchases_count > sales_count:
+            sentiment = "BULLISH ⚡ (more buying than selling)"
+        elif sales_count > purchases_count * 2:
+            sentiment = "BEARISH ⚠️ (significant insider selling)"
+        elif sales_count > purchases_count:
+            sentiment = "Slightly bearish (more selling than buying)"
+        else:
+            sentiment = "Neutral"
+        
+        # Build summary header
+        header = f"# Insider Transactions for {ticker.upper()}\n"
         header += f"# Data retrieved on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
+        header += "## Summary\n"
+        header += f"- **Insider Sentiment:** {sentiment}\n"
+        for tx_type, count in sorted(transaction_counts.items(), key=lambda x: -x[1]):
+            header += f"- **{tx_type}:** {count} transactions\n"
+        if total_sales_value > 0:
+            header += f"- **Total Sales Value:** ${total_sales_value:,.0f}\n"
+        if total_purchases_value > 0:
+            header += f"- **Total Purchases Value:** ${total_purchases_value:,.0f}\n"
+        header += "\n## Transaction Details\n\n"
+        
+        # Select key columns for output
+        output_cols = ['Start Date', 'Insider', 'Position', 'Transaction', 'Shares', 'Value', 'Ownership']
+        available_cols = [c for c in output_cols if c in data.columns]
+        
+        csv_string = data[available_cols].to_csv(index=False)
         
         return header + csv_string
         
@@ -414,24 +876,17 @@ def validate_ticker(symbol: str) -> bool:
     """
     try:
         ticker = yf.Ticker(symbol.upper())
-        # Try to fetch 1 day of history
-        # Suppress yfinance error output
-        import sys
-        from io import StringIO
-        
-        # Redirect stderr to suppress yfinance error messages
-        original_stderr = sys.stderr
-        sys.stderr = StringIO()
-        
-        try:
-            history = ticker.history(period="1d")
-            return not history.empty
-        finally:
-            # Restore stderr
-            sys.stderr = original_stderr
+        # Use fast_info for lighter validation (no historical download needed)
+        # fast_info attributes are lazy-loaded
+        _ = ticker.fast_info.get("lastPrice")
+        return True
             
     except Exception:
-        return False
+        # Fallback to older method if fast_info fails or is missing
+        try:
+            return not ticker.history(period="1d", progress=False).empty
+        except:
+            return False
 
 
 def get_fundamentals(
