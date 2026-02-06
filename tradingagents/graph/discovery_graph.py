@@ -3,9 +3,9 @@ from typing import Any, Callable, Dict, List, Optional
 from langgraph.graph import END, StateGraph
 
 from tradingagents.agents.utils.agent_states import DiscoveryState
-from tradingagents.dataflows.discovery.utils import PRIORITY_ORDER, Priority, serialize_for_log
-from tradingagents.dataflows.discovery.scanner_registry import SCANNER_REGISTRY
 from tradingagents.dataflows.discovery import scanners  # Load scanners to trigger registration
+from tradingagents.dataflows.discovery.scanner_registry import SCANNER_REGISTRY
+from tradingagents.dataflows.discovery.utils import PRIORITY_ORDER, Priority, serialize_for_log
 from tradingagents.tools.executor import execute_tool
 
 
@@ -613,9 +613,7 @@ class DiscoveryGraph:
         }
 
     def _run_scanners_sequential(
-        self,
-        enabled_scanners: List[tuple],
-        state: DiscoveryState
+        self, enabled_scanners: List[tuple], state: DiscoveryState
     ) -> Dict[str, List[Dict[str, Any]]]:
         """
         Run scanners sequentially (original behavior).
@@ -657,7 +655,7 @@ class DiscoveryGraph:
         enabled_scanners: List[tuple],
         state: DiscoveryState,
         max_workers: int,
-        timeout_seconds: int
+        timeout_seconds: int,
     ) -> Dict[str, List[Dict[str, Any]]]:
         """
         Run scanners concurrently using ThreadPoolExecutor.
@@ -671,13 +669,15 @@ class DiscoveryGraph:
         Returns:
             Dict mapping pipeline -> list of candidates
         """
-        from concurrent.futures import ThreadPoolExecutor, TimeoutError, as_completed
         import logging
+        from concurrent.futures import ThreadPoolExecutor, TimeoutError, as_completed
 
         logger = logging.getLogger(__name__)
         pipeline_candidates: Dict[str, List[Dict[str, Any]]] = {}
 
-        print(f"   Running {len(enabled_scanners)} scanners concurrently (max {max_workers} workers)...")
+        print(
+            f"   Running {len(enabled_scanners)} scanners concurrently (max {max_workers} workers)..."
+        )
 
         def run_scanner(scanner_info: tuple) -> tuple:
             """Execute a single scanner with error handling."""
@@ -739,9 +739,7 @@ class DiscoveryGraph:
 
             # Log completion stats
             if completed_count < len(enabled_scanners):
-                logger.warning(
-                    f"Only {completed_count}/{len(enabled_scanners)} scanners completed"
-                )
+                logger.warning(f"Only {completed_count}/{len(enabled_scanners)} scanners completed")
 
         return pipeline_candidates
 
@@ -1180,8 +1178,9 @@ class DiscoveryGraph:
     def _fetch_price_series(self, ticker: str) -> List[Dict[str, Any]]:
         """Fetch recent daily close prices with dates for charting and movement stats."""
         try:
-            import yfinance as yf
             import pandas as pd
+            import yfinance as yf
+
             from tradingagents.dataflows.y_finance import suppress_yfinance_warnings
 
             history_days = max(self.price_chart_lookback_days + 10, 390)
@@ -1386,8 +1385,9 @@ class DiscoveryGraph:
     def _fetch_intraday_closes(self, ticker: str) -> List[float]:
         """Fetch intraday close prices for 1-day chart window."""
         try:
-            import yfinance as yf
             import pandas as pd
+            import yfinance as yf
+
             from tradingagents.dataflows.y_finance import suppress_yfinance_warnings
 
             with suppress_yfinance_warnings():
