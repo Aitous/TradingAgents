@@ -109,17 +109,25 @@ class CandidateFilter:
 
         # Discovery Settings
         discovery_config = config.get("discovery", {})
+
+        # Filter settings (nested under "filters" section, with backward compatibility)
+        filter_config = discovery_config.get("filters", discovery_config)  # Fallback to root for old configs
+        self.filter_same_day_movers = filter_config.get("filter_same_day_movers", True)
+        self.intraday_movement_threshold = filter_config.get("intraday_movement_threshold", 10.0)
+        self.filter_recent_movers = filter_config.get("filter_recent_movers", True)
+        self.recent_movement_lookback_days = filter_config.get("recent_movement_lookback_days", 7)
+        self.recent_movement_threshold = filter_config.get("recent_movement_threshold", 10.0)
+        self.recent_mover_action = filter_config.get("recent_mover_action", "filter")
+        self.min_average_volume = filter_config.get("min_average_volume", 500_000)
+        self.volume_lookback_days = filter_config.get("volume_lookback_days", 10)
+
+        # Enrichment settings (nested under "enrichment" section, with backward compatibility)
+        enrichment_config = discovery_config.get("enrichment", discovery_config)  # Fallback to root
+        self.batch_news_vendor = enrichment_config.get("batch_news_vendor", "openai")
+        self.batch_news_batch_size = enrichment_config.get("batch_news_batch_size", 50)
+
+        # Other settings (remain at discovery level)
         self.news_lookback_days = discovery_config.get("news_lookback_days", 3)
-        self.filter_same_day_movers = discovery_config.get("filter_same_day_movers", True)
-        self.intraday_movement_threshold = discovery_config.get("intraday_movement_threshold", 6.0)
-        self.filter_recent_movers = discovery_config.get("filter_recent_movers", True)
-        self.recent_movement_lookback_days = discovery_config.get(
-            "recent_movement_lookback_days", 7
-        )
-        self.recent_movement_threshold = discovery_config.get("recent_movement_threshold", 10.0)
-        self.recent_mover_action = discovery_config.get("recent_mover_action", "filter")
-        self.min_average_volume = discovery_config.get("min_average_volume", 500_000)
-        self.volume_lookback_days = discovery_config.get("volume_lookback_days", 10)
         self.volume_cache_key = discovery_config.get("volume_cache_key", "avg_volume_cache")
         self.min_market_cap = discovery_config.get("min_market_cap", 0)
         self.compression_atr_pct_max = discovery_config.get("compression_atr_pct_max", 2.0)
@@ -127,9 +135,6 @@ class CandidateFilter:
         self.compression_min_volume_ratio = discovery_config.get("compression_min_volume_ratio", 1.3)
         self.context_max_snippets = discovery_config.get("context_max_snippets", 2)
         self.context_snippet_max_chars = discovery_config.get("context_snippet_max_chars", 140)
-
-        self.batch_news_vendor = discovery_config.get("batch_news_vendor", "openai")
-        self.batch_news_batch_size = discovery_config.get("batch_news_batch_size", 50)
 
     def filter(self, state: Dict[str, Any]) -> Dict[str, Any]:
         """Filter candidates based on strategy and enrich with additional data."""

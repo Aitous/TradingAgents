@@ -21,15 +21,13 @@ DEFAULT_CONFIG = {
     # Discovery settings
     "discovery": {
         # ========================================
-        # GLOBAL SETTINGS (apply to all scanners)
+        # GLOBAL SETTINGS (ranking, analysis, output)
         # ========================================
         "max_candidates_to_analyze": 200,  # Maximum candidates for deep dive analysis
         "analyze_all_candidates": False,  # If True, skip truncation and analyze all candidates
         "final_recommendations": 15,  # Number of final opportunities to recommend
         "deep_dive_max_workers": 1,  # Parallel workers for deep-dive analysis (1 = sequential)
-
-        # Discovery mode: "traditional", "semantic", or "hybrid"
-        "discovery_mode": "hybrid",
+        "discovery_mode": "hybrid",  # "traditional", "semantic", or "hybrid"
 
         # Ranking context truncation
         "truncate_ranking_context": False,  # True = truncate to save tokens, False = full context
@@ -37,27 +35,13 @@ DEFAULT_CONFIG = {
         "max_insider_chars": 300,  # Only used if truncate_ranking_context=True
         "max_recommendations_chars": 300,  # Only used if truncate_ranking_context=True
 
-        # Global filters (apply to all scanners)
-        "min_average_volume": 500_000,  # Minimum average volume for liquidity filter
-        "volume_lookback_days": 10,  # Days to average for liquidity filter
-        "filter_same_day_movers": True,  # Filter stocks that moved significantly today
-        "intraday_movement_threshold": 10.0,  # Intraday % change threshold to filter
-        "filter_recent_movers": True,  # Filter stocks that already moved in recent days
-        "recent_movement_lookback_days": 7,  # Days to check for recent move
-        "recent_movement_threshold": 10.0,  # % change to consider as already moved
-        "recent_mover_action": "filter",  # "filter" or "deprioritize"
-
-        # Batch news enrichment
-        "batch_news_vendor": "google",  # Vendor for batch news: "openai" or "google"
-        "batch_news_batch_size": 150,  # Tickers per API call
-
         # Tool execution logging
         "log_tool_calls": True,  # Capture tool inputs/outputs to results logs
         "log_tool_calls_console": False,  # Mirror tool logs to Python logger
         "tool_log_max_chars": 10_000,  # Max chars stored per tool output
         "tool_log_exclude": ["validate_ticker"],  # Tool names to exclude from logging
 
-        # Console price charts
+        # Console price charts (output formatting)
         "console_price_charts": True,  # Render mini price charts in console output
         "price_chart_library": "plotille",  # "plotille" (prettier) or "plotext" fallback
         "price_chart_windows": ["1d", "7d", "1m", "6m", "1y"],  # Windows to render
@@ -68,6 +52,32 @@ DEFAULT_CONFIG = {
         "price_chart_show_movement_stats": True,  # Show movement stats in console
 
         # ========================================
+        # FILTER STAGE SETTINGS
+        # ========================================
+        "filters": {
+            # Liquidity filter
+            "min_average_volume": 500_000,  # Minimum average volume
+            "volume_lookback_days": 10,  # Days to average for liquidity check
+
+            # Same-day mover filter (remove stocks that already moved today)
+            "filter_same_day_movers": True,  # Enable/disable filter
+            "intraday_movement_threshold": 10.0,  # Intraday % change threshold
+
+            # Recent mover filter (remove stocks that moved in recent days)
+            "filter_recent_movers": True,  # Enable/disable filter
+            "recent_movement_lookback_days": 7,  # Days to check for recent moves
+            "recent_movement_threshold": 10.0,  # % change threshold
+            "recent_mover_action": "filter",  # "filter" or "deprioritize"
+        },
+
+        # ========================================
+        # ENRICHMENT STAGE SETTINGS
+        # ========================================
+        "enrichment": {
+            "batch_news_vendor": "google",  # Vendor for batch news: "openai" or "google"
+            "batch_news_batch_size": 150,  # Tickers per API call
+        },
+        # ========================================
         # PIPELINES (priority and budget per pipeline)
         # ========================================
         "pipelines": {
@@ -75,33 +85,28 @@ DEFAULT_CONFIG = {
                 "enabled": True,
                 "priority": 1,
                 "ranker_prompt": "edge_signals_ranker.txt",
-                "deep_dive_budget": 15
+                "deep_dive_budget": 15,
             },
             "momentum": {
                 "enabled": True,
                 "priority": 2,
                 "ranker_prompt": "momentum_ranker.txt",
-                "deep_dive_budget": 10
+                "deep_dive_budget": 10,
             },
             "news": {
                 "enabled": True,
                 "priority": 3,
                 "ranker_prompt": "news_catalyst_ranker.txt",
-                "deep_dive_budget": 5
+                "deep_dive_budget": 5,
             },
             "social": {
                 "enabled": True,
                 "priority": 4,
                 "ranker_prompt": "social_signals_ranker.txt",
-                "deep_dive_budget": 5
+                "deep_dive_budget": 5,
             },
-            "events": {
-                "enabled": True,
-                "priority": 5,
-                "deep_dive_budget": 3
-            }
+            "events": {"enabled": True, "priority": 5, "deep_dive_budget": 3},
         },
-
         # ========================================
         # SCANNER EXECUTION SETTINGS
         # ========================================
@@ -110,7 +115,6 @@ DEFAULT_CONFIG = {
             "max_workers": 8,  # Max concurrent scanner threads
             "timeout_seconds": 30,  # Timeout per scanner
         },
-
         # ========================================
         # SCANNERS (each with scanner-specific settings)
         # ========================================
@@ -130,9 +134,28 @@ DEFAULT_CONFIG = {
                 "unusual_volume_multiple": 2.0,  # Min volume/OI ratio for unusual activity
                 "min_premium": 25000,  # Minimum premium ($) to filter noise
                 "min_volume": 1000,  # Minimum option volume to consider
-                "ticker_universe": ["AAPL", "MSFT", "GOOGL", "AMZN", "META", "NVDA", "AMD", "TSLA",
-                                   "TSMC", "ASML", "AVGO", "ORCL", "CRM", "ADBE", "INTC", "QCOM",
-                                   "TXN", "AMAT", "LRCX", "KLAC"],  # Top 20 liquid options
+                "ticker_universe": [
+                    "AAPL",
+                    "MSFT",
+                    "GOOGL",
+                    "AMZN",
+                    "META",
+                    "NVDA",
+                    "AMD",
+                    "TSLA",
+                    "TSMC",
+                    "ASML",
+                    "AVGO",
+                    "ORCL",
+                    "CRM",
+                    "ADBE",
+                    "INTC",
+                    "QCOM",
+                    "TXN",
+                    "AMAT",
+                    "LRCX",
+                    "KLAC",
+                ],  # Top 20 liquid options
             },
             "congress_trades": {
                 "enabled": False,
@@ -140,7 +163,6 @@ DEFAULT_CONFIG = {
                 "limit": 10,
                 "lookback_days": 7,  # Days to look back for congressional trades
             },
-
             # Momentum - Price and volume signals
             "volume_accumulation": {
                 "enabled": True,
@@ -157,7 +179,6 @@ DEFAULT_CONFIG = {
                 "pipeline": "momentum",
                 "limit": 10,
             },
-
             # News - Catalyst-driven signals
             "semantic_news": {
                 "enabled": True,
@@ -176,7 +197,6 @@ DEFAULT_CONFIG = {
                 "limit": 5,
                 "lookback_days": 1,  # Days to look back for rating changes
             },
-
             # Social - Community signals
             "reddit_trending": {
                 "enabled": True,
@@ -188,7 +208,6 @@ DEFAULT_CONFIG = {
                 "pipeline": "social",
                 "limit": 10,
             },
-
             # Events - Calendar-based signals
             "earnings_calendar": {
                 "enabled": True,
@@ -204,8 +223,8 @@ DEFAULT_CONFIG = {
                 "limit": 5,
                 "min_short_interest_pct": 15.0,  # Minimum short interest %
                 "min_days_to_cover": 5.0,  # Minimum days to cover ratio
-            }
-        }
+            },
+        },
     },
     # Memory settings
     "enable_memory": False,  # Enable/disable embeddings and memory system
