@@ -3,6 +3,10 @@ import time
 import json
 from tradingagents.tools.generator import get_agent_tools
 from tradingagents.dataflows.config import get_config
+from tradingagents.agents.utils.prompt_templates import (
+    BASE_COLLABORATIVE_BOILERPLATE,
+    get_date_awareness_section,
+)
 
 
 def create_fundamentals_analyst(llm):
@@ -13,9 +17,9 @@ def create_fundamentals_analyst(llm):
 
         tools = get_agent_tools("fundamentals")
 
-        system_message = """You are a Fundamental Analyst assessing {ticker}'s financial health with SHORT-TERM trading relevance.
+        system_message = f"""You are a Fundamental Analyst assessing {ticker}'s financial health with SHORT-TERM trading relevance.
 
-**Analysis Date:** {current_date}
+{get_date_awareness_section(current_date)}
 
 ## YOUR MISSION
 Identify fundamental strengths/weaknesses and any SHORT-TERM catalysts hidden in the financials.
@@ -34,6 +38,21 @@ Look for:
 - Margin trends (expanding = positive, compressing = negative)
 - Cash flow changes (improving = strength, deteriorating = risk)
 - Valuation extremes (very cheap or very expensive vs. sector)
+
+## COMPARISON FRAMEWORK
+When assessing metrics, always compare:
+- **Historical:** vs. same company 1 year ago, 2 years ago
+- **Sector:** vs. sector median/average (use get_fundamentals for sector data)
+- **Peers:** vs. top 3-5 competitors in same industry
+
+Example: "P/E of 15 vs sector median of 25 = 40% discount, but vs. company's 5-year average of 12 = 25% premium"
+
+## SHORT-TERM RELEVANCE CHECKLIST
+For each fundamental metric, ask:
+- [ ] Does this affect next earnings report? (revenue trend, margin trend)
+- [ ] Is there a catalyst in next 2 weeks? (guidance change, product launch)
+- [ ] Is valuation extreme enough to trigger mean reversion? (very cheap/expensive)
+- [ ] Does balance sheet support/risk short-term trade? (cash runway, debt maturity)
 
 ## OUTPUT STRUCTURE (MANDATORY)
 
@@ -72,27 +91,18 @@ Look for:
 
 Date: {current_date} | Ticker: {ticker}"""
 
+        tool_names_str = ", ".join([tool.name for tool in tools])
+        full_system_message = (
+            f"{BASE_COLLABORATIVE_BOILERPLATE}\n\n{system_message}\n\n"
+            f"Context: {ticker} | Date: {current_date} | Tools: {tool_names_str}"
+        )
+
         prompt = ChatPromptTemplate.from_messages(
             [
-                (
-                    "system",
-                    "You are a helpful AI assistant, collaborating with other assistants."
-                    " Use the provided tools to progress towards answering the question."
-                    " If you are unable to fully answer, that's OK; another assistant with different tools"
-                    " will help where you left off. Execute what you can to make progress."
-                    " If you or any other assistant has the FINAL TRANSACTION PROPOSAL: **BUY/HOLD/SELL** or deliverable,"
-                    " prefix your response with FINAL TRANSACTION PROPOSAL: **BUY/HOLD/SELL** so the team knows to stop."
-                    " You have access to the following tools: {tool_names}.\n{system_message}"
-                    "For your reference, the current date is {current_date}. The company we want to look at is {ticker}",
-                ),
+                ("system", full_system_message),
                 MessagesPlaceholder(variable_name="messages"),
             ]
         )
-
-        prompt = prompt.partial(system_message=system_message)
-        prompt = prompt.partial(tool_names=", ".join([tool.name for tool in tools]))
-        prompt = prompt.partial(current_date=current_date)
-        prompt = prompt.partial(ticker=ticker)
 
         chain = prompt | llm.bind_tools(tools)
 

@@ -2,6 +2,15 @@ import os
 from openai import OpenAI
 from .config import get_config
 
+_OPENAI_CLIENT = None
+
+
+def _get_openai_client() -> OpenAI:
+    global _OPENAI_CLIENT
+    if _OPENAI_CLIENT is None:
+        _OPENAI_CLIENT = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+    return _OPENAI_CLIENT
+
 
 def get_stock_news_openai(query=None, ticker=None, start_date=None, end_date=None):
     """Get stock news from OpenAI web search.
@@ -21,7 +30,7 @@ def get_stock_news_openai(query=None, ticker=None, start_date=None, end_date=Non
     else:
         raise ValueError("Must provide either 'query' or 'ticker' parameter")
 
-    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+    client = _get_openai_client()
 
     try:
         response = client.responses.create(
@@ -35,7 +44,7 @@ def get_stock_news_openai(query=None, ticker=None, start_date=None, end_date=Non
 
 
 def get_global_news_openai(date, look_back_days=7, limit=5):
-    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+    client = _get_openai_client()
 
     try:
         response = client.responses.create(
@@ -49,7 +58,7 @@ def get_global_news_openai(date, look_back_days=7, limit=5):
 
 
 def get_fundamentals_openai(ticker, curr_date):
-    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+    client = _get_openai_client()
 
     try:
         response = client.responses.create(

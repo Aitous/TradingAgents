@@ -48,12 +48,15 @@ For each:
 - **Point:** [Bullish argument]
 - **Evidence:** [Specific data - numbers, dates]
 - **Short-Term Relevance:** [Impact in next 1-2 weeks]
+- **Strength Score:** [1-10] (10 = very strong, 5 = moderate, 1 = weak)
+- **Confidence:** [High/Med/Low] based on data quality
 
 ### Bear Rebuttals
 For EACH Bear concern:
 - **Bear Says:** "[Quote]"
 - **Counter:** [Data-driven refutation]
 - **Why Wrong:** [Flaw in their logic]
+- **Rebuttal Strength:** [Strong/Moderate/Weak] - does your counter fully address their concern?
 
 ### Risks I Acknowledge
 - [1-2 legitimate risks]
@@ -84,7 +87,14 @@ Fundamentals: {fundamentals_report}
 History: {history}
 Last Bear: {current_response}
 """ + (f"""
-**LESSONS:** {past_memory_str}
+## PAST LESSONS APPLICATION (Review BEFORE making arguments)
+{past_memory_str}
+
+**For each relevant past lesson:**
+1. **Similar Situation:** [What was similar?]
+2. **What Went Wrong/Right:** [Specific outcome]
+3. **How I'm Adjusting:** [Specific change to current argument based on lesson]
+4. **Impact on Conviction:** [Increases/Decreases/No change to conviction level]
 
 Apply past lessons: How are you adjusting based on similar situations?""" if past_memory_str else "")
 

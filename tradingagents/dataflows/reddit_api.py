@@ -295,3 +295,209 @@ def get_reddit_discussions(
     Wrapper for get_reddit_news to match get_reddit_discussions registry signature.
     """
     return get_reddit_news(ticker=symbol, start_date=from_date, end_date=to_date)
+
+
+def get_reddit_undiscovered_dd(
+    lookback_hours: Annotated[int, "Hours to look back"] = 72,
+    scan_limit: Annotated[int, "Number of new posts to scan"] = 100,
+    top_n: Annotated[int, "Number of top DD posts to return"] = 10,
+    num_comments: Annotated[int, "Number of top comments to include"] = 10,
+    llm_evaluator = None,  # Will be passed from discovery graph
+) -> str:
+    """
+    Find high-quality undiscovered DD using LLM evaluation.
+
+    LEADING INDICATOR: Deep research before it goes viral.
+
+    Strategy:
+    1. Scan NEW posts (not hot) from quality subreddits
+    2. Send ALL to LLM for quality evaluation (parallel)
+    3. LLM filters for: quality analysis, sound thesis, novel insights
+    4. Return top-scoring DD posts
+
+    Args:
+        lookback_hours: How far back to scan
+        scan_limit: Number of posts to scan
+        top_n: Number of top DD to return
+        llm_evaluator: LLM instance for evaluation
+
+    Returns:
+        Report of high-quality undiscovered DD
+    """
+    try:
+        reddit = get_reddit_client()
+
+        subreddits = "stocks+investing+StockMarket+wallstreetbets+Superstonk+pennystocks"
+        subreddit = reddit.subreddit(subreddits)
+        cutoff_time = datetime.now() - timedelta(hours=lookback_hours)
+
+        # Collect ALL recent posts (minimal filtering)
+        candidate_posts = []
+
+        for submission in subreddit.new(limit=scan_limit):
+            post_date = datetime.fromtimestamp(submission.created_utc)
+
+            if post_date < cutoff_time:
+                continue
+
+            # Only filter: has text content
+            if not submission.selftext or len(submission.selftext) < 200:
+                continue
+
+            # Get top comments for community validation
+            submission.comment_sort = 'top'
+            submission.comments.replace_more(limit=0)
+            top_comments = []
+            for comment in submission.comments[:num_comments]:
+                if hasattr(comment, 'body') and hasattr(comment, 'score'):
+                    top_comments.append({
+                        'body': comment.body[:500],  # Include more of each comment
+                        'score': comment.score,
+                    })
+
+            candidate_posts.append({
+                "title": submission.title,
+                "author": str(submission.author) if submission.author else '[deleted]',
+                "score": submission.score,
+                "num_comments": submission.num_comments,
+                "subreddit": submission.subreddit.display_name,
+                "flair": submission.link_flair_text or "None",
+                "date": post_date.strftime("%Y-%m-%d %H:%M"),
+                "url": f"https://reddit.com{submission.permalink}",
+                "text": submission.selftext[:1500],  # First 1500 chars for LLM
+                "full_length": len(submission.selftext),
+                "hours_ago": int((datetime.now() - post_date).total_seconds() / 3600),
+                "top_comments": top_comments,
+            })
+
+        if not candidate_posts:
+            return f"# Undiscovered DD\n\nNo posts found in last {lookback_hours}h."
+
+        print(f"   Scanning {len(candidate_posts)} Reddit posts with LLM...")
+
+        # LLM evaluation (parallel)
+        if llm_evaluator:
+            from concurrent.futures import ThreadPoolExecutor, as_completed
+            from pydantic import BaseModel, Field
+            from typing import List, Optional
+
+            # Define structured output schema
+            class DDEvaluation(BaseModel):
+                score: int = Field(description="Quality score 0-100")
+                reason: str = Field(description="Brief reasoning for the score")
+                tickers: List[str] = Field(default_factory=list, description="List of stock ticker symbols mentioned (empty list if none)")
+
+            # Create structured LLM
+            structured_llm = llm_evaluator.with_structured_output(DDEvaluation)
+
+            def evaluate_post(post):
+                try:
+                    # Build prompt with comments if available
+                    comments_section = ""
+                    if post.get('top_comments') and len(post['top_comments']) > 0:
+                        comments_section = "\n\nTop Community Comments (for validation):\n"
+                        for i, comment in enumerate(post['top_comments'], 1):
+                            comments_section += f"{i}. [{comment['score']} upvotes] {comment['body']}\n"
+
+                    prompt = f"""Evaluate this Reddit post for investment Due Diligence quality.
+
+Title: {post['title']}
+Subreddit: r/{post['subreddit']}
+Upvotes: {post['score']} | Comments: {post['num_comments']}
+
+Content:
+{post['text']}{comments_section}
+
+Score 0-100 based on:
+- Quality analysis (financial data, metrics, industry research)
+- Sound thesis (logical, not just hype/speculation)
+- Novel insights (unique perspective vs rehashing news)
+- Risk awareness (mentions downsides, realistic)
+- Actionable (identifies specific ticker/opportunity)
+- Community validation (do top comments support or debunk the thesis?)
+
+Extract all stock ticker symbols mentioned in the post or comments."""
+
+                    result = structured_llm.invoke(prompt)
+
+                    # Extract values from structured response
+                    post['quality_score'] = result.score
+                    post['quality_reason'] = result.reason
+                    post['tickers'] = result.tickers  # Now a list
+
+                except Exception as e:
+                    print(f"      Error evaluating '{post['title'][:50]}': {str(e)}")
+                    post['quality_score'] = 0
+                    post['quality_reason'] = f'Error: {str(e)}'
+                    post['tickers'] = []
+
+                return post
+
+            # Parallel evaluation with progress tracking
+            try:
+                from tqdm import tqdm
+                use_tqdm = True
+            except ImportError:
+                use_tqdm = False
+
+            with ThreadPoolExecutor(max_workers=10) as executor:
+                futures = [executor.submit(evaluate_post, post) for post in candidate_posts]
+
+                if use_tqdm:
+                    # With progress bar
+                    evaluated = []
+                    for future in tqdm(as_completed(futures), total=len(futures), desc="   Evaluating posts"):
+                        evaluated.append(future.result())
+                else:
+                    # Without progress bar (fallback)
+                    evaluated = [f.result() for f in as_completed(futures)]
+
+            # Filter quality threshold (55+ = decent DD)
+            quality_dd = [p for p in evaluated if p['quality_score'] >= 55]
+            quality_dd.sort(key=lambda x: x['quality_score'], reverse=True)
+
+            # Debug: show score distribution
+            all_scores = [p['quality_score'] for p in evaluated if p['quality_score'] > 0]
+            if all_scores:
+                avg_score = sum(all_scores) / len(all_scores)
+                max_score = max(all_scores)
+                print(f"   Score distribution: avg={avg_score:.1f}, max={max_score}, quality_posts={len(quality_dd)}")
+
+            top_dd = quality_dd[:top_n]
+
+        else:
+            # No LLM - sort by length + engagement
+            candidate_posts.sort(
+                key=lambda x: x['full_length'] + (x['score'] * 10),
+                reverse=True
+            )
+            top_dd = candidate_posts[:top_n]
+
+        if not top_dd:
+            return f"# Undiscovered DD\n\nNo high-quality DD found (scanned {len(candidate_posts)} posts)."
+
+        # Build report
+        report = f"# 💎 Undiscovered DD (LLM-Filtered Quality)\n\n"
+        report += f"**Scanned:** {len(candidate_posts)} posts\n"
+        report += f"**High Quality:** {len(top_dd)} DD posts (score ≥60)\n\n"
+
+        for i, post in enumerate(top_dd, 1):
+            report += f"## {i}. {post['title']}\n\n"
+
+            if 'quality_score' in post:
+                report += f"**Quality:** {post['quality_score']}/100 - {post['quality_reason']}\n"
+                if post.get('tickers') and len(post['tickers']) > 0:
+                    tickers_str = ', '.join([f'${t}' for t in post['tickers']])
+                    report += f"**Tickers:** {tickers_str}\n"
+
+            report += f"**r/{post['subreddit']}** | {post['hours_ago']}h ago | "
+            report += f"{post['score']} ⬆ {post['num_comments']} 💬\n\n"
+
+            report += f"{post['text'][:600]}...\n\n"
+            report += f"[Read Full DD]({post['url']})\n\n---\n\n"
+
+        return report
+
+    except Exception as e:
+        import traceback
+        return f"# Undiscovered DD\n\nError: {str(e)}\n{traceback.format_exc()}"

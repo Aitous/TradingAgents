@@ -49,12 +49,15 @@ For each:
 - **Evidence:** [Specific data - numbers, dates]
 - **Short-Term Impact:** [Impact in next 1-2 weeks]
 - **Probability:** [High/Med/Low]
+- **Strength Score:** [1-10] (10 = very strong, 5 = moderate, 1 = weak)
+- **Confidence:** [High/Med/Low] based on data quality
 
 ### Bull Rebuttals
 For EACH Bull claim:
 - **Bull Says:** "[Quote]"
 - **Counter:** [Why they're wrong]
 - **Flaw:** [Weakness in their logic]
+- **Rebuttal Strength:** [Strong/Moderate/Weak] - does your counter fully address their claim?
 
 ### Strengths I Acknowledge
 - [1-2 legitimate Bull points]
@@ -84,10 +87,17 @@ Fundamentals: {fundamentals_report}
 **DEBATE:**
 History: {history}
 Last Bull: {current_response}
+""" + (f"""
+## PAST LESSONS APPLICATION (Review BEFORE making arguments)
+{past_memory_str}
 
-**LESSONS:** {past_memory_str}
+**For each relevant past lesson:**
+1. **Similar Situation:** [What was similar?]
+2. **What Went Wrong/Right:** [Specific outcome]
+3. **How I'm Adjusting:** [Specific change to current argument based on lesson]
+4. **Impact on Conviction:** [Increases/Decreases/No change to conviction level]
 
-Apply lessons: How are you adjusting?"""
+Apply lessons: How are you adjusting?""" if past_memory_str else "")
 
         response = llm.invoke(prompt)
 

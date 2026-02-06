@@ -3,6 +3,10 @@ import time
 import json
 from tradingagents.tools.generator import get_agent_tools
 from tradingagents.dataflows.config import get_config
+from tradingagents.agents.utils.prompt_templates import (
+    BASE_COLLABORATIVE_BOILERPLATE,
+    get_date_awareness_section,
+)
 
 
 def create_news_analyst(llm):
@@ -13,9 +17,9 @@ def create_news_analyst(llm):
 
         tools = get_agent_tools("news")
 
-        system_message = """You are a News Intelligence Analyst finding SHORT-TERM catalysts for {ticker}.
+        system_message = f"""You are a News Intelligence Analyst finding SHORT-TERM catalysts for {ticker}.
 
-**Analysis Date:** {current_date}
+{get_date_awareness_section(current_date)}
 
 ## YOUR MISSION
 Identify material catalysts and risks that could impact {ticker} over the NEXT 1-2 WEEKS.
@@ -39,7 +43,11 @@ For each:
 - **Date:** [When]
 - **Impact:** [Stock reaction so far]
 - **Forward Look:** [Why this matters for next 1-2 weeks]
-- **Priced In?:** [Fully/Partially/Not Yet]
+- **Priced-In Assessment:**
+  - **Event Date:** [When it happened]
+  - **Price Reaction:** [Stock moved X% on event day]
+  - **Current Price vs Event Price:** [Is it still elevated or back to pre-event?]
+  - **Conclusion:** [Fully Priced In / Partially Priced In / Not Yet Priced In]
 - **Confidence:** [High/Med/Low]
 
 ### Key Risks (Bearish - max 4)
@@ -70,27 +78,18 @@ For each:
 
 Date: {current_date} | Ticker: {ticker}"""
 
+        tool_names_str = ", ".join([tool.name for tool in tools])
+        full_system_message = (
+            f"{BASE_COLLABORATIVE_BOILERPLATE}\n\n{system_message}\n\n"
+            f"Context: {ticker} | Date: {current_date} | Tools: {tool_names_str}"
+        )
+
         prompt = ChatPromptTemplate.from_messages(
             [
-                (
-                    "system",
-                    "You are a helpful AI assistant, collaborating with other assistants."
-                    " Use the provided tools to progress towards answering the question."
-                    " If you are unable to fully answer, that's OK; another assistant with different tools"
-                    " will help where you left off. Execute what you can to make progress."
-                    " If you or any other assistant has the FINAL TRANSACTION PROPOSAL: **BUY/HOLD/SELL** or deliverable,"
-                    " prefix your response with FINAL TRANSACTION PROPOSAL: **BUY/HOLD/SELL** so the team knows to stop."
-                    " You have access to the following tools: {tool_names}.\n{system_message}"
-                    "For your reference, the current date is {current_date}. We are looking at the company {ticker}",
-                ),
+                ("system", full_system_message),
                 MessagesPlaceholder(variable_name="messages"),
             ]
         )
-
-        prompt = prompt.partial(system_message=system_message)
-        prompt = prompt.partial(tool_names=", ".join([tool.name for tool in tools]))
-        prompt = prompt.partial(current_date=current_date)
-        prompt = prompt.partial(ticker=ticker)
 
         chain = prompt | llm.bind_tools(tools)
         result = chain.invoke(state["messages"])

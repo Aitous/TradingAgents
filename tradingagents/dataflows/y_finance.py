@@ -1,9 +1,12 @@
-from typing import Annotated
+from typing import Annotated, List, Optional, Union
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 import yfinance as yf
 import pandas as pd
 import os
+import requests
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from pathlib import Path
 from .stockstats_utils import StockstatsUtils
 
 def get_YFin_data_online(
@@ -1136,3 +1139,169 @@ def get_options_activity(
         
     except Exception as e:
         return f"Error retrieving options activity for {ticker}: {str(e)}"
+
+
+def _get_ticker_universe(
+    tickers: Optional[Union[str, List[str]]] = None,
+    max_tickers: Optional[int] = None
+) -> List[str]:
+    """
+    Get a list of ticker symbols.
+
+    Args:
+        tickers: List of ticker symbols, or None to load from config file
+        max_tickers: Maximum number of tickers to return (None = all)
+
+    Returns:
+        List of ticker symbols
+    """
+    # If custom list provided, use it
+    if isinstance(tickers, list):
+        ticker_list = [t.upper().strip() for t in tickers if t and isinstance(t, str)]
+        return ticker_list[:max_tickers] if max_tickers else ticker_list
+
+    # Load from config file
+    from tradingagents.default_config import DEFAULT_CONFIG
+    ticker_file = DEFAULT_CONFIG.get("tickers_file")
+
+    if not ticker_file:
+        print("Warning: tickers_file not configured, using fallback list")
+        return _get_default_tickers()[:max_tickers] if max_tickers else _get_default_tickers()
+
+    # Load tickers from file
+    try:
+        ticker_path = Path(ticker_file)
+        if ticker_path.exists():
+            with open(ticker_path, 'r') as f:
+                ticker_list = [line.strip().upper() for line in f if line.strip()]
+            # Remove duplicates while preserving order
+            seen = set()
+            ticker_list = [t for t in ticker_list if t and t not in seen and not seen.add(t)]
+            return ticker_list[:max_tickers] if max_tickers else ticker_list
+        else:
+            print(f"Warning: Ticker file not found at {ticker_file}, using fallback list")
+            return _get_default_tickers()[:max_tickers] if max_tickers else _get_default_tickers()
+    except Exception as e:
+        print(f"Warning: Could not load ticker list from file: {e}, using fallback")
+        return _get_default_tickers()[:max_tickers] if max_tickers else _get_default_tickers()
+
+
+def _get_default_tickers() -> List[str]:
+    """Fallback list of major US stocks if ticker file is not found."""
+    return [
+        "AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "META", "TSLA", "BRK-B", "V", "UNH",
+        "XOM", "JNJ", "JPM", "WMT", "MA", "PG", "LLY", "AVGO", "HD", "MRK",
+        "COST", "ABBV", "PEP", "ADBE", "TMO", "CSCO", "NFLX", "ACN", "DHR", "ABT",
+        "VZ", "WFC", "CRM", "PM", "LIN", "DIS", "BMY", "NKE", "TXN", "RTX",
+        "QCOM", "UPS", "HON", "AMGN", "DE", "INTU", "AMAT", "LOW", "SBUX", "C",
+        "BKNG", "ADP", "GE", "TJX", "AXP", "SPGI", "MDT", "GILD", "ISRG", "BLK",
+        "SYK", "ZTS", "CI", "CME", "ICE", "EQIX", "REGN", "APH", "KLAC", "CDNS",
+        "SNPS", "MCHP", "FTNT", "ANSS", "CTSH", "WDAY", "ON", "NXPI", "MPWR", "CRWD",
+        "AMD", "INTC", "MU", "LRCX", "PANW", "NOW", "DDOG", "ZS", "NET", "TEAM"
+    ]
+
+
+def get_pre_earnings_accumulation_signal(
+    ticker: Annotated[str, "ticker symbol to analyze"],
+    lookback_days: Annotated[int, "days to analyze volume"] = 10,
+) -> dict:
+    """
+    Detect if a stock is being accumulated BEFORE earnings (LEADING INDICATOR).
+
+    SIGNAL: Volume increases while price stays flat = Smart money accumulating
+
+    This happens BEFORE the price run, giving you an early entry.
+    Returns a dict with signal strength and metrics.
+
+    Args:
+        ticker: Stock symbol to check
+        lookback_days: Recent days to analyze
+
+    Returns:
+        Dict with 'signal' (bool), 'volume_ratio' (float), 'price_change_pct' (float), 'current_price' (float)
+    """
+    try:
+        stock = yf.Ticker(ticker.upper())
+
+        # Get 1 month of data to calculate baseline
+        hist = stock.history(period="1mo")
+        if len(hist) < 20:
+            return {'signal': False, 'reason': 'Insufficient data'}
+
+        # Baseline volume (excluding recent period)
+        baseline_volume = hist['Volume'][:-lookback_days].mean()
+
+        # Recent volume
+        recent_volume = hist['Volume'][-lookback_days:].mean()
+
+        # Volume ratio
+        volume_ratio = recent_volume / baseline_volume if baseline_volume > 0 else 0
+
+        # Price movement in recent period
+        price_start = hist['Close'].iloc[-lookback_days]
+        price_end = hist['Close'].iloc[-1]
+        price_change_pct = ((price_end - price_start) / price_start) * 100
+
+        # SIGNAL CRITERIA:
+        # - Volume up at least 50% (1.5x)
+        # - Price relatively flat (< 5% move)
+        accumulation_signal = volume_ratio >= 1.5 and abs(price_change_pct) < 5.0
+
+        return {
+            'signal': accumulation_signal,
+            'volume_ratio': round(volume_ratio, 2),
+            'price_change_pct': round(price_change_pct, 2),
+            'current_price': round(price_end, 2),
+            'baseline_volume': int(baseline_volume),
+            'recent_volume': int(recent_volume),
+        }
+
+    except Exception as e:
+        return {'signal': False, 'reason': str(e)}
+
+
+def check_if_price_reacted(
+    ticker: Annotated[str, "ticker symbol to analyze"],
+    lookback_days: Annotated[int, "days to check for price reaction"] = 3,
+    reaction_threshold: Annotated[float, "% change to consider as 'reacted'"] = 5.0,
+) -> dict:
+    """
+    Check if a stock's price has already reacted to news/catalyst.
+
+    Use this to determine if a catalyst (analyst upgrade, news, etc.) is LEADING or LAGGING:
+    - If price hasn't moved much = LEADING indicator (you're early)
+    - If price already moved significantly = LAGGING indicator (you're late)
+
+    Args:
+        ticker: Stock symbol to check
+        lookback_days: Days to check for reaction (default 3)
+        reaction_threshold: Price change % to consider as "reacted" (default 5%)
+
+    Returns:
+        Dict with 'reacted' (bool), 'price_change_pct' (float), 'status' (str: 'leading' or 'lagging')
+    """
+    try:
+        stock = yf.Ticker(ticker.upper())
+
+        # Get recent history
+        hist = stock.history(period="1mo")
+        if len(hist) < lookback_days:
+            return {'reacted': None, 'reason': 'Insufficient data', 'status': 'unknown'}
+
+        # Check price movement in lookback period
+        price_start = hist['Close'].iloc[-lookback_days]
+        price_end = hist['Close'].iloc[-1]
+        price_change_pct = ((price_end - price_start) / price_start) * 100
+
+        # Determine if already reacted
+        reacted = abs(price_change_pct) >= reaction_threshold
+
+        return {
+            'reacted': reacted,
+            'price_change_pct': round(price_change_pct, 2),
+            'status': 'lagging' if reacted else 'leading',
+            'current_price': round(price_end, 2),
+        }
+
+    except Exception as e:
+        return {'reacted': None, 'reason': str(e), 'status': 'unknown'}

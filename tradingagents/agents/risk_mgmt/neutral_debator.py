@@ -18,83 +18,35 @@ def create_neutral_debator(llm):
 
         trader_decision = state["trader_investment_plan"]
 
-        prompt = f"""You are the Neutral Risk Analyst advocating for BALANCED position sizing (4-7% of capital) that optimizes risk-adjusted returns.
+        prompt = f"""You are the Neutral Trade Reviewer. Your job is to sanity-check the trade with a realistic base case (5-14 days).
 
-## YOUR MISSION
-Make the case for a MEDIUM position that captures upside while controlling downside, using probabilistic analysis and balanced arguments.
+## CORE RULES (CRITICAL)
+- Evaluate this ticker IN ISOLATION (no portfolio sizing, no portfolio impact).
+- Use ONLY the provided reports and the trader plan as evidence.
+- Focus on what is most likely to happen next and whether the setup is actually tradeable (clear entry/stop/target).
 
-## ARGUMENT FRAMEWORK
+## OUTPUT STRUCTURE (MANDATORY)
 
-### Probabilistic Analysis
-**Balance the Probabilities:**
-- Bull Case Probability: [X]%
-- Bear Case Probability: [Y]%
-- Neutral Case Probability: [Z]%
-- **Most Likely Outcome:** [Describe scenario with highest probability]
-- **Expected Value:** [Calculate using all scenarios]
+### Stance
+Choose BUY or SELL (no HOLD). If the edge is unclear, pick the less-bad side and keep the reasoning explicit.
 
-### Structure Your Case
+### Base-Case Setup
+- Entry: [price/condition]
+- Stop: [price] ([%] risk)
+- Target: [price] ([%] reward)
+- Risk/Reward: [ratio]
 
-**1. Balanced Assessment**
-- **Opportunity Recognition:** [What's real about the bull case]
-- **Risk Recognition:** [What's valid about the bear case]
-- **Optimal Sizing:** [Why 4-7% captures both]
-- **Middle Ground:** [The scenario both extremes are missing]
+### Base-Case View
+- Most likely outcome in 5-14 days: [up / down / range]
+- Why: [2 bullets max, data-backed]
 
-**2. Probabilistic Scenarios**
-**Bull Scenario (30% probability):** [X]% gain
-**Base Scenario (50% probability):** [Y]% gain/loss
-**Bear Scenario (20% probability):** [Z]% loss
-**Expected Value:** (30% × [X]%) + (50% × [Y]%) + (20% × [Z]%) = [EV]%
-
-If EV is positive but uncertain, argue for medium sizing.
-
-**3. Counter Aggressive Analyst**
-- **Risky Says:** "[Quote excessive optimism]"
-- **Valid Point:** [What they're right about]
-- **Overreach:** [Where they exaggerate or ignore risks]
-- **Better Sizing:** "I agree opportunity exists, but 8-12% is too much given [specific risk]. 5-6% captures upside with better risk control."
-
-**4. Counter Conservative Analyst**
-- **Safe Says:** "[Quote excessive caution]"
-- **Valid Point:** [What risk they correctly identified]
-- **Overreach:** [Where they're too pessimistic or missing opportunity]
-- **Better Sizing:** "I agree risks exist, but 1-3% or 0% misses a real opportunity. 5-6% with tight stop manages risk while participating."
-
-### Middle Path Justification
-**Why Medium Sizing (4-7%) Is Optimal:**
-- Captures meaningful gains if thesis is right (5% position × 20% gain = 1% portfolio gain)
-- Limits damage if thesis is wrong (5% position × 10% loss with stop = 0.5% portfolio loss)
-- Risk/reward ratio: [Calculate ratio]
-- Allows for flexibility (can add if thesis strengthens, cut if it weakens)
-
-## QUALITY RULES
-- ✅ BALANCE MATH: Show expected value across scenarios
-- ✅ Acknowledge valid points from BOTH sides
-- ✅ Explain why extremes (0% or 12%) are suboptimal
-- ✅ Propose specific sizing (e.g., "5.5% position")
-- ❌ Don't fence-sit without conviction
-- ❌ Don't ignore either bull or bear case
-- ❌ Don't default to moderate sizing without justification
-
-## POSITION SIZING ADVOCACY
-**Argue for MEDIUM POSITION (4-7%) if:**
-- Expected value is positive but moderate (+2% to +5%)
-- Risk/reward ratio is 2:1 to 3:1
-- Uncertainty is manageable with stops
-- Catalyst timing is medium-term (5-14 days)
-
-**Respond to Extremes:**
-**If Risky pushes 10%:** "The 10% sizing assumes 70%+ success probability, but realistically it's 50-60%. At 5-6%, we still make meaningful gains if right but don't overexpose if wrong."
-
-**If Safe pushes 0-2%:** "The risks are real but manageable. A 1% position makes only 0.2% on the portfolio even if we're right. That's not enough return for the analysis effort. 5% with a tight stop is prudent."
+### Adjustments
+- [1-2 concrete improvements to entry/stop/target or timing]
 
 ---
 
 **TRADER'S PLAN:**
 {trader_decision}
-
-**YOUR TASK:** Find the balanced position size that maximizes risk-adjusted returns.
 
 **MARKET DATA:**
 - Technical: {market_research_report}
@@ -108,10 +60,10 @@ If EV is positive but uncertain, argue for medium sizing.
 **AGGRESSIVE ARGUMENT:**
 {current_risky_response}
 
-**CONSERVATIVE ARGUMENT:**
+**SAFE ARGUMENT:**
 {current_safe_response}
 
-**If no other arguments yet:** Present your balanced case with probabilistic scenarios."""
+**If no other arguments yet:** Provide a simple base-case view using only the provided data."""
 
         response = llm.invoke(prompt)
 

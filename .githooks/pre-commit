@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT_DIR="$(git rev-parse --show-toplevel)"
+cd "$ROOT_DIR"
+
+echo "Running pre-commit checks..."
+
+python -m compileall -q tradingagents
+
+if python - <<'PY'
+import importlib.util
+raise SystemExit(0 if importlib.util.find_spec("pytest") else 1)
+PY
+then
+  python -m pytest -q
+else
+  echo "pytest not installed; skipping test run."
+fi

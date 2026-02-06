@@ -71,6 +71,10 @@ class MarketMover(BaseModel):
     type: Literal["gainer", "loser"] = Field(
         description="Whether this is a top gainer or loser"
     )
+    change_percent: Optional[float] = Field(
+        default=None,
+        description="Percent change for the move"
+    )
     reason: Optional[str] = Field(
         default=None,
         description="Brief reason for the movement"
@@ -82,6 +86,48 @@ class MarketMovers(BaseModel):
     
     movers: List[MarketMover] = Field(
         description="List of market movers (gainers and losers)"
+    )
+
+
+class DiscoveryRankingItem(BaseModel):
+    """Individual discovery ranking entry."""
+
+    ticker: str = Field(
+        description="Stock ticker symbol"
+    )
+    rank: int = Field(
+        ge=1,
+        description="Rank order (1 is highest)"
+    )
+    strategy_match: str = Field(
+        description="Primary strategy match (e.g., Momentum, Contrarian, Insider)"
+    )
+    base_score: float = Field(
+        ge=0,
+        le=10,
+        description="Base strategy score before modifiers"
+    )
+    modifiers: str = Field(
+        description="Score modifiers with brief rationale"
+    )
+    final_score: float = Field(
+        description="Final score after modifiers"
+    )
+    confidence: int = Field(
+        ge=1,
+        le=10,
+        description="Confidence score from 1-10"
+    )
+    reason: str = Field(
+        description="Specific rationale with actionable insight"
+    )
+
+
+class DiscoveryRankingList(BaseModel):
+    """Structured output for discovery rankings."""
+
+    rankings: List[DiscoveryRankingItem] = Field(
+        description="Ranked list of top discovery opportunities"
     )
 
 

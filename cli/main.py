@@ -86,7 +86,7 @@ class MessageBuffer:
             "Risky Analyst": "pending",
             "Neutral Analyst": "pending",
             "Safe Analyst": "pending",
-            # Portfolio Management Team
+            # Final Decision
             "Portfolio Manager": "pending",
         }
         self.current_agent = None
@@ -138,7 +138,7 @@ class MessageBuffer:
                 "fundamentals_report": "Fundamentals Analysis",
                 "investment_plan": "Research Team Decision",
                 "trader_investment_plan": "Trading Team Plan",
-                "final_trade_decision": "Portfolio Management Decision",
+                "final_trade_decision": "Final Trade Decision",
             }
             self.current_report = (
                 f"### {section_titles[latest_section]}\n{latest_content}"
@@ -190,7 +190,7 @@ class MessageBuffer:
 
         # Portfolio Management Decision
         if self.report_sections["final_trade_decision"]:
-            report_parts.append("## Portfolio Management Decision")
+            report_parts.append("## Final Trade Decision")
             report_parts.append(f"{self.report_sections['final_trade_decision']}")
 
         self.final_report = "\n\n".join(report_parts) if report_parts else None
@@ -253,7 +253,7 @@ def update_display(layout, spinner_text=None):
         "Research Team": ["Bull Researcher", "Bear Researcher", "Research Manager"],
         "Trading Team": ["Trader"],
         "Risk Management": ["Risky Analyst", "Neutral Analyst", "Safe Analyst"],
-        "Portfolio Management": ["Portfolio Manager"],
+        "Final Decision": ["Portfolio Manager"],
     }
 
     for team, agents in teams.items():
@@ -430,7 +430,7 @@ def get_user_selections():
     welcome_content = f"{welcome_ascii}\n"
     welcome_content += "[bold green]TradingAgents: Multi-Agents LLM Financial Trading Framework - CLI[/bold green]\n\n"
     welcome_content += "[bold]Workflow Steps:[/bold]\n"
-    welcome_content += "I. Analyst Team → II. Research Team → III. Trader → IV. Risk Management → V. Portfolio Management\n\n"
+    welcome_content += "I. Analyst Team → II. Research Team → III. Trader → IV. Risk Management → V. Final Decision\n\n"
     welcome_content += (
         "[dim]Built by [Tauric Research](https://github.com/TauricResearch)[/dim]"
     )
@@ -717,12 +717,12 @@ def display_complete_report(final_state):
                 )
             )
 
-        # Conservative (Safe) Analyst Analysis
+        # Risk Audit (Safe) Analyst Analysis
         if risk_state.get("safe_history"):
             risk_reports.append(
                 Panel(
                     Markdown(risk_state["safe_history"]),
-                    title="Conservative Analyst",
+                    title="Risk Audit Analyst",
                     border_style="blue",
                     padding=(1, 2),
                 )
@@ -749,17 +749,17 @@ def display_complete_report(final_state):
                 )
             )
 
-        # V. Portfolio Manager Decision
+        # V. Final Trade Decision
         if risk_state.get("judge_decision"):
             console.print(
                 Panel(
                     Panel(
                         Markdown(extract_text_from_content(risk_state["judge_decision"])),
-                        title="Portfolio Manager",
+                        title="Final Decider",
                         border_style="blue",
                         padding=(1, 2),
                     ),
-                    title="V. Portfolio Manager Decision",
+                    title="V. Final Trade Decision",
                     border_style="green",
                     padding=(1, 2),
                 )
@@ -1062,6 +1062,14 @@ def run_trading_analysis(selections):
     log_file = results_dir / "message_tool.log"
     log_file.touch(exist_ok=True)
 
+    # IMPORTANT: `message_buffer` is a global singleton used by the Rich UI.
+    # When running multiple tickers in the same CLI session (e.g., discovery → trading → trading),
+    # we must reset any previously wrapped methods; otherwise decorators stack and later runs
+    # write logs/reports into earlier tickers' folders.
+    message_buffer.add_message = MessageBuffer.add_message.__get__(message_buffer, MessageBuffer)
+    message_buffer.add_tool_call = MessageBuffer.add_tool_call.__get__(message_buffer, MessageBuffer)
+    message_buffer.update_report_section = MessageBuffer.update_report_section.__get__(message_buffer, MessageBuffer)
+
     def save_message_decorator(obj, func_name):
         func = getattr(obj, func_name)
         @wraps(func)
@@ -1102,6 +1110,10 @@ def run_trading_analysis(selections):
     message_buffer.add_message = save_message_decorator(message_buffer, "add_message")
     message_buffer.add_tool_call = save_tool_call_decorator(message_buffer, "add_tool_call")
     message_buffer.update_report_section = save_report_section_decorator(message_buffer, "update_report_section")
+
+    # Reset UI buffers for a clean per-ticker run
+    message_buffer.messages.clear()
+    message_buffer.tool_calls.clear()
 
     # Now start the display layout
     layout = create_layout()
@@ -1363,7 +1375,7 @@ def run_trading_analysis(selections):
                         # Update risk report with final decision only
                         message_buffer.update_report_section(
                             "final_trade_decision",
-                            f"### Portfolio Manager Decision\n{risk_state['judge_decision']}",
+                            f"### Final Trade Decision\n{risk_state['judge_decision']}",
                         )
                         # Mark risk analysts as completed
                         message_buffer.update_agent_status("Risky Analyst", "completed")
