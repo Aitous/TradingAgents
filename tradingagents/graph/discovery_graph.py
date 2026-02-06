@@ -3,7 +3,7 @@ from typing import Any, Callable, Dict, List, Optional
 from langgraph.graph import END, StateGraph
 
 from tradingagents.agents.utils.agent_states import DiscoveryState
-from tradingagents.dataflows.discovery import scanners  # Load scanners to trigger registration
+from tradingagents.dataflows.discovery import scanners  # noqa: F401  # Load scanners to trigger registration
 from tradingagents.dataflows.discovery.scanner_registry import SCANNER_REGISTRY
 from tradingagents.dataflows.discovery.utils import PRIORITY_ORDER, Priority, serialize_for_log
 from tradingagents.tools.executor import execute_tool
