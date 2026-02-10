@@ -1,0 +1,116 @@
+{
+  "date": "2026-01-29",
+  "llm_provider": "google",
+  "recommendations": [
+    {
+      "ticker": "APLD",
+      "rank": 1,
+      "strategy_match": "Momentum",
+      "final_score": 10.5,
+      "confidence": 9,
+      "reason": "Extreme growth profile with 250% revenue growth YoY. Nvidia's $2B investment in anchor tenant CoreWeave effectively de-risks the Ellendale campus project. Technicals show a strong uptrend above 50 SMA with a bullish MACD crossover. Options activity is highly favorable with a Put/Call volume ratio of 0.325, indicating institutional accumulation. Strategy: Enter on pullbacks to $36.78 support with a target of $45.",
+      "entry_price": 38.06999969482422,
+      "discovery_date": "2026-01-29",
+      "status": "open"
+    },
+    {
+      "ticker": "AAPL",
+      "rank": 2,
+      "strategy_match": "Momentum",
+      "final_score": 10.4,
+      "confidence": 9,
+      "reason": "Reported record Q1 revenue of $143.8B with a bullish MACD crossover indicating shifting momentum. Acquisition rumors of AI startup Q.ai provide a catalyst for Siri enhancement. Options flow is bullish with a P/C ratio of 0.63 and strong institutional positioning. Strategy: Bullish breakout play toward $287 analyst target; stop-loss at $248.",
+      "entry_price": 258.2799987792969,
+      "discovery_date": "2026-01-29",
+      "status": "open"
+    },
+    {
+      "ticker": "UA",
+      "rank": 3,
+      "strategy_match": "Insider Play",
+      "final_score": 10.2,
+      "confidence": 8,
+      "reason": "Significant insider buying from V. Prem Watsa ($16.4M) and a total of over $90M in purchases this quarter shows extreme conviction. ADX of 62 indicates an incredibly strong trend. Options P/C ratio of 0.117 confirms bullish sentiment. Strategy: Follow insider lead for a move back toward $7.76 high; entry at $5.90, stop at $5.35.",
+      "entry_price": 5.929999828338623,
+      "discovery_date": "2026-01-29",
+      "status": "open"
+    },
+    {
+      "ticker": "MCHP",
+      "rank": 4,
+      "strategy_match": "Momentum",
+      "final_score": 10.0,
+      "confidence": 8,
+      "reason": "Fresh analyst upgrade from Investing.com paired with a confirmed Golden Cross (50 SMA crossing 200 SMA). Company launched new 3-nm switches for AI data centers. Put/Call ratio of 0.13 is exceptionally bullish. RSI is overbought (73.4), suggesting a brief consolidation before the Feb 5 earnings. Strategy: Long position at $78-80 range targeting $95.",
+      "entry_price": 79.36000061035156,
+      "discovery_date": "2026-01-29",
+      "status": "open"
+    },
+    {
+      "ticker": "INTC",
+      "rank": 5,
+      "strategy_match": "Momentum",
+      "final_score": 9.8,
+      "confidence": 8,
+      "reason": "Recent 11% jump on rumors of 2028 foundry partnerships with Apple and Nvidia. Bullish insider activity from the CFO ($250k purchase) signals manufacturing confidence. Options flow confirms the bias with a P/C ratio of 0.655. Strategy: Momentum trade toward $54 resistance; tight stop at $44.03 (ATR based).",
+      "entry_price": 48.65999984741211,
+      "discovery_date": "2026-01-29",
+      "status": "open"
+    },
+    {
+      "ticker": "USAR",
+      "rank": 6,
+      "strategy_match": "Momentum",
+      "final_score": 9.6,
+      "confidence": 8,
+      "reason": "Closing of $1.5B PIPE and CHIPS program LOI ($1.6B) provide multi-year funding runway for rare earth production. Technicals show very strong trend strength (ADX 55.5). Options P/C ratio of 0.382 indicates heavy call buying. Strategy: Target $37.20 analyst consensus with trailing stop under the 20 EMA ($20.08).",
+      "entry_price": 22.06999969482422,
+      "discovery_date": "2026-01-29",
+      "status": "open"
+    },
+    {
+      "ticker": "LTRX",
+      "rank": 7,
+      "strategy_match": "Momentum",
+      "final_score": 9.5,
+      "confidence": 7,
+      "reason": "Announced high-impact AI drone partnership for defense. Extremely low Put/Call ratio (0.024) suggests speculative call buying ahead of Feb 5 earnings. Technicals show a strong uptrend above all major EMAs. Strategy: Speculative earnings play targeting $9.00; stop-loss at 50 SMA ($5.79).",
+      "entry_price": 6.800000190734863,
+      "discovery_date": "2026-01-29",
+      "status": "open"
+    },
+    {
+      "ticker": "KLAC",
+      "rank": 8,
+      "strategy_match": "Momentum",
+      "final_score": 9.1,
+      "confidence": 8,
+      "reason": "Crushed Q2 estimates with 17% growth driven by AI packaging demand. Strong guidance issued for the next quarter. Strong uptrend verified by OBV and VWAP. RSI is high (72.5), but momentum is supported by yielding management dominance. Strategy: Buy on confirmation of support at $1620; target $1800.",
+      "entry_price": 1684.7099609375,
+      "discovery_date": "2026-01-29",
+      "status": "open"
+    },
+    {
+      "ticker": "AMD",
+      "rank": 9,
+      "strategy_match": "Momentum",
+      "final_score": 9.0,
+      "confidence": 8,
+      "reason": "Upgraded ahead of earnings due to MI308 chip demand and AI accelerator licenses. ADX of 39.6 indicates a solid trend. Options OI shows bullish long-term positioning. Insider selling is a minor concern (-0.1 modifier offset). Strategy: Play the earnings run-up to $267 resistance; stop at $237.",
+      "entry_price": 252.17999267578125,
+      "discovery_date": "2026-01-29",
+      "status": "open"
+    },
+    {
+      "ticker": "THM",
+      "rank": 10,
+      "strategy_match": "Insider Play",
+      "final_score": 8.5,
+      "confidence": 7,
+      "reason": "Paulson & Co. increased stake via a $40M purchase in a recent $115M financing round. Technicals show an extreme move (+26% in 5 days) and RSI is overbought (78.6). High institutional support (53.8%) provides floor. Strategy: Wait for mean reversion toward $2.55 (VWAP) before entering; target $3.65.",
+      "entry_price": 2.990000009536743,
+      "discovery_date": "2026-01-29",
+      "status": "open"
+    }
+  ]
+}

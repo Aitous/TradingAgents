@@ -1,0 +1,171 @@
+{
+  "date": "2026-02-09",
+  "llm_provider": "google",
+  "recommendations": [
+    {
+      "ticker": "WRB",
+      "rank": 1,
+      "strategy_match": "insider_buying",
+      "final_score": 92,
+      "confidence": 9,
+      "reason": "This is a high-conviction setup driven by massive institutional insider accumulation. Mitsui Sumitomo Insurance Co. has purchased over $300 million worth of stock in the last month, including a $69 million buy on Jan 28 and continued buying through Feb 6. Technically, the stock just triggered a bullish MACD crossover and price has reclaimed the 20 EMA and VWAP, signaling a trend reversal. With a 100% win rate for the insider buying strategy historically, the catalyst is immediate and powerful.",
+      "entry_price": 69.25,
+      "discovery_date": "2026-02-09",
+      "status": "open"
+    },
+    {
+      "ticker": "GME",
+      "rank": 2,
+      "strategy_match": "reddit_dd",
+      "final_score": 89,
+      "confidence": 9,
+      "reason": "CEO Ryan Cohen purchased $21.3 million worth of shares on Jan 21, providing a strong floor of confidence. The stock maintains a high short interest of 16.1%, creating a classic squeeze setup alongside bullish technicals (MACD bullish, RSI > 60). The ML model predicts a win (49.8%), and recent Reddit diligence highlights institutional ownership exceeding the float. The risk/reward is asymmetric due to the volatility and cult-like following combined with insider backing.",
+      "entry_price": 24.639999389648438,
+      "discovery_date": "2026-02-09",
+      "status": "open"
+    },
+    {
+      "ticker": "NVAX",
+      "rank": 3,
+      "strategy_match": "momentum",
+      "final_score": 88,
+      "confidence": 8,
+      "reason": "Novavax presents a potent short squeeze candidate with 32.9% short interest and a recent Golden Cross (50 SMA crossing above 200 SMA), indicating a strong long-term trend shift. Despite recent consolidation, the ML model gives it a 50.5% win probability. The combination of extremely high short interest and bullish technical structure suggests an explosive move could occur if volume spikes. Volatility is high, but the technical floor is established.",
+      "entry_price": 8.699999809265137,
+      "discovery_date": "2026-02-09",
+      "status": "open"
+    },
+    {
+      "ticker": "PMN",
+      "rank": 4,
+      "strategy_match": "insider_buying",
+      "final_score": 85,
+      "confidence": 8,
+      "reason": "A 10% beneficial owner, ABG Management, purchased over $11 million in stock on Feb 3, which is massive relative to the company's small market capitalization. Technical indicators show a bullish divergence in On-Balance Volume (OBV), suggesting accumulation despite recent price drops. The stock has reclaimed its 20 EMA, and the sheer size of the insider purchase relative to the float serves as a major catalyst for repricing.",
+      "entry_price": 13.050000190734863,
+      "discovery_date": "2026-02-09",
+      "status": "open"
+    },
+    {
+      "ticker": "CZR",
+      "rank": 5,
+      "strategy_match": "momentum",
+      "final_score": 84,
+      "confidence": 8,
+      "reason": "Caesars has a high short interest of 19.9% and is currently showing a bullish divergence in OBV, indicating smart money accumulation during the price dip. The ML model predicts a win (51.7%), and earnings are approaching in 8 days, which could act as a catalyst for a squeeze. The stock is oversold on stochastics, offering a favorable entry point for a mean-reversion trade with squeeze potential.",
+      "entry_price": 20.649999618530273,
+      "discovery_date": "2026-02-09",
+      "status": "open"
+    },
+    {
+      "ticker": "WOOF",
+      "rank": 6,
+      "strategy_match": "momentum",
+      "final_score": 82,
+      "confidence": 8,
+      "reason": "This is a technical deep-value and squeeze play with 16.6% short interest. The stock is trading near its Bollinger Band lower limit and shows a bullish divergence in OBV, signaling potential accumulation. The ML model is optimistic with a 51.6% win probability. While the trend is bearish, the oversold conditions and short positioning create a 'coiled spring' setup for a sharp bounce.",
+      "entry_price": 2.549999952316284,
+      "discovery_date": "2026-02-09",
+      "status": "open"
+    },
+    {
+      "ticker": "UWMC",
+      "rank": 7,
+      "strategy_match": "momentum",
+      "final_score": 80,
+      "confidence": 7,
+      "reason": "UWMC is trading at the lower Bollinger Band, a technical level that often precedes a bounce. It carries a high short interest of 15.7% and a massive dividend yield that supports price stability. The ML model predicts a win (51.5%). The setup is a classic mean-reversion trade where the high short interest adds fuel to any upward technical correction.",
+      "entry_price": 4.630000114440918,
+      "discovery_date": "2026-02-09",
+      "status": "open"
+    },
+    {
+      "ticker": "TDOC",
+      "rank": 8,
+      "strategy_match": "momentum",
+      "final_score": 79,
+      "confidence": 7,
+      "reason": "Teladoc is deeply oversold with an RSI of 27.3 and is trading near its lower Bollinger Band. With 15.6% short interest, the stock is primed for a relief rally or short covering event. The ML model predicts a win (51.6%). The risk is the prevailing downtrend, but the extreme oversold conditions offer an attractive risk/reward ratio for a short-term bounce.",
+      "entry_price": 4.980000019073486,
+      "discovery_date": "2026-02-09",
+      "status": "open"
+    },
+    {
+      "ticker": "CRM",
+      "rank": 9,
+      "strategy_match": "momentum",
+      "final_score": 77,
+      "confidence": 7,
+      "reason": "Salesforce is significantly oversold with an RSI of 21.9, a level that typically triggers institutional buy programs for mean reversion. The ML model predicts a win (53.2%), one of the highest in the cohort. While insider selling is a concern, the technical extension to the downside is extreme, making a snap-back rally highly probable in the next 1-7 days.",
+      "entry_price": 194.02999877929688,
+      "discovery_date": "2026-02-09",
+      "status": "open"
+    },
+    {
+      "ticker": "APH",
+      "rank": 10,
+      "strategy_match": "insider_buying",
+      "final_score": 75,
+      "confidence": 7,
+      "reason": "A Director purchased nearly $1.3 million in shares on Feb 5, signaling strong internal confidence despite the recent price correction. The stock is trading near the lower Bollinger Band, suggesting it is technically oversold. While the ML prediction is weak, the significant insider skin-in-the-game at these levels provides a fundamental floor and a catalyst for a reversal.",
+      "entry_price": 144.1999969482422,
+      "discovery_date": "2026-02-09",
+      "status": "open"
+    },
+    {
+      "ticker": "RYAN",
+      "rank": 11,
+      "strategy_match": "momentum",
+      "final_score": 72,
+      "confidence": 7,
+      "reason": "The ML model assigns a solid win probability to RYAN, and earnings are approaching in 3 days, which often drives a 'run-up' in price. Despite bearish technicals, the fundamental growth (110% earnings growth) supports a valuation floor. The trade is a tactical play on pre-earnings momentum and mean reversion from recent selling.",
+      "entry_price": 43.779998779296875,
+      "discovery_date": "2026-02-09",
+      "status": "open"
+    },
+    {
+      "ticker": "AVXL",
+      "rank": 12,
+      "strategy_match": "earnings_calendar",
+      "final_score": 70,
+      "confidence": 6,
+      "reason": "With earnings imminent (0 days) and a high short interest of 23.1%, AVXL is a volatility play. The stock is oversold on stochastics. If earnings surprise or provide positive guidance, the high short float could trigger an immediate squeeze. This is a high-risk, high-reward binary event trade supported by short squeeze mechanics.",
+      "entry_price": 4.349999904632568,
+      "discovery_date": "2026-02-09",
+      "status": "open"
+    },
+    {
+      "ticker": "ASTS",
+      "rank": 13,
+      "strategy_match": "reddit_dd",
+      "final_score": 68,
+      "confidence": 6,
+      "reason": "ASTS remains in a strong macro uptrend (above 50 SMA) and carries 18.5% short interest. It is a favorite among retail traders (Reddit DD), which can drive momentum independent of fundamentals. While MACD is bearish, the volatility and short positioning make it a prime candidate for a rapid momentum move if retail volume surges.",
+      "entry_price": 102.12000274658203,
+      "discovery_date": "2026-02-09",
+      "status": "open"
+    },
+    {
+      "ticker": "TMC",
+      "rank": 14,
+      "strategy_match": "reddit_dd",
+      "final_score": 67,
+      "confidence": 6,
+      "reason": "The stock has a narrative catalyst involving political tailwinds (Executive Orders) mentioned in recent diligence. Technically, it is oversold on stochastics. The volatility is high (ATR > 13%), which fits the criteria for >5% moves. The trade relies on news-driven momentum and speculative retail interest.",
+      "entry_price": 6.639999866485596,
+      "discovery_date": "2026-02-09",
+      "status": "open"
+    },
+    {
+      "ticker": "OGN",
+      "rank": 15,
+      "strategy_match": "momentum",
+      "final_score": 65,
+      "confidence": 6,
+      "reason": "Organon has earnings in 3 days and the ML model predicts a win (50.9%). The stock is in a general uptrend (above 50 SMA) but has seen recent selling, creating a 'buy the dip' opportunity before the earnings print. The 8% short interest adds a minor squeeze tailwind to any positive news.",
+      "entry_price": 7.909999847412109,
+      "discovery_date": "2026-02-09",
+      "status": "open"
+    }
+  ]
+}

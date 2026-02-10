@@ -1,0 +1,116 @@
+{
+  "date": "2026-01-26",
+  "llm_provider": "google",
+  "recommendations": [
+    {
+      "ticker": "GME",
+      "rank": 1,
+      "strategy_match": "Insider Play",
+      "final_score": 11.5,
+      "confidence": 9,
+      "reason": "Highest conviction setup. CEO Ryan Cohen purchased $21.3M worth of stock on Jan 21, coupled with director buying. This aligns with store closure efficiency news. Options flow is flashing an extreme bullish signal with a Put/Call ratio of 0.11 (heavy call skew), suggesting institutional positioning for a move higher. Technicals show RSI at 64 with price holding above 200 SMA.",
+      "entry_price": 24.010000228881836,
+      "discovery_date": "2026-01-26",
+      "status": "open"
+    },
+    {
+      "ticker": "BKR",
+      "rank": 2,
+      "strategy_match": "Momentum",
+      "final_score": 11.0,
+      "confidence": 9,
+      "reason": "Fresh breakout to 52-week highs following a Q4 earnings beat ($0.78 vs $0.67 est). Technicals confirm a 'Upper Bollinger Band Walk,' indicating strong momentum. Options activity is incredibly bullish with a P/C ratio of 0.209, confirming the post-earnings drift thesis. Analysts maintain a $56+ target, which price is now testing.",
+      "entry_price": 56.290000915527344,
+      "discovery_date": "2026-01-26",
+      "status": "open"
+    },
+    {
+      "ticker": "VIAV",
+      "rank": 3,
+      "strategy_match": "Momentum",
+      "final_score": 10.0,
+      "confidence": 8,
+      "reason": "Stock hit 52-week high ($19.78) ahead of Jan 28 earnings. B. Riley raised PT to $22. Options flow is heavily skewed bullish with a P/C volume ratio of just 0.12, suggesting smart money is positioning for a beat or raised guidance. Technical trend is strong (Price > 20/50/200 SMAs).",
+      "entry_price": 19.920000076293945,
+      "discovery_date": "2026-01-26",
+      "status": "open"
+    },
+    {
+      "ticker": "APLD",
+      "rank": 4,
+      "strategy_match": "Momentum",
+      "final_score": 9.5,
+      "confidence": 8,
+      "reason": "Recent groundbreaking on 430MW AI data center and analyst upgrade to 'Strong Buy'. Options volume shows P/C ratio of 0.495, confirming bullish sentiment. Technicals show an 8.5% daily jump and price significantly above moving averages. Note: High volatility (ATR $3.26) requires wider stops.",
+      "entry_price": 36.18000030517578,
+      "discovery_date": "2026-01-26",
+      "status": "open"
+    },
+    {
+      "ticker": "AMZN",
+      "rank": 5,
+      "strategy_match": "Momentum",
+      "final_score": 9.5,
+      "confidence": 9,
+      "reason": "Multiple analyst upgrades (Wells Fargo PT $301, Roth PT $295) citing AWS acceleration. Layoff news typically viewed as margin-positive by Wall Street. Options flow confirms the bullish thesis with a P/C ratio of 0.449. Price is consolidating near highs, setting up for a potential breakout toward $250.",
+      "entry_price": 238.4199981689453,
+      "discovery_date": "2026-01-26",
+      "status": "open"
+    },
+    {
+      "ticker": "DDOG",
+      "rank": 6,
+      "strategy_match": "Momentum",
+      "final_score": 9.5,
+      "confidence": 8,
+      "reason": "Technical breakout featuring a Golden Cross and bullish engulfing pattern. Stifel upgraded to Buy with $160 target. Options flow supports the move with a low P/C ratio of 0.30. The 9.3% 5-day change indicates strong accumulation ahead of earnings.",
+      "entry_price": 136.63999938964844,
+      "discovery_date": "2026-01-26",
+      "status": "open"
+    },
+    {
+      "ticker": "SLV",
+      "rank": 7,
+      "strategy_match": "Momentum",
+      "final_score": 9.0,
+      "confidence": 7,
+      "reason": "Strong social momentum (Reddit threads regarding tariffs and inflation hedging) and breakout to new highs. Driven by tariff threats against Canada/Korea. Caution advised as RSI is 76 (Overbought), but the trend is undeniably strong. Options flow is neutral/mixed, suggesting some profit-taking at these levels.",
+      "entry_price": 98.33999633789062,
+      "discovery_date": "2026-01-26",
+      "status": "open"
+    },
+    {
+      "ticker": "NVDA",
+      "rank": 8,
+      "strategy_match": "Momentum",
+      "final_score": 9.0,
+      "confidence": 8,
+      "reason": "Approval to sell H20 chips in China removes a major overhang, outweighing the 15% revenue share fee. Options flow is bullish (P/C 0.63). Insider selling is a slight drag, but the catalyst is strong enough to drive near-term momentum. Support at $180 holds.",
+      "entry_price": 186.47000122070312,
+      "discovery_date": "2026-01-26",
+      "status": "open"
+    },
+    {
+      "ticker": "DHR",
+      "rank": 9,
+      "strategy_match": "Momentum",
+      "final_score": 9.0,
+      "confidence": 8,
+      "reason": "Goldman Sachs and Wells Fargo raised price targets ($270/$240). While price dipped slightly recently (-2%), the options flow is aggressively bullish with a P/C ratio of 0.175, indicating institutional accumulation during the dip.",
+      "entry_price": 236.7100067138672,
+      "discovery_date": "2026-01-26",
+      "status": "open"
+    },
+    {
+      "ticker": "STLD",
+      "rank": 10,
+      "strategy_match": "Contrarian Value",
+      "final_score": 8.5,
+      "confidence": 7,
+      "reason": "Despite lowered guidance for Q4, the stock is up 4.4% in 5 days with strong technicals (Bullish MACD). Options traders are betting on a beat or looking past Q4 weakness, evidenced by a bullish P/C ratio of 0.43. Strong backlog supports 2026 outlook.",
+      "entry_price": 173.32000732421875,
+      "discovery_date": "2026-01-26",
+      "status": "open"
+    }
+  ]
+}

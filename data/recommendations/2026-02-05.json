@@ -1,0 +1,171 @@
+{
+  "date": "2026-02-05",
+  "llm_provider": "google",
+  "recommendations": [
+    {
+      "ticker": "GME",
+      "rank": 1,
+      "strategy_match": "momentum",
+      "final_score": 94,
+      "confidence": 9,
+      "reason": "Massive $21M insider purchase by CEO Ryan Cohen on Jan 21 serves as a major vote of confidence. Technicals show a 'Very Strong' trend with an ADX of 50.7 and rising On-Balance Volume, indicating sustained accumulation.",
+      "entry_price": 24.690000534057617,
+      "discovery_date": "2026-02-05",
+      "status": "open"
+    },
+    {
+      "ticker": "IP",
+      "rank": 2,
+      "strategy_match": "momentum",
+      "final_score": 92,
+      "confidence": 9,
+      "reason": "Recent insider purchases totaling ~$3M by the CEO and Directors signal strong internal conviction. The stock is staging a breakout with a 6.25% daily gain, confirmed by rising OBV and price holding above all major Moving Averages.",
+      "entry_price": 44.369998931884766,
+      "discovery_date": "2026-02-05",
+      "status": "open"
+    },
+    {
+      "ticker": "LPG",
+      "rank": 3,
+      "strategy_match": "momentum",
+      "final_score": 90,
+      "confidence": 8,
+      "reason": "Earnings Before Market Open (BMO) catalyst today aligns with a Bullish Divergence in OBV. The stock maintains a 'Strong Uptrend' and is trading above its 20-day EMA and VWAP, suggesting institutional accumulation.",
+      "entry_price": 30.059999465942383,
+      "discovery_date": "2026-02-05",
+      "status": "open"
+    },
+    {
+      "ticker": "POST",
+      "rank": 4,
+      "strategy_match": "momentum",
+      "final_score": 88,
+      "confidence": 8,
+      "reason": "Fresh earnings beat and raised guidance provide a fundamental tailwind. Technicals confirm momentum with a Bullish MACD crossover and price action holding firmly above the 50-day SMA.",
+      "entry_price": 104.41000366210938,
+      "discovery_date": "2026-02-05",
+      "status": "open"
+    },
+    {
+      "ticker": "TCBI",
+      "rank": 5,
+      "strategy_match": "momentum",
+      "final_score": 87,
+      "confidence": 8,
+      "reason": "Insider buying by the CEO and Directors complements a 'Strong Uptrend' technical rating. A Bullish MACD crossover and price performance above the VWAP indicate continued buyer strength.",
+      "entry_price": 103.5,
+      "discovery_date": "2026-02-05",
+      "status": "open"
+    },
+    {
+      "ticker": "AB",
+      "rank": 6,
+      "strategy_match": "momentum",
+      "final_score": 85,
+      "confidence": 8,
+      "reason": "Earnings catalyst today is supported by bullish options volume (Put/Call ratio 0.081). The stock is in a confirmed uptrend, trading above the 50 SMA and 200 SMA with rising momentum.",
+      "entry_price": 42.36000061035156,
+      "discovery_date": "2026-02-05",
+      "status": "open"
+    },
+    {
+      "ticker": "ROK",
+      "rank": 7,
+      "strategy_match": "momentum",
+      "final_score": 84,
+      "confidence": 7,
+      "reason": "Strong Q1 earnings beat and raised guidance drive the bullish thesis. A MACD bullish crossover confirms upward momentum, although the price is near the upper Bollinger Band which may invite volatility.",
+      "entry_price": 406.70001220703125,
+      "discovery_date": "2026-02-05",
+      "status": "open"
+    },
+    {
+      "ticker": "TSLA",
+      "rank": 8,
+      "strategy_match": "momentum",
+      "final_score": 80,
+      "confidence": 7,
+      "reason": "Potential asymmetric bounce play as price hits the Lower Bollinger Band. Despite the downtrend, a Bullish Divergence in OBV and high Reddit interest suggest potential for a sharp reversal.",
+      "entry_price": 397.2099914550781,
+      "discovery_date": "2026-02-05",
+      "status": "open"
+    },
+    {
+      "ticker": "PECO",
+      "rank": 9,
+      "strategy_match": "momentum",
+      "final_score": 79,
+      "confidence": 7,
+      "reason": "Earnings After Market Close (AMC) catalyst combined with a 'Strong Uptrend'. Bullish MACD crossover and rising OBV signal accumulation into the event, though RSI is nearing overbought levels.",
+      "entry_price": 37.81999969482422,
+      "discovery_date": "2026-02-05",
+      "status": "open"
+    },
+    {
+      "ticker": "STE",
+      "rank": 10,
+      "strategy_match": "momentum",
+      "final_score": 78,
+      "confidence": 7,
+      "reason": "Unusual volume accumulation detected alongside a 'Strong Uptrend'. A bullish stochastic crossover suggests short-term momentum is recovering despite the recent mixed earnings reaction.",
+      "entry_price": 243.80999755859375,
+      "discovery_date": "2026-02-05",
+      "status": "open"
+    },
+    {
+      "ticker": "NTRS",
+      "rank": 11,
+      "strategy_match": "momentum",
+      "final_score": 76,
+      "confidence": 7,
+      "reason": "Insider purchasing signals confidence in the ongoing 'Strong Uptrend'. The stock is trading well above its 200 SMA and VWAP, indicating sustained institutional support.",
+      "entry_price": 147.47999572753906,
+      "discovery_date": "2026-02-05",
+      "status": "open"
+    },
+    {
+      "ticker": "MANE",
+      "rank": 12,
+      "strategy_match": "momentum",
+      "final_score": 75,
+      "confidence": 6,
+      "reason": "Massive $43M insider purchase provides a strong conviction backdrop. While current technicals are sideways, the bullish stochastic crossover indicates a potential bounce from support levels.",
+      "entry_price": 37.15999984741211,
+      "discovery_date": "2026-02-05",
+      "status": "open"
+    },
+    {
+      "ticker": "WEX",
+      "rank": 13,
+      "strategy_match": "momentum",
+      "final_score": 72,
+      "confidence": 6,
+      "reason": "Earnings beat and raised guidance provide a catalyst for reversal. Unusual bullish options flow (Calls > Puts) suggests traders are positioning for a recovery despite current technical weakness.",
+      "entry_price": 148.5399932861328,
+      "discovery_date": "2026-02-05",
+      "status": "open"
+    },
+    {
+      "ticker": "UDMY",
+      "rank": 14,
+      "strategy_match": "momentum",
+      "final_score": 68,
+      "confidence": 5,
+      "reason": "High-risk earnings play with Bullish Divergence in OBV. A stochastic crossover from oversold levels suggests potential for a sharp volatility-driven move post-earnings.",
+      "entry_price": 4.690000057220459,
+      "discovery_date": "2026-02-05",
+      "status": "open"
+    },
+    {
+      "ticker": "CR",
+      "rank": 15,
+      "strategy_match": "momentum",
+      "final_score": 65,
+      "confidence": 5,
+      "reason": "Identified insider buying interest serves as a potential floor. Bullish stochastic crossover indicates the stock may be oversold and due for a technical mean reversion.",
+      "entry_price": 187.77999877929688,
+      "discovery_date": "2026-02-05",
+      "status": "open"
+    }
+  ]
+}

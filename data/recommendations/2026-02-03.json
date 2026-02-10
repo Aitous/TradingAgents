@@ -1,0 +1,171 @@
+{
+  "date": "2026-02-03",
+  "llm_provider": "google",
+  "recommendations": [
+    {
+      "ticker": "SMCI",
+      "rank": 1,
+      "strategy_match": "momentum",
+      "final_score": 95,
+      "confidence": 9,
+      "reason": "SMCI is experiencing significant momentum, with news directly mentioning its AI server sales driving a 120% revenue increase. Despite a bearish technical outlook with price below the 50 SMA, the strong fundamental growth and record revenue reported in its latest earnings indicate strong underlying business performance.",
+      "entry_price": 29.670000076293945,
+      "discovery_date": "2026-02-03",
+      "status": "open"
+    },
+    {
+      "ticker": "NVDA",
+      "rank": 2,
+      "strategy_match": "momentum",
+      "final_score": 92,
+      "confidence": 8,
+      "reason": "NVIDIA is a key player in AI, with strong analyst sentiment and bullish options activity. While news mentions scrutiny over its AI chip supply chain, its robust fundamentals, including significant revenue growth, and its position above the 50 SMA suggest continued upward potential.",
+      "entry_price": 180.33999633789062,
+      "discovery_date": "2026-02-03",
+      "status": "open"
+    },
+    {
+      "ticker": "AMAT",
+      "rank": 3,
+      "strategy_match": "analyst_upgrade",
+      "final_score": 90,
+      "confidence": 8,
+      "reason": "AMAT has received an analyst upgrade and shows strong upward momentum, trading above its 50 SMA. The company's strong fundamentals, including significant revenue and earnings growth, coupled with bullish options activity, support a positive outlook.",
+      "entry_price": 318.6700134277344,
+      "discovery_date": "2026-02-03",
+      "status": "open"
+    },
+    {
+      "ticker": "LRCX",
+      "rank": 4,
+      "strategy_match": "analyst_upgrade",
+      "final_score": 88,
+      "confidence": 8,
+      "reason": "LRCX has seen an analyst upgrade and exhibits a very strong uptrend with its price well above the 50 SMA. The company's fundamentals show robust growth in revenue and earnings, and its bullish options sentiment further strengthens its investment case.",
+      "entry_price": 230.10000610351562,
+      "discovery_date": "2026-02-03",
+      "status": "open"
+    },
+    {
+      "ticker": "AMD",
+      "rank": 5,
+      "strategy_match": "social_hype",
+      "final_score": 85,
+      "confidence": 7,
+      "reason": "AMD reported strong Q4 earnings driven by AI demand, and despite some insider selling, its positive analyst sentiment and upward trend above the 50 SMA make it a compelling pick. The social hype around AI continues to benefit AMD.",
+      "entry_price": 242.11000061035156,
+      "discovery_date": "2026-02-03",
+      "status": "open"
+    },
+    {
+      "ticker": "CSCO",
+      "rank": 6,
+      "strategy_match": "undiscovered_dd",
+      "final_score": 82,
+      "confidence": 7,
+      "reason": "CSCO's recent AI summit and focus on high-margin software and security services, combined with strong upward technicals (above 50 SMA and strong trend), position it well. The 'undiscovered DD' strategy match and bullish options flow suggest potential upside.",
+      "entry_price": 83.11000061035156,
+      "discovery_date": "2026-02-03",
+      "status": "open"
+    },
+    {
+      "ticker": "AKAM",
+      "rank": 7,
+      "strategy_match": "momentum",
+      "final_score": 80,
+      "confidence": 6,
+      "reason": "AKAM is described as a 'quiet cloud veteran suddenly looks like a growth story again,' indicating positive underlying sentiment. Its strong uptrend, price above 50 SMA, and bullish MACD support this, despite some recent insider selling and bearish options volume.",
+      "entry_price": 91.79000091552734,
+      "discovery_date": "2026-02-03",
+      "status": "open"
+    },
+    {
+      "ticker": "SIMO",
+      "rank": 8,
+      "strategy_match": "undiscovered_dd",
+      "final_score": 78,
+      "confidence": 7,
+      "reason": "SIMO has strong uptrend technicals, trading above its 50 SMA with a high RSI. The 'undiscovered DD' strategy and strong analyst buy ratings suggest potential for further upside, despite a slight bearish MACD signal.",
+      "entry_price": 120.41999816894531,
+      "discovery_date": "2026-02-03",
+      "status": "open"
+    },
+    {
+      "ticker": "AB",
+      "rank": 9,
+      "strategy_match": "pre_earnings_accumulation",
+      "final_score": 75,
+      "confidence": 6,
+      "reason": "AB shows bullish technicals with its price above the 50 SMA and a bullish OBV divergence indicating accumulation. The 'pre-earnings accumulation' strategy, coupled with strong analyst buy ratings, suggests a positive outlook heading into earnings.",
+      "entry_price": 41.36000061035156,
+      "discovery_date": "2026-02-03",
+      "status": "open"
+    },
+    {
+      "ticker": "AEIS",
+      "rank": 10,
+      "strategy_match": "pre_earnings_accumulation",
+      "final_score": 72,
+      "confidence": 6,
+      "reason": "AEIS is showing signs of pre-earnings accumulation with higher than average volume and a price above the 50 SMA. Despite a bearish OBV divergence, the strong analyst sentiment and bullish technicals make it a candidate for short-term gains.",
+      "entry_price": 263.0299987792969,
+      "discovery_date": "2026-02-03",
+      "status": "open"
+    },
+    {
+      "ticker": "LUMN",
+      "rank": 11,
+      "strategy_match": "news_catalyst",
+      "final_score": 70,
+      "confidence": 5,
+      "reason": "LUMN reported strong earnings and debt reduction, with news highlighting significant new contracts. Its strong uptrend and price above the 50 SMA are positive indicators, although analyst sentiment is mixed.",
+      "entry_price": 8.460000038146973,
+      "discovery_date": "2026-02-03",
+      "status": "open"
+    },
+    {
+      "ticker": "INMD",
+      "rank": 12,
+      "strategy_match": "earnings_play",
+      "final_score": 68,
+      "confidence": 5,
+      "reason": "INMD shows strong bullish technicals, trading above its 50 SMA with a bullish MACD crossover and high RSI. The 'earnings play' strategy and positive analyst sentiment suggest potential for a short-term upward move.",
+      "entry_price": 15.899999618530273,
+      "discovery_date": "2026-02-03",
+      "status": "open"
+    },
+    {
+      "ticker": "FFIV",
+      "rank": 13,
+      "strategy_match": "momentum",
+      "final_score": 65,
+      "confidence": 5,
+      "reason": "FFIV exhibits positive momentum with a bullish MACD crossover and price above the 50 SMA. While there is significant insider selling and a bearish analyst sentiment, the strong uptrend and bullish options activity warrant consideration.",
+      "entry_price": 274.6300048828125,
+      "discovery_date": "2026-02-03",
+      "status": "open"
+    },
+    {
+      "ticker": "RRR",
+      "rank": 14,
+      "strategy_match": "earnings_play",
+      "final_score": 62,
+      "confidence": 4,
+      "reason": "RRR shows strong uptrend technicals with its price above the 50 SMA and positive OBV trend. The 'earnings play' strategy and high analyst buy ratings suggest potential for short-term gains, despite bearish options activity.",
+      "entry_price": 63.459999084472656,
+      "discovery_date": "2026-02-03",
+      "status": "open"
+    },
+    {
+      "ticker": "AAPL",
+      "rank": 15,
+      "strategy_match": "momentum",
+      "final_score": 60,
+      "confidence": 4,
+      "reason": "AAPL has strong uptrend technicals, trading above its 50 SMA with bullish MACD and options flow. Despite reaching its upper Bollinger Band, indicating potential reversal, the overall positive sentiment and consistent performance make it a viable option.",
+      "entry_price": 269.4800109863281,
+      "discovery_date": "2026-02-03",
+      "status": "open"
+    }
+  ]
+}
