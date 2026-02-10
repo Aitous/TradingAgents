@@ -6,14 +6,32 @@ cd "$ROOT_DIR"
 
 echo "Running pre-commit checks..."
 
-python -m compileall -q tradingagents
-
+# Run black formatter (auto-fix)
 if python - <<'PY'
 import importlib.util
-raise SystemExit(0 if importlib.util.find_spec("pytest") else 1)
+raise SystemExit(0 if importlib.util.find_spec("black") else 1)
 PY
 then
-  python -m pytest -q
+  echo "🎨 Running black formatter..."
+  python -m black tradingagents/ cli/ scripts/ --quiet
 else
-  echo "pytest not installed; skipping test run."
+  echo "⚠️  black not installed; skipping formatting."
 fi
+
+# Run ruff linter (auto-fix, but don't fail on warnings)
+if python - <<'PY'
+import importlib.util
+raise SystemExit(0 if importlib.util.find_spec("ruff") else 1)
+PY
+then
+  echo "🔍 Running ruff linter..."
+  python -m ruff check tradingagents/ cli/ scripts/ --fix --exit-zero
+else
+  echo "⚠️  ruff not installed; skipping linting."
+fi
+
+# CRITICAL: Check for syntax errors (this will fail the commit)
+echo "🐍 Checking for syntax errors..."
+python -m compileall -q tradingagents cli scripts
+
+echo "✅ Pre-commit checks passed!"

@@ -22,6 +22,7 @@ PERMANENTLY_DELISTED = {
     "SVIVU",
 }
 
+
 # Priority and strategy enums for consistent labeling.
 class Priority(str, Enum):
     CRITICAL = "critical"
@@ -122,6 +123,7 @@ def append_llm_log(
     )
     tool_logs.append(entry)
     return entry
+
 
 def get_delisted_tickers() -> Set[str]:
     """Get combined list of delisted tickers from permanent list + dynamic cache."""

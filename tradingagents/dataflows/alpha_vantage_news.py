@@ -1,7 +1,11 @@
-from typing import Union, Dict, Optional
+from typing import Dict, Union
+
 from .alpha_vantage_common import _make_api_request, format_datetime_for_api
 
-def get_news(ticker: str = None, start_date: str = None, end_date: str = None, query: str = None) -> Union[Dict[str, str], str]:
+
+def get_news(
+    ticker: str = None, start_date: str = None, end_date: str = None, query: str = None
+) -> Union[Dict[str, str], str]:
     """Returns live and historical market news & sentiment data.
 
     Args:
@@ -25,11 +29,13 @@ def get_news(ticker: str = None, start_date: str = None, end_date: str = None, q
         "sort": "LATEST",
         "limit": "50",
     }
-    
+
     return _make_api_request("NEWS_SENTIMENT", params)
 
 
-def get_global_news(date: str, look_back_days: int = 7, limit: int = 5) -> Union[Dict[str, str], str]:
+def get_global_news(
+    date: str, look_back_days: int = 7, limit: int = 5
+) -> Union[Dict[str, str], str]:
     """Returns global market news & sentiment data.
 
     Args:
@@ -49,7 +55,41 @@ def get_global_news(date: str, look_back_days: int = 7, limit: int = 5) -> Union
 
     return _make_api_request("NEWS_SENTIMENT", params)
 
-def get_insider_transactions(symbol: str = None, ticker: str = None, curr_date: str = None) -> Union[Dict[str, str], str]:
+
+def get_alpha_vantage_news_feed(
+    topics: str = None, time_from: str = None, limit: int = 50
+) -> Union[Dict[str, str], str]:
+    """Returns news feed from Alpha Vantage with optional topic filtering.
+
+    Args:
+        topics: Comma-separated topics (e.g., "technology,finance,earnings").
+                Valid topics: blockchain, earnings, ipo, mergers_and_acquisitions,
+                financial_markets, economy_fiscal, economy_monetary, economy_macro,
+                energy_transportation, finance, life_sciences, manufacturing,
+                real_estate, retail_wholesale, technology
+        time_from: Start time in format YYYYMMDDTHHMM (e.g., "20240101T0000").
+        limit: Maximum number of articles to return.
+
+    Returns:
+        Dictionary containing news sentiment data or JSON string.
+    """
+    params = {
+        "sort": "LATEST",
+        "limit": str(limit),
+    }
+
+    if topics:
+        params["topics"] = topics
+
+    if time_from:
+        params["time_from"] = time_from
+
+    return _make_api_request("NEWS_SENTIMENT", params)
+
+
+def get_insider_transactions(
+    symbol: str = None, ticker: str = None, curr_date: str = None
+) -> Union[Dict[str, str], str]:
     """Returns latest and historical insider transactions.
 
     Args:
@@ -70,14 +110,15 @@ def get_insider_transactions(symbol: str = None, ticker: str = None, curr_date: 
 
     return _make_api_request("INSIDER_TRANSACTIONS", params)
 
+
 def get_insider_sentiment(symbol: str = None, ticker: str = None, curr_date: str = None) -> str:
     """Returns insider sentiment data derived from Alpha Vantage transactions.
-    
+
     Args:
         symbol: Ticker symbol.
         ticker: Alias for symbol.
         curr_date: Current date.
-        
+
     Returns:
         Formatted string containing insider sentiment analysis.
     """
@@ -87,24 +128,24 @@ def get_insider_sentiment(symbol: str = None, ticker: str = None, curr_date: str
 
     import json
     from datetime import datetime, timedelta
-    
+
     # Fetch transactions
     params = {
         "symbol": target_symbol,
     }
     response_text = _make_api_request("INSIDER_TRANSACTIONS", params)
-    
+
     try:
         data = json.loads(response_text)
         if "Information" in data:
             return f"Error: {data['Information']}"
-            
+
         # Alpha Vantage INSIDER_TRANSACTIONS returns a dictionary with "symbol" and "data" (list)
         # or sometimes just the list depending on the endpoint version, but usually it's under a key.
         # Let's handle the standard response structure.
         # Based on docs, it returns CSV by default? No, _make_api_request handles JSON.
         # Actually, Alpha Vantage INSIDER_TRANSACTIONS returns JSON by default.
-        
+
         # Structure check
         transactions = []
         if "data" in data:
@@ -114,16 +155,16 @@ def get_insider_sentiment(symbol: str = None, ticker: str = None, curr_date: str
         else:
             # If we can't find the list, return the raw text
             return f"Raw Data: {str(data)[:500]}"
-            
+
         # Filter and Aggregate
         # We want recent transactions (e.g. last 3 months)
         if curr_date:
             curr_dt = datetime.strptime(curr_date, "%Y-%m-%d")
         else:
             curr_dt = datetime.now()
-            
+
         start_dt = curr_dt - timedelta(days=90)
-        
+
         relevant_txs = []
         for tx in transactions:
             # Date format in AV is usually YYYY-MM-DD
@@ -132,44 +173,44 @@ def get_insider_sentiment(symbol: str = None, ticker: str = None, curr_date: str
                 if not tx_date_str:
                     continue
                 tx_date = datetime.strptime(tx_date_str, "%Y-%m-%d")
-                
+
                 if start_dt <= tx_date <= curr_dt:
                     relevant_txs.append(tx)
             except ValueError:
                 continue
-                
+
         if not relevant_txs:
             return f"No insider transactions found for {symbol} in the 90 days before {curr_date}."
-            
+
         # Calculate metrics
         total_bought = 0
         total_sold = 0
         net_shares = 0
-        
+
         for tx in relevant_txs:
             shares = int(float(tx.get("shares", 0)))
             # acquisition_or_disposal: "A" (Acquisition) or "D" (Disposal)
             # transaction_code: "P" (Purchase), "S" (Sale)
             # We can use acquisition_or_disposal if available, or transaction_code
-            
+
             code = tx.get("acquisition_or_disposal")
             if not code:
                 # Fallback to transaction code logic if needed, but A/D is standard for AV
                 pass
-                
+
             if code == "A":
                 total_bought += shares
                 net_shares += shares
             elif code == "D":
                 total_sold += shares
                 net_shares -= shares
-                
+
         sentiment = "NEUTRAL"
         if net_shares > 0:
             sentiment = "POSITIVE"
         elif net_shares < 0:
             sentiment = "NEGATIVE"
-            
+
         report = f"## Insider Sentiment for {symbol} (Last 90 Days)\n"
         report += f"**Overall Sentiment:** {sentiment}\n"
         report += f"**Net Shares:** {net_shares:,}\n"
@@ -177,12 +218,12 @@ def get_insider_sentiment(symbol: str = None, ticker: str = None, curr_date: str
         report += f"**Total Sold:** {total_sold:,}\n"
         report += f"**Transaction Count:** {len(relevant_txs)}\n\n"
         report += "### Recent Transactions:\n"
-        
+
         # List top 5 recent
         relevant_txs.sort(key=lambda x: x.get("transaction_date", ""), reverse=True)
         for tx in relevant_txs[:5]:
             report += f"- {tx.get('transaction_date')}: {tx.get('executive')} - {tx.get('acquisition_or_disposal')} {tx.get('shares')} shares at ${tx.get('transaction_price')}\n"
-            
+
         return report
 
     except Exception as e:

@@ -1,6 +1,9 @@
-from langchain_core.tools import tool
 from typing import Annotated
+
+from langchain_core.tools import tool
+
 from tradingagents.tools.executor import execute_tool
+
 
 @tool
 def get_tweets(
@@ -17,6 +20,7 @@ def get_tweets(
         str: A formatted string containing recent tweets
     """
     return execute_tool("get_tweets", query=query, count=count)
+
 
 @tool
 def get_tweets_from_user(

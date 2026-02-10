@@ -1,8 +1,12 @@
 """Market movers scanner - migrated from legacy TraditionalScanner."""
+
 from typing import Any, Dict, List
 
-from tradingagents.dataflows.discovery.scanner_registry import BaseScanner, SCANNER_REGISTRY
+from tradingagents.dataflows.discovery.scanner_registry import SCANNER_REGISTRY, BaseScanner
 from tradingagents.dataflows.discovery.utils import Priority
+from tradingagents.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 class MarketMoversScanner(BaseScanner):
@@ -18,58 +22,59 @@ class MarketMoversScanner(BaseScanner):
         if not self.is_enabled():
             return []
 
-        print(f"   📈 Scanning market movers...")
+        logger.info("📈 Scanning market movers...")
 
         from tradingagents.tools.executor import execute_tool
 
         try:
-            result = execute_tool(
-                "get_market_movers",
-                return_structured=True
-            )
+            result = execute_tool("get_market_movers", return_structured=True)
 
             if not result or not isinstance(result, dict):
                 return []
 
             if "error" in result:
-                print(f"      ⚠️  API error: {result['error']}")
+                logger.warning(f"⚠️  API error: {result['error']}")
                 return []
 
             candidates = []
 
             # Process gainers
-            for gainer in result.get("gainers", [])[:self.limit // 2]:
+            for gainer in result.get("gainers", [])[: self.limit // 2]:
                 ticker = gainer.get("ticker", "").upper()
                 if not ticker:
                     continue
 
-                candidates.append({
-                    "ticker": ticker,
-                    "source": self.name,
-                    "context": f"Top gainer: {gainer.get('change_percentage', 0)} change",
-                    "priority": Priority.MEDIUM.value,
-                    "strategy": "momentum",
-                })
+                candidates.append(
+                    {
+                        "ticker": ticker,
+                        "source": self.name,
+                        "context": f"Top gainer: {gainer.get('change_percentage', 0)} change",
+                        "priority": Priority.MEDIUM.value,
+                        "strategy": "momentum",
+                    }
+                )
 
             # Process losers (potential reversal plays)
-            for loser in result.get("losers", [])[:self.limit // 2]:
+            for loser in result.get("losers", [])[: self.limit // 2]:
                 ticker = loser.get("ticker", "").upper()
                 if not ticker:
                     continue
 
-                candidates.append({
-                    "ticker": ticker,
-                    "source": self.name,
-                    "context": f"Top loser: {loser.get('change_percentage', 0)} change (reversal play)",
-                    "priority": Priority.LOW.value,
-                    "strategy": "oversold_reversal",
-                })
+                candidates.append(
+                    {
+                        "ticker": ticker,
+                        "source": self.name,
+                        "context": f"Top loser: {loser.get('change_percentage', 0)} change (reversal play)",
+                        "priority": Priority.LOW.value,
+                        "strategy": "oversold_reversal",
+                    }
+                )
 
-            print(f"      Found {len(candidates)} market movers")
+            logger.info(f"Found {len(candidates)} market movers")
             return candidates
 
         except Exception as e:
-            print(f"      ⚠️  Market movers failed: {e}")
+            logger.warning(f"⚠️  Market movers failed: {e}")
             return []
 
 

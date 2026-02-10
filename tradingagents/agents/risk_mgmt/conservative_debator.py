@@ -1,13 +1,11 @@
-from langchain_core.messages import AIMessage
-import time
-import json
+from tradingagents.agents.utils.agent_utils import update_risk_debate_state
+from tradingagents.agents.utils.llm_utils import parse_llm_response
 
 
 def create_safe_debator(llm):
     def safe_node(state) -> dict:
         risk_debate_state = state["risk_debate_state"]
         history = risk_debate_state.get("history", "")
-        safe_history = risk_debate_state.get("safe_history", "")
 
         current_risky_response = risk_debate_state.get("current_risky_response", "")
         current_neutral_response = risk_debate_state.get("current_neutral_response", "")
@@ -69,25 +67,9 @@ Choose BUY or SELL (no HOLD). If the setup looks poor, still pick the less-bad s
 **If no other arguments yet:** Identify trade invalidation and the key risks using only the provided data."""
 
         response = llm.invoke(prompt)
+        response_text = parse_llm_response(response.content)
+        argument = f"Safe Analyst: {response_text}"
 
-        argument = f"Safe Analyst: {response.content}"
-
-        new_risk_debate_state = {
-            "history": history + "\n" + argument,
-            "risky_history": risk_debate_state.get("risky_history", ""),
-            "safe_history": safe_history + "\n" + argument,
-            "neutral_history": risk_debate_state.get("neutral_history", ""),
-            "latest_speaker": "Safe",
-            "current_risky_response": risk_debate_state.get(
-                "current_risky_response", ""
-            ),
-            "current_safe_response": argument,
-            "current_neutral_response": risk_debate_state.get(
-                "current_neutral_response", ""
-            ),
-            "count": risk_debate_state["count"] + 1,
-        }
-
-        return {"risk_debate_state": new_risk_debate_state}
+        return {"risk_debate_state": update_risk_debate_state(risk_debate_state, argument, "Safe")}
 
     return safe_node

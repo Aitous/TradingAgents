@@ -7,6 +7,7 @@ from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import HumanMessage
 from pydantic import BaseModel, Field
 
+from tradingagents.dataflows.discovery.discovery_config import DiscoveryConfig
 from tradingagents.dataflows.discovery.utils import append_llm_log, resolve_llm_name
 from tradingagents.utils.logger import get_logger
 
@@ -51,7 +52,7 @@ class StockRanking(BaseModel):
     strategy_match: str = Field(description="Strategy that matched")
     final_score: int = Field(description="Score 0-100")
     confidence: int = Field(description="Confidence 1-10")
-    reason: str = Field(description="Investment thesis")
+    reason: str = Field(description="Detailed investment thesis (4-6 sentences) defending the trade with specific catalysts, risk/reward, and timing")
     description: str = Field(description="Company description")
 
 
@@ -71,15 +72,18 @@ class CandidateRanker:
         self.llm = llm
         self.analytics = analytics
 
-        discovery_config = config.get("discovery", {})
-        self.max_candidates_to_analyze = discovery_config.get("max_candidates_to_analyze", 30)
-        self.final_recommendations = discovery_config.get("final_recommendations", 3)
+        dc = DiscoveryConfig.from_config(config)
+        self.max_candidates_to_analyze = dc.ranker.max_candidates_to_analyze
+        self.final_recommendations = dc.ranker.final_recommendations
 
         # Truncation settings
-        self.truncate_context = discovery_config.get("truncate_ranking_context", False)
-        self.max_news_chars = discovery_config.get("max_news_chars", 500)
-        self.max_insider_chars = discovery_config.get("max_insider_chars", 300)
-        self.max_recommendations_chars = discovery_config.get("max_recommendations_chars", 300)
+        self.truncate_context = dc.ranker.truncate_ranking_context
+        self.max_news_chars = dc.ranker.max_news_chars
+        self.max_insider_chars = dc.ranker.max_insider_chars
+        self.max_recommendations_chars = dc.ranker.max_recommendations_chars
+
+        # Prompt logging
+        self.log_prompts_console = dc.logging.log_prompts_console
 
     def rank(self, state: Dict[str, Any]) -> Dict[str, Any]:
         """Rank all filtered candidates and select the top opportunities."""
@@ -87,7 +91,7 @@ class CandidateRanker:
         trade_date = state.get("trade_date", datetime.now().strftime("%Y-%m-%d"))
 
         if len(candidates) == 0:
-            print("⚠️  No candidates to rank.")
+            logger.warning("⚠️ No candidates to rank.")
             return {
                 "opportunities": [],
                 "final_ranking": "[]",
@@ -98,20 +102,20 @@ class CandidateRanker:
         # Limit candidates to prevent token overflow
         max_candidates = min(self.max_candidates_to_analyze, 200)
         if len(candidates) > max_candidates:
-            print(
-                f"   ⚠️  Too many candidates ({len(candidates)}), limiting to top {max_candidates} by priority"
+            logger.warning(
+                f"⚠️ Too many candidates ({len(candidates)}), limiting to top {max_candidates} by priority"
             )
             candidates = candidates[:max_candidates]
 
-        print(
+        logger.info(
             f"🏆 Ranking {len(candidates)} candidates to select top {self.final_recommendations}..."
         )
 
         # Load historical performance statistics
         historical_stats = self.analytics.load_historical_stats()
         if historical_stats.get("available"):
-            print(
-                f"   📊 Loaded historical stats: {historical_stats.get('total_tracked', 0)} tracked recommendations"
+            logger.info(
+                f"📊 Loaded historical stats: {historical_stats.get('total_tracked', 0)} tracked recommendations"
             )
 
         # Build RICH context for each candidate
@@ -213,10 +217,41 @@ class CandidateRanker:
                         recommendations_text[: self.max_recommendations_chars] + "..."
                     )
 
+            # New enrichment fields
+            confluence_score = cand.get("confluence_score", 1)
+            quant_score = cand.get("quant_score", "N/A")
+
+            # ML prediction
+            ml_win_prob = cand.get("ml_win_probability")
+            ml_prediction = cand.get("ml_prediction")
+            if ml_win_prob is not None:
+                ml_str = f"{ml_win_prob:.1%} (Predicted: {ml_prediction})"
+            else:
+                ml_str = "N/A"
+            short_interest_pct = cand.get("short_interest_pct")
+            high_short = cand.get("high_short_interest", False)
+            short_str = f"{short_interest_pct:.1f}%" if short_interest_pct else "N/A"
+            if high_short:
+                short_str += " (HIGH)"
+
+            # Earnings estimate
+            if cand.get("has_upcoming_earnings"):
+                days = cand.get("days_to_earnings", "?")
+                eps_est = cand.get("eps_estimate")
+                rev_est = cand.get("revenue_estimate")
+                earnings_date = cand.get("earnings_date", "N/A")
+                eps_str = f"${eps_est:.2f}" if isinstance(eps_est, (int, float)) else "N/A"
+                rev_str = f"${rev_est:,.0f}" if isinstance(rev_est, (int, float)) else "N/A"
+                earnings_section = f"Earnings in {days} days ({earnings_date}): EPS Est {eps_str}, Rev Est {rev_str}"
+            else:
+                earnings_section = "No upcoming earnings within 30 days"
+
             summary = f"""### {ticker} (Priority: {priority.upper()})
 - **Strategy Match**: {strategy}
-- **Sources**: {source_str}
+- **Sources**: {source_str} | **Confluence**: {confluence_score} source(s)
+- **Quant Pre-Score**: {quant_score}/100 | **ML Win Probability**: {ml_str}
 - **Price**: {price_str} | **Current Price (numeric)**: {current_price if isinstance(current_price, (int, float)) else "N/A"} | **Intraday**: {intraday_str} | **Avg Volume**: {volume_str}
+- **Short Interest**: {short_str}
 - **Discovery Context**: {context}
 - **Business**: {business_description}
 - **News**: {news_summary}
@@ -234,6 +269,8 @@ class CandidateRanker:
 
 **Options Activity**:
 {options_activity if options_activity else "N/A"}
+
+**Upcoming Earnings**: {earnings_section}
 """
             candidate_summaries.append(summary)
 
@@ -256,12 +293,14 @@ CANDIDATES FOR REVIEW:
 INSTRUCTIONS:
 1. Analyze each candidate's "Discovery Context" (why it was found) and "Strategy Match".
 2. Cross-reference with Technicals (RSI, etc.) and Fundamentals.
-3. Prioritize "LEADING" indicators (Undiscovered DD, Earnings Accumulation, Insider Buying) over lagging ones.
-4. Select exactly {self.final_recommendations} winners.
-5. Use ONLY the information provided in the candidates section; do NOT invent catalysts, prices, or metrics.
-6. If a required field is missing, set it to null (do not guess).
-7. Rank only tickers from the candidates list.
-8. Reasons must reference at least two concrete facts from the candidate context.
+3. Use the Quantitative Pre-Score as an objective baseline. Scores above 50 indicate strong multi-factor alignment.
+4. The ML Win Probability is a trained model's estimate that this stock hits +5% within 7 days. Treat scores above 60% as strong ML confirmation.
+5. Prioritize "LEADING" indicators (Undiscovered DD, Earnings Accumulation, Insider Buying) over lagging ones.
+6. Select exactly {self.final_recommendations} winners.
+7. Use ONLY the information provided in the candidates section; do NOT invent catalysts, prices, or metrics.
+8. If a required field is missing, set it to null (do not guess).
+9. Rank only tickers from the candidates list.
+10. Reasons must reference at least two concrete facts from the candidate context.
 
 Output a JSON object with a 'rankings' list. Each item should have:
 - rank: 1 to {self.final_recommendations}
@@ -271,17 +310,20 @@ Output a JSON object with a 'rankings' list. Each item should have:
 - strategy_match: main strategy
 - final_score: 0-100 score
 - confidence: 1-10 confidence level
-- reason: Detailed investment thesis (2-3 sentences) explaining WHY this will move NOW.
+- reason: Detailed investment thesis (4-6 sentences). Defend the trade: (1) what is the catalyst/edge, (2) why NOW and not later, (3) what does the risk/reward look like, (4) what could go wrong. Reference specific data points from the candidate context.
 - description: Brief company description.
 
 JSON FORMAT ONLY. No markdown, no extra text. All numeric fields must be numbers (not strings)."""
 
         # Invoke LLM with structured output
-        print("   🧠 Deep Thinking Ranker analyzing opportunities...")
+        logger.info("🧠 Deep Thinking Ranker analyzing opportunities...")
         logger.info(
             f"Invoking ranking LLM with {len(candidates)} candidates, prompt length: {len(prompt)} chars"
         )
-        logger.debug(f"Full ranking prompt:\n{prompt}")
+        if self.log_prompts_console:
+            logger.info(f"Full ranking prompt:\n{prompt}")
+        else:
+            logger.debug(f"Full ranking prompt:\n{prompt}")
 
         try:
             # Use structured output with include_raw for debugging
@@ -364,7 +406,7 @@ JSON FORMAT ONLY. No markdown, no extra text. All numeric fields must be numbers
 
             final_ranking_list = [ranking.model_dump() for ranking in result.rankings]
 
-            print(f"   ✅ Selected {len(final_ranking_list)} top recommendations")
+            logger.info(f"✅ Selected {len(final_ranking_list)} top recommendations")
             logger.info(
                 f"Successfully ranked {len(final_ranking_list)} opportunities: "
                 f"{[r['ticker'] for r in final_ranking_list]}"
@@ -407,7 +449,7 @@ JSON FORMAT ONLY. No markdown, no extra text. All numeric fields must be numbers
             )
             state["tool_logs"] = tool_logs
             # Structured output validation failed
-            print(f"   ❌ Error: {e}")
+            logger.error(f"❌ Error: {e}")
             logger.error(f"Structured output validation error: {e}")
             return {"final_ranking": [], "opportunities": [], "status": "ranking_failed"}
 
@@ -423,7 +465,7 @@ JSON FORMAT ONLY. No markdown, no extra text. All numeric fields must be numbers
                 error=str(e),
             )
             state["tool_logs"] = tool_logs
-            print(f"   ❌ Error during ranking: {e}")
+            logger.error(f"❌ Error during ranking: {e}")
             logger.exception(f"Unexpected error during ranking: {e}")
             return {"final_ranking": [], "opportunities": [], "status": "error"}
 

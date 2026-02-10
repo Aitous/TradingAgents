@@ -1,15 +1,21 @@
 import json
 import re
-from datetime import timedelta
+from datetime import datetime, timedelta
 from typing import Any, Callable, Dict, List
 
+import pandas as pd
+
 from tradingagents.dataflows.discovery.candidate import Candidate
+from tradingagents.dataflows.discovery.discovery_config import DiscoveryConfig
 from tradingagents.dataflows.discovery.utils import (
     PRIORITY_ORDER,
     Strategy,
     is_valid_ticker,
     resolve_trade_date,
 )
+from tradingagents.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 def _parse_market_cap_to_billions(value: Any) -> Any:
@@ -107,34 +113,35 @@ class CandidateFilter:
         self.config = config
         self.execute_tool = tool_executor
 
-        # Discovery Settings
-        discovery_config = config.get("discovery", {})
+        dc = DiscoveryConfig.from_config(config)
 
-        # Filter settings (nested under "filters" section, with backward compatibility)
-        filter_config = discovery_config.get("filters", discovery_config)  # Fallback to root for old configs
-        self.filter_same_day_movers = filter_config.get("filter_same_day_movers", True)
-        self.intraday_movement_threshold = filter_config.get("intraday_movement_threshold", 10.0)
-        self.filter_recent_movers = filter_config.get("filter_recent_movers", True)
-        self.recent_movement_lookback_days = filter_config.get("recent_movement_lookback_days", 7)
-        self.recent_movement_threshold = filter_config.get("recent_movement_threshold", 10.0)
-        self.recent_mover_action = filter_config.get("recent_mover_action", "filter")
-        self.min_average_volume = filter_config.get("min_average_volume", 500_000)
-        self.volume_lookback_days = filter_config.get("volume_lookback_days", 10)
+        # Filter settings
+        self.filter_same_day_movers = dc.filters.filter_same_day_movers
+        self.intraday_movement_threshold = dc.filters.intraday_movement_threshold
+        self.filter_recent_movers = dc.filters.filter_recent_movers
+        self.recent_movement_lookback_days = dc.filters.recent_movement_lookback_days
+        self.recent_movement_threshold = dc.filters.recent_movement_threshold
+        self.recent_mover_action = dc.filters.recent_mover_action
+        self.min_average_volume = dc.filters.min_average_volume
+        self.volume_lookback_days = dc.filters.volume_lookback_days
 
-        # Enrichment settings (nested under "enrichment" section, with backward compatibility)
-        enrichment_config = discovery_config.get("enrichment", discovery_config)  # Fallback to root
-        self.batch_news_vendor = enrichment_config.get("batch_news_vendor", "openai")
-        self.batch_news_batch_size = enrichment_config.get("batch_news_batch_size", 50)
+        # Filter extras (volume/compression detection)
+        self.volume_cache_key = dc.filters.volume_cache_key
+        self.min_market_cap = dc.filters.min_market_cap
+        self.compression_atr_pct_max = dc.filters.compression_atr_pct_max
+        self.compression_bb_width_max = dc.filters.compression_bb_width_max
+        self.compression_min_volume_ratio = dc.filters.compression_min_volume_ratio
 
-        # Other settings (remain at discovery level)
-        self.news_lookback_days = discovery_config.get("news_lookback_days", 3)
-        self.volume_cache_key = discovery_config.get("volume_cache_key", "avg_volume_cache")
-        self.min_market_cap = discovery_config.get("min_market_cap", 0)
-        self.compression_atr_pct_max = discovery_config.get("compression_atr_pct_max", 2.0)
-        self.compression_bb_width_max = discovery_config.get("compression_bb_width_max", 6.0)
-        self.compression_min_volume_ratio = discovery_config.get("compression_min_volume_ratio", 1.3)
-        self.context_max_snippets = discovery_config.get("context_max_snippets", 2)
-        self.context_snippet_max_chars = discovery_config.get("context_snippet_max_chars", 140)
+        # Enrichment settings
+        self.batch_news_vendor = dc.enrichment.batch_news_vendor
+        self.batch_news_batch_size = dc.enrichment.batch_news_batch_size
+        self.news_lookback_days = dc.enrichment.news_lookback_days
+        self.context_max_snippets = dc.enrichment.context_max_snippets
+        self.context_snippet_max_chars = dc.enrichment.context_snippet_max_chars
+
+        # ML predictor (loaded lazily — None if no model file exists)
+        self._ml_predictor = None
+        self._ml_predictor_loaded = False
 
     def filter(self, state: Dict[str, Any]) -> Dict[str, Any]:
         """Filter candidates based on strategy and enrich with additional data."""
@@ -150,7 +157,7 @@ class CandidateFilter:
         start_date = start_date_obj.strftime("%Y-%m-%d")
         end_date = end_date_obj.strftime("%Y-%m-%d")
 
-        print(f"🔍 Filtering and enriching {len(candidates)} candidates...")
+        logger.info(f"🔍 Filtering and enriching {len(candidates)} candidates...")
 
         priority_order = self._priority_order()
         candidates = self._dedupe_candidates(candidates, priority_order)
@@ -178,12 +185,12 @@ class CandidateFilter:
 
         # Print consolidated list of failed tickers
         if failed_tickers:
-            print(f"\n   ⚠️  {len(failed_tickers)} tickers failed data fetch (possibly delisted)")
+            logger.warning(f"⚠️  {len(failed_tickers)} tickers failed data fetch (possibly delisted)")
             if len(failed_tickers) <= 10:
-                print(f"      {', '.join(failed_tickers)}")
+                logger.warning(f"{', '.join(failed_tickers)}")
             else:
-                print(
-                    f"      {', '.join(failed_tickers[:10])} ... and {len(failed_tickers)-10} more"
+                logger.warning(
+                    f"{', '.join(failed_tickers[:10])} ... and {len(failed_tickers)-10} more"
                 )
             # Export review list
             delisted_cache.export_review_list()
@@ -255,6 +262,16 @@ class CandidateFilter:
 
             unique_candidates[ticker] = primary
 
+        # Compute confluence scores and boost priority for multi-source candidates
+        for candidate in unique_candidates.values():
+            source_count = len(candidate.all_sources)
+            candidate.extras["confluence_score"] = source_count
+
+            if source_count >= 3 and candidate.priority != "critical":
+                candidate.priority = "critical"
+            elif source_count >= 2 and candidate.priority in ("medium", "low", "unknown"):
+                candidate.priority = "high"
+
         return [candidate.to_dict() for candidate in unique_candidates.values()]
 
     def _sort_by_priority(
@@ -268,8 +285,8 @@ class CandidateFilter:
         high_priority = sum(1 for c in candidates if c.get("priority") == "high")
         medium_priority = sum(1 for c in candidates if c.get("priority") == "medium")
         low_priority = sum(1 for c in candidates if c.get("priority") == "low")
-        print(
-            f"   Priority breakdown: {critical_priority} critical, {high_priority} high, {medium_priority} medium, {low_priority} low"
+        logger.info(
+            f"Priority breakdown: {critical_priority} critical, {high_priority} high, {medium_priority} medium, {low_priority} low"
         )
 
     def _fetch_batch_volume(
@@ -299,7 +316,7 @@ class CandidateFilter:
             if self.batch_news_vendor == "google":
                 from tradingagents.dataflows.openai import get_batch_stock_news_google
 
-                print(f"   📰 Batch fetching news (Google) for {len(all_tickers)} tickers...")
+                logger.info(f"📰 Batch fetching news (Google) for {len(all_tickers)} tickers...")
                 news_by_ticker = self._run_call(
                     "batch fetching news (Google)",
                     get_batch_stock_news_google,
@@ -312,7 +329,7 @@ class CandidateFilter:
             else:  # Default to OpenAI
                 from tradingagents.dataflows.openai import get_batch_stock_news_openai
 
-                print(f"   📰 Batch fetching news (OpenAI) for {len(all_tickers)} tickers...")
+                logger.info(f"📰 Batch fetching news (OpenAI) for {len(all_tickers)} tickers...")
                 news_by_ticker = self._run_call(
                     "batch fetching news (OpenAI)",
                     get_batch_stock_news_openai,
@@ -322,10 +339,10 @@ class CandidateFilter:
                     end_date=end_date,
                     batch_size=self.batch_news_batch_size,
                 )
-            print(f"   ✓ Batch news fetched for {len(news_by_ticker)} tickers")
+            logger.info(f"✓ Batch news fetched for {len(news_by_ticker)} tickers")
             return news_by_ticker
         except Exception as e:
-            print(f"   Warning: Batch news fetch failed, will skip news enrichment: {e}")
+            logger.warning(f"Batch news fetch failed, will skip news enrichment: {e}")
             return {}
 
     def _filter_and_enrich_candidates(
@@ -368,8 +385,8 @@ class CandidateFilter:
                         if intraday_check.get("already_moved"):
                             filtered_reasons["intraday_moved"] += 1
                             intraday_pct = intraday_check.get("intraday_change_pct", 0)
-                            print(
-                                f"   Filtered {ticker}: Already moved {intraday_pct:+.1f}% today (stale)"
+                            logger.info(
+                                f"Filtered {ticker}: Already moved {intraday_pct:+.1f}% today (stale)"
                             )
                             continue
 
@@ -378,7 +395,7 @@ class CandidateFilter:
 
                     except Exception as e:
                         # Don't filter out if check fails, just log
-                        print(f"   Warning: Could not check intraday movement for {ticker}: {e}")
+                        logger.warning(f"Could not check intraday movement for {ticker}: {e}")
 
                 # Recent multi-day mover filter (avoid stocks that already ran)
                 if self.filter_recent_movers:
@@ -397,8 +414,8 @@ class CandidateFilter:
                             if self.recent_mover_action == "filter":
                                 filtered_reasons["recent_moved"] += 1
                                 change_pct = reaction.get("price_change_pct", 0)
-                                print(
-                                    f"   Filtered {ticker}: Already moved {change_pct:+.1f}% in last "
+                                logger.info(
+                                    f"Filtered {ticker}: Already moved {change_pct:+.1f}% in last "
                                     f"{self.recent_movement_lookback_days} days"
                                 )
                                 continue
@@ -411,7 +428,7 @@ class CandidateFilter:
                                     f"over {self.recent_movement_lookback_days}d"
                                 )
                     except Exception as e:
-                        print(f"   Warning: Could not check recent movement for {ticker}: {e}")
+                        logger.warning(f"Could not check recent movement for {ticker}: {e}")
 
                 # Liquidity filter based on average volume
                 if self.min_average_volume:
@@ -482,13 +499,37 @@ class CandidateFilter:
                                 cand["business_description"] = (
                                     f"{company_name} - Business description not available."
                                 )
+
+                        # Extract short interest from fundamentals (no extra API call)
+                        short_pct_raw = fund.get("ShortPercentOfFloat", fund.get("ShortPercentFloat"))
+                        short_interest_pct = None
+                        if short_pct_raw and short_pct_raw != "N/A":
+                            try:
+                                short_interest_pct = round(float(short_pct_raw) * 100, 2)
+                            except (ValueError, TypeError):
+                                pass
+                        cand["short_interest_pct"] = short_interest_pct
+                        cand["high_short_interest"] = (
+                            short_interest_pct is not None and short_interest_pct > 15.0
+                        )
+                        short_ratio_raw = fund.get("ShortRatio")
+                        if short_ratio_raw and short_ratio_raw != "N/A":
+                            try:
+                                cand["short_ratio"] = float(short_ratio_raw)
+                            except (ValueError, TypeError):
+                                cand["short_ratio"] = None
+                        else:
+                            cand["short_ratio"] = None
                     else:
                         cand["fundamentals"] = {}
                         cand["business_description"] = (
                             f"{ticker} - Business description not available."
                         )
+                        cand["short_interest_pct"] = None
+                        cand["high_short_interest"] = False
+                        cand["short_ratio"] = None
                 except Exception as e:
-                    print(f"   Warning: Could not fetch fundamentals for {ticker}: {e}")
+                    logger.warning(f"Could not fetch fundamentals for {ticker}: {e}")
                     delisted_cache.mark_failed(ticker, str(e))
                     failed_tickers.append(ticker)
                     cand["current_price"] = None
@@ -630,10 +671,59 @@ class CandidateFilter:
                     else:
                         cand["has_bullish_options_flow"] = False
 
+                # Normalize options signal for quantitative scoring
+                cand["options_signal"] = cand.get("options_flow", {}).get("signal", "neutral")
+
+                # 5. Earnings Estimate Enrichment
+                from tradingagents.dataflows.finnhub_api import get_ticker_earnings_estimate
+
+                earnings_to = (
+                    datetime.strptime(end_date, "%Y-%m-%d") + timedelta(days=30)
+                ).strftime("%Y-%m-%d")
+                earnings_data = self._run_call(
+                    "fetching earnings estimate",
+                    get_ticker_earnings_estimate,
+                    default={},
+                    ticker=ticker,
+                    from_date=end_date,
+                    to_date=earnings_to,
+                )
+                if earnings_data.get("has_upcoming_earnings"):
+                    cand["has_upcoming_earnings"] = True
+                    cand["days_to_earnings"] = earnings_data.get("days_to_earnings")
+                    cand["eps_estimate"] = earnings_data.get("eps_estimate")
+                    cand["revenue_estimate"] = earnings_data.get("revenue_estimate")
+                    cand["earnings_date"] = earnings_data.get("earnings_date")
+                else:
+                    cand["has_upcoming_earnings"] = False
+
+                # Extract derived signals for quant scoring
+                tech_report = cand.get("technical_indicators", "")
+                rsi_match = re.search(
+                    r"RSI.*?Value[:\s]*(\d+\.?\d*)", tech_report, re.IGNORECASE | re.DOTALL
+                )
+                if rsi_match:
+                    cand["rsi_value"] = float(rsi_match.group(1))
+
+                insider_text = cand.get("insider_transactions", "")
+                cand["has_insider_buying"] = (
+                    isinstance(insider_text, str) and "Purchase" in insider_text
+                )
+
+                # Compute quantitative pre-score
+                cand["quant_score"] = self._compute_quant_score(cand)
+
+                # ML win probability prediction (if model available)
+                ml_result = self._predict_ml(cand, ticker, end_date)
+                if ml_result:
+                    cand["ml_win_probability"] = ml_result["win_prob"]
+                    cand["ml_prediction"] = ml_result["prediction"]
+                    cand["ml_loss_probability"] = ml_result["loss_prob"]
+
                 filtered_candidates.append(cand)
 
             except Exception as e:
-                print(f"   Error checking {ticker}: {e}")
+                logger.error(f"Error checking {ticker}: {e}")
 
         return filtered_candidates, filtered_reasons, failed_tickers, delisted_cache
 
@@ -643,19 +733,116 @@ class CandidateFilter:
         filtered_candidates: List[Dict[str, Any]],
         filtered_reasons: Dict[str, int],
     ) -> None:
-        print("\n   📊 Filtering Summary:")
-        print(f"      Starting candidates: {len(candidates)}")
+        logger.info("\n   📊 Filtering Summary:")
+        logger.info(f"      Starting candidates: {len(candidates)}")
         if filtered_reasons.get("intraday_moved", 0) > 0:
-            print(f"      ❌ Same-day movers: {filtered_reasons['intraday_moved']}")
+            logger.info(f"      ❌ Same-day movers: {filtered_reasons['intraday_moved']}")
         if filtered_reasons.get("recent_moved", 0) > 0:
-            print(f"      ❌ Recent movers: {filtered_reasons['recent_moved']}")
+            logger.info(f"      ❌ Recent movers: {filtered_reasons['recent_moved']}")
         if filtered_reasons.get("volume", 0) > 0:
-            print(f"      ❌ Low volume: {filtered_reasons['volume']}")
+            logger.info(f"      ❌ Low volume: {filtered_reasons['volume']}")
         if filtered_reasons.get("market_cap", 0) > 0:
-            print(f"      ❌ Below market cap: {filtered_reasons['market_cap']}")
+            logger.info(f"      ❌ Below market cap: {filtered_reasons['market_cap']}")
         if filtered_reasons.get("no_data", 0) > 0:
-            print(f"      ❌ No data available: {filtered_reasons['no_data']}")
-        print(f"      ✅ Passed filters: {len(filtered_candidates)}")
+            logger.info(f"      ❌ No data available: {filtered_reasons['no_data']}")
+        logger.info(f"      ✅ Passed filters: {len(filtered_candidates)}")
+
+    def _predict_ml(
+        self, cand: Dict[str, Any], ticker: str, end_date: str
+    ) -> Any:
+        """Run ML win probability prediction for a candidate."""
+        # Lazy-load predictor on first call
+        if not self._ml_predictor_loaded:
+            self._ml_predictor_loaded = True
+            try:
+                from tradingagents.ml.predictor import MLPredictor
+
+                self._ml_predictor = MLPredictor.load()
+                if self._ml_predictor:
+                    logger.info("ML predictor loaded — will add win probabilities")
+            except Exception as e:
+                logger.debug(f"ML predictor not available: {e}")
+
+        if self._ml_predictor is None:
+            return None
+
+        try:
+            from tradingagents.ml.feature_engineering import (
+                compute_features_single,
+            )
+            from tradingagents.dataflows.y_finance import download_history
+
+            # Fetch OHLCV for feature computation (needs ~210 rows of history)
+            ohlcv = download_history(
+                ticker,
+                start=pd.Timestamp(end_date) - pd.DateOffset(years=2),
+                end=end_date,
+                multi_level_index=False,
+                progress=False,
+                auto_adjust=True,
+            )
+
+            if ohlcv.empty:
+                return None
+
+            ohlcv = ohlcv.reset_index()
+            market_cap = cand.get("market_cap_bil", 0)
+            market_cap_usd = market_cap * 1e9 if market_cap else None
+
+            features = compute_features_single(ohlcv, end_date, market_cap=market_cap_usd)
+            if features is None:
+                return None
+
+            return self._ml_predictor.predict(features)
+
+        except Exception as e:
+            logger.debug(f"ML prediction failed for {ticker}: {e}")
+            return None
+
+    def _compute_quant_score(self, cand: Dict[str, Any]) -> int:
+        """Compute a 0-100 quantitative pre-score from hard data."""
+        score = 0
+
+        # Volume ratio (max +15)
+        vol_ratio = cand.get("volume_ratio")
+        if vol_ratio is not None:
+            if vol_ratio >= 2.0:
+                score += 15
+            elif vol_ratio >= 1.5:
+                score += 10
+            elif vol_ratio >= 1.3:
+                score += 5
+
+        # Confluence — per independent source, max 3 (max +30)
+        confluence = cand.get("confluence_score", 1)
+        score += min(confluence, 3) * 10
+
+        # Options flow signal (max +20)
+        options_signal = cand.get("options_signal", "neutral")
+        if options_signal == "very_bullish":
+            score += 20
+        elif options_signal == "bullish":
+            score += 15
+
+        # Insider buying detected (max +10)
+        if cand.get("has_insider_buying"):
+            score += 10
+
+        # Volatility compression with volume uptick (max +10)
+        if cand.get("has_volatility_compression"):
+            score += 10
+
+        # Healthy RSI momentum: 40-65 range (max +5)
+        rsi = cand.get("rsi_value")
+        if rsi is not None and 40 <= rsi <= 65:
+            score += 5
+
+        # Short squeeze potential: 5-20% short interest (max +5)
+        short_pct = cand.get("short_interest_pct")
+        if short_pct is not None and 5.0 <= short_pct <= 20.0:
+            score += 5
+
+        return min(score, 100)
 
     def _run_tool(
         self,
@@ -674,7 +861,7 @@ class CandidateFilter:
                 **params,
             )
         except Exception as e:
-            print(f"   Error during {step}: {e}")
+            logger.error(f"Error during {step}: {e}")
             return default
 
     def _run_call(
@@ -687,7 +874,7 @@ class CandidateFilter:
         try:
             return func(**kwargs)
         except Exception as e:
-            print(f"   Error {label}: {e}")
+            logger.error(f"Error {label}: {e}")
             return default
 
     def _assign_strategy(self, cand: Dict[str, Any]):

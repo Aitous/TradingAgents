@@ -28,19 +28,17 @@ DEFAULT_CONFIG = {
         "final_recommendations": 15,  # Number of final opportunities to recommend
         "deep_dive_max_workers": 1,  # Parallel workers for deep-dive analysis (1 = sequential)
         "discovery_mode": "hybrid",  # "traditional", "semantic", or "hybrid"
-
         # Ranking context truncation
         "truncate_ranking_context": False,  # True = truncate to save tokens, False = full context
         "max_news_chars": 500,  # Only used if truncate_ranking_context=True
         "max_insider_chars": 300,  # Only used if truncate_ranking_context=True
         "max_recommendations_chars": 300,  # Only used if truncate_ranking_context=True
-
         # Tool execution logging
         "log_tool_calls": True,  # Capture tool inputs/outputs to results logs
         "log_tool_calls_console": False,  # Mirror tool logs to Python logger
+        "log_prompts_console": False,  # Show LLM prompts in console (always saved to log file)
         "tool_log_max_chars": 10_000,  # Max chars stored per tool output
         "tool_log_exclude": ["validate_ticker"],  # Tool names to exclude from logging
-
         # Console price charts (output formatting)
         "console_price_charts": True,  # Render mini price charts in console output
         "price_chart_library": "plotille",  # "plotille" (prettier) or "plotext" fallback
@@ -50,7 +48,6 @@ DEFAULT_CONFIG = {
         "price_chart_height": 12,  # Chart height (rows)
         "price_chart_max_tickers": 10,  # Max tickers to chart per run
         "price_chart_show_movement_stats": True,  # Show movement stats in console
-
         # ========================================
         # FILTER STAGE SETTINGS
         # ========================================
@@ -58,24 +55,30 @@ DEFAULT_CONFIG = {
             # Liquidity filter
             "min_average_volume": 500_000,  # Minimum average volume
             "volume_lookback_days": 10,  # Days to average for liquidity check
-
             # Same-day mover filter (remove stocks that already moved today)
             "filter_same_day_movers": True,  # Enable/disable filter
             "intraday_movement_threshold": 10.0,  # Intraday % change threshold
-
             # Recent mover filter (remove stocks that moved in recent days)
             "filter_recent_movers": True,  # Enable/disable filter
             "recent_movement_lookback_days": 7,  # Days to check for recent moves
             "recent_movement_threshold": 10.0,  # % change threshold
             "recent_mover_action": "filter",  # "filter" or "deprioritize"
+            # Volume / compression detection
+            "volume_cache_key": "default",  # Cache key for volume data
+            "min_market_cap": 0,  # Minimum market cap in billions (0 = no filter)
+            "compression_atr_pct_max": 2.0,  # Max ATR % for compression detection
+            "compression_bb_width_max": 6.0,  # Max Bollinger bandwidth for compression
+            "compression_min_volume_ratio": 1.3,  # Min volume ratio for compression
         },
-
         # ========================================
         # ENRICHMENT STAGE SETTINGS
         # ========================================
         "enrichment": {
             "batch_news_vendor": "google",  # Vendor for batch news: "openai" or "google"
             "batch_news_batch_size": 150,  # Tickers per API call
+            "news_lookback_days": 0.5,  # Days of news history for enrichment
+            "context_max_snippets": 2,  # Max news snippets per candidate
+            "context_snippet_max_chars": 140,  # Max chars per snippet
         },
         # ========================================
         # PIPELINES (priority and budget per pipeline)
@@ -223,6 +226,17 @@ DEFAULT_CONFIG = {
                 "limit": 5,
                 "min_short_interest_pct": 15.0,  # Minimum short interest %
                 "min_days_to_cover": 5.0,  # Minimum days to cover ratio
+            },
+            "ml_signal": {
+                "enabled": True,
+                "pipeline": "momentum",
+                "limit": 15,
+                "min_win_prob": 0.35,  # Minimum P(WIN) to surface as candidate
+                "lookback_period": "1y",  # OHLCV history to fetch (needs ~210 trading days)
+                # ticker_file: path to ticker list (defaults to tickers_file from root config)
+                # ticker_universe: explicit list overrides ticker_file if set
+                "fetch_market_cap": False,  # Skip for speed (1 NaN out of 30 features)
+                "max_workers": 8,  # Parallel feature computation threads
             },
         },
     },

@@ -1,34 +1,31 @@
-from typing import Optional
 import datetime
-import typer
-from pathlib import Path
 from functools import wraps
-from rich.console import Console
+from pathlib import Path
+
+import typer
 from dotenv import load_dotenv
+from rich.console import Console, Group
 
 # Load environment variables from .env file
 load_dotenv()
-from rich.panel import Panel
-from rich.spinner import Spinner
-from rich.live import Live
-from rich.columns import Columns
-from rich.markdown import Markdown
-from rich.layout import Layout
-from rich.text import Text
-from rich.live import Live
-from rich.table import Table
 from collections import deque
-import time
-from rich.tree import Tree
+
 from rich import box
 from rich.align import Align
-from rich.rule import Rule
+from rich.columns import Columns
+from rich.layout import Layout
+from rich.live import Live
+from rich.markdown import Markdown
+from rich.panel import Panel
+from rich.spinner import Spinner
+from rich.table import Table
+from rich.text import Text
 
-from tradingagents.graph.trading_graph import TradingAgentsGraph
-from tradingagents.graph.discovery_graph import DiscoveryGraph
-from tradingagents.default_config import DEFAULT_CONFIG
 from cli.models import AnalystType
 from cli.utils import *
+from tradingagents.default_config import DEFAULT_CONFIG
+from tradingagents.graph.discovery_graph import DiscoveryGraph
+from tradingagents.graph.trading_graph import TradingAgentsGraph
 
 console = Console()
 
@@ -54,11 +51,11 @@ def extract_text_from_content(content):
     elif isinstance(content, list):
         text_parts = []
         for block in content:
-            if isinstance(block, dict) and 'text' in block:
-                text_parts.append(block['text'])
+            if isinstance(block, dict) and "text" in block:
+                text_parts.append(block["text"])
             elif isinstance(block, str):
                 text_parts.append(block)
-        return '\n'.join(text_parts)
+        return "\n".join(text_parts)
     else:
         return str(content)
 
@@ -128,7 +125,7 @@ class MessageBuffer:
             if content is not None:
                 latest_section = section
                 latest_content = content
-               
+
         if latest_section and latest_content:
             # Format the current section for display
             section_titles = {
@@ -140,9 +137,7 @@ class MessageBuffer:
                 "trader_investment_plan": "Trading Team Plan",
                 "final_trade_decision": "Final Trade Decision",
             }
-            self.current_report = (
-                f"### {section_titles[latest_section]}\n{latest_content}"
-            )
+            self.current_report = f"### {section_titles[latest_section]}\n{latest_content}"
 
         # Update the final complete report
         self._update_final_report()
@@ -162,17 +157,13 @@ class MessageBuffer:
         ):
             report_parts.append("## Analyst Team Reports")
             if self.report_sections["market_report"]:
-                report_parts.append(
-                    f"### Market Analysis\n{self.report_sections['market_report']}"
-                )
+                report_parts.append(f"### Market Analysis\n{self.report_sections['market_report']}")
             if self.report_sections["sentiment_report"]:
                 report_parts.append(
                     f"### Social Sentiment\n{self.report_sections['sentiment_report']}"
                 )
             if self.report_sections["news_report"]:
-                report_parts.append(
-                    f"### News Analysis\n{self.report_sections['news_report']}"
-                )
+                report_parts.append(f"### News Analysis\n{self.report_sections['news_report']}")
             if self.report_sections["fundamentals_report"]:
                 report_parts.append(
                     f"### Fundamentals Analysis\n{self.report_sections['fundamentals_report']}"
@@ -206,12 +197,8 @@ def create_layout():
         Layout(name="main"),
         Layout(name="footer", size=3),
     )
-    layout["main"].split_column(
-        Layout(name="upper", ratio=3), Layout(name="analysis", ratio=5)
-    )
-    layout["upper"].split_row(
-        Layout(name="progress", ratio=2), Layout(name="messages", ratio=3)
-    )
+    layout["main"].split_column(Layout(name="upper", ratio=3), Layout(name="analysis", ratio=5))
+    layout["upper"].split_row(Layout(name="progress", ratio=2), Layout(name="messages", ratio=3))
     return layout
 
 
@@ -261,9 +248,7 @@ def update_display(layout, spinner_text=None):
         first_agent = agents[0]
         status = message_buffer.agent_status[first_agent]
         if status == "in_progress":
-            spinner = Spinner(
-                "dots", text="[blue]in_progress[/blue]", style="bold cyan"
-            )
+            spinner = Spinner("dots", text="[blue]in_progress[/blue]", style="bold cyan")
             status_cell = spinner
         else:
             status_color = {
@@ -278,9 +263,7 @@ def update_display(layout, spinner_text=None):
         for agent in agents[1:]:
             status = message_buffer.agent_status[agent]
             if status == "in_progress":
-                spinner = Spinner(
-                    "dots", text="[blue]in_progress[/blue]", style="bold cyan"
-                )
+                spinner = Spinner("dots", text="[blue]in_progress[/blue]", style="bold cyan")
                 status_cell = spinner
             else:
                 status_color = {
@@ -333,16 +316,16 @@ def update_display(layout, spinner_text=None):
             text_parts = []
             for item in content:
                 if isinstance(item, dict):
-                    if item.get('type') == 'text':
-                        text_parts.append(item.get('text', ''))
-                    elif item.get('type') == 'tool_use':
+                    if item.get("type") == "text":
+                        text_parts.append(item.get("text", ""))
+                    elif item.get("type") == "tool_use":
                         text_parts.append(f"[Tool: {item.get('name', 'unknown')}]")
                 else:
                     text_parts.append(str(item))
-            content_str = ' '.join(text_parts)
+            content_str = " ".join(text_parts)
         elif not isinstance(content_str, str):
             content_str = str(content)
-            
+
         # Truncate message content if too long
         if len(content_str) > 200:
             content_str = content_str[:197] + "..."
@@ -431,9 +414,7 @@ def get_user_selections():
     welcome_content += "[bold green]TradingAgents: Multi-Agents LLM Financial Trading Framework - CLI[/bold green]\n\n"
     welcome_content += "[bold]Workflow Steps:[/bold]\n"
     welcome_content += "I. Analyst Team → II. Research Team → III. Trader → IV. Risk Management → V. Final Decision\n\n"
-    welcome_content += (
-        "[dim]Built by [Tauric Research](https://github.com/TauricResearch)[/dim]"
-    )
+    welcome_content += "[dim]Built by [Tauric Research](https://github.com/TauricResearch)[/dim]"
 
     # Create and center the welcome box
     welcome_box = Panel(
@@ -455,13 +436,9 @@ def get_user_selections():
         return Panel(box_content, border_style="blue", padding=(1, 2))
 
     # Step 1: Select mode (Discovery or Trading)
-    console.print(
-        create_question_box(
-            "Step 1: Mode Selection", "Select which agent to run"
-        )
-    )
+    console.print(create_question_box("Step 1: Mode Selection", "Select which agent to run"))
     mode = select_mode()
-    
+
     # Step 2: Ticker symbol (only for Trading mode)
     selected_ticker = None
     if mode == "trading":
@@ -501,9 +478,7 @@ def get_user_selections():
 
         # Step 5: Research depth
         console.print(
-            create_question_box(
-                "Step 5: Research Depth", "Select your research depth level"
-            )
+            create_question_box("Step 5: Research Depth", "Select your research depth level")
         )
         selected_research_depth = select_research_depth()
         step_offset = 5
@@ -517,7 +492,7 @@ def get_user_selections():
         )
     )
     selected_llm_provider, backend_url = select_llm_provider()
-    
+
     # Thinking agents
     console.print(
         create_question_box(
@@ -548,9 +523,7 @@ def get_ticker():
 def get_analysis_date():
     """Get the analysis date from user input."""
     while True:
-        date_str = typer.prompt(
-            "", default=datetime.datetime.now().strftime("%Y-%m-%d")
-        )
+        date_str = typer.prompt("", default=datetime.datetime.now().strftime("%Y-%m-%d"))
         try:
             # Validate date format and ensure it's not in the future
             analysis_date = datetime.datetime.strptime(date_str, "%Y-%m-%d")
@@ -559,16 +532,14 @@ def get_analysis_date():
                 continue
             return date_str
         except ValueError:
-            console.print(
-                "[red]Error: Invalid date format. Please use YYYY-MM-DD[/red]"
-            )
+            console.print("[red]Error: Invalid date format. Please use YYYY-MM-DD[/red]")
 
 
 def select_mode():
     """Select between Discovery and Trading mode."""
     console.print("[1] Discovery - Find investment opportunities")
     console.print("[2] Trading - Analyze a specific ticker")
-    
+
     while True:
         choice = typer.prompt("Select mode", default="2")
         if choice in ["1", "2"]:
@@ -772,9 +743,10 @@ def update_research_team_status(status):
     for agent in research_team:
         message_buffer.update_agent_status(agent, status)
 
+
 def extract_text_from_content(content):
     """Extract text string from content that may be a string or list of dicts.
-    
+
     Handles both:
     - Plain strings
     - Lists of dicts with 'type': 'text' and 'text': '...'
@@ -784,11 +756,12 @@ def extract_text_from_content(content):
     elif isinstance(content, list):
         text_parts = []
         for item in content:
-            if isinstance(item, dict) and item.get('type') == 'text':
-                text_parts.append(item.get('text', ''))
-        return '\n'.join(text_parts) if text_parts else str(content)
+            if isinstance(item, dict) and item.get("type") == "text":
+                text_parts.append(item.get("text", ""))
+        return "\n".join(text_parts) if text_parts else str(content)
     else:
         return str(content)
+
 
 def extract_content_string(content):
     """Extract string content from various message formats."""
@@ -799,15 +772,36 @@ def extract_content_string(content):
         text_parts = []
         for item in content:
             if isinstance(item, dict):
-                if item.get('type') == 'text':
-                    text_parts.append(item.get('text', ''))
-                elif item.get('type') == 'tool_use':
+                if item.get("type") == "text":
+                    text_parts.append(item.get("text", ""))
+                elif item.get("type") == "tool_use":
                     text_parts.append(f"[Tool: {item.get('name', 'unknown')}]")
             else:
                 text_parts.append(str(item))
-        return ' '.join(text_parts)
+        return " ".join(text_parts)
     else:
         return str(content)
+
+
+def format_movement_stats(movement: dict) -> str:
+    """Format movement stats for display in discovery ranking panels."""
+    if not movement:
+        return ""
+
+    def fmt(value):
+        if value is None:
+            return "N/A"
+        return f"{value:+.2f}%"
+
+    return (
+        "**Movement:** "
+        f"1D {fmt(movement.get('1d'))} | "
+        f"7D {fmt(movement.get('7d'))} | "
+        f"1M {fmt(movement.get('1m'))} | "
+        f"6M {fmt(movement.get('6m'))} | "
+        f"1Y {fmt(movement.get('1y'))}"
+    )
+
 
 def run_analysis():
     # First get all user selections
@@ -822,105 +816,211 @@ def run_analysis():
 
 def run_discovery_analysis(selections):
     """Run discovery mode to find investment opportunities."""
-    from tradingagents.dataflows.config import set_config
     import json
-    import re
-    
+
+    from tradingagents.dataflows.config import set_config
+
     # Create config
     config = DEFAULT_CONFIG.copy()
     config["quick_think_llm"] = selections["shallow_thinker"]
     config["deep_think_llm"] = selections["deep_thinker"]
     config["backend_url"] = selections["backend_url"]
     config["llm_provider"] = selections["llm_provider"].lower()
-    
+
     # Set config globally for route_to_vendor
     set_config(config)
-    
-    
+
     # Generate run timestamp
     import datetime
+
     run_timestamp = datetime.datetime.now().strftime("%H_%M_%S")
-    
+
     # Create results directory with run timestamp
-    results_dir = Path(config["results_dir"]) / "discovery" / selections["analysis_date"] / f"run_{run_timestamp}"
+    results_dir = (
+        Path(config["results_dir"])
+        / "discovery"
+        / selections["analysis_date"]
+        / f"run_{run_timestamp}"
+    )
     results_dir.mkdir(parents=True, exist_ok=True)
-    
+
     # Add results dir to config so graph can use it for logging
     config["discovery_run_dir"] = str(results_dir)
-    
-    console.print(f"[dim]Using {config['llm_provider'].upper()} - Shallow: {config['quick_think_llm']}, Deep: {config['deep_think_llm']}[/dim]")
-    
+
+    console.print(
+        f"[dim]Using {config['llm_provider'].upper()} - Shallow: {config['quick_think_llm']}, Deep: {config['deep_think_llm']}[/dim]"
+    )
+
     # Initialize Discovery Graph (LLMs initialized internally like TradingAgentsGraph)
     discovery_graph = DiscoveryGraph(config=config)
-    
-    console.print(f"\n[bold green]Running Discovery Analysis for {selections['analysis_date']}[/bold green]\n")
-    
-    # Run discovery
-    result = discovery_graph.graph.invoke({
-        "trade_date": selections["analysis_date"],
-        "tickers": [],
-        "filtered_tickers": [],
-        "opportunities": [],
-        "tool_logs": [],
-        "status": "start"
-    })
-    
-    # Save discovery results
-    final_ranking = result.get("final_ranking", "No ranking available")
-    final_ranking_text = extract_text_from_content(final_ranking)
 
-    # Save as markdown
-    with open(results_dir / "discovery_results.md", "w") as f:
-        f.write(f"# Discovery Analysis - {selections['analysis_date']}\n\n")
-        f.write(f"**LLM Provider**: {config['llm_provider'].upper()}\n")
-        f.write(f"**Models**: Shallow={config['quick_think_llm']}, Deep={config['deep_think_llm']}\n\n")
-        f.write("## Top Investment Opportunities\n\n")
-        f.write(final_ranking_text)
-    
-    # Save raw result as JSON
-    with open(results_dir / "discovery_result.json", "w") as f:
-        json.dump({
-            "trade_date": selections["analysis_date"],
-            "config": {
-                "llm_provider": config["llm_provider"],
-                "shallow_llm": config["quick_think_llm"],
-                "deep_llm": config["deep_think_llm"]
-            },
-            "opportunities": result.get("opportunities", []),
-            "final_ranking": final_ranking_text
-        }, f, indent=2)
-    
+    console.print(
+        f"\n[bold green]Running Discovery Analysis for {selections['analysis_date']}[/bold green]\n"
+    )
+
+    # Run discovery (uses run() method which saves results)
+    result = discovery_graph.run(trade_date=selections["analysis_date"])
+
+    # Get final ranking for display (results saved by discovery_graph.run())
+    final_ranking = result.get("final_ranking", "No ranking available")
+
+    rankings_list = []
+    # Format rankings for console display
+    try:
+        if isinstance(final_ranking, str):
+            rankings = json.loads(final_ranking)
+        else:
+            rankings = final_ranking
+
+        # Handle dict with 'rankings' key
+        if isinstance(rankings, dict):
+            rankings = rankings.get("rankings", [])
+        rankings_list = rankings
+
+        # Build nicely formatted markdown
+        formatted_output = []
+        for rank in rankings:
+            ticker = rank.get("ticker", "UNKNOWN")
+            company_name = rank.get("company_name", ticker)
+            current_price = rank.get("current_price")
+            description = rank.get("description", "")
+            strategy = rank.get("strategy_match", "N/A")
+            final_score = rank.get("final_score", 0)
+            confidence = rank.get("confidence", 0)
+            reason = rank.get("reason", "")
+            rank_num = rank.get("rank", "?")
+
+            price_str = f"${current_price:.2f}" if current_price else "N/A"
+
+            formatted_output.append(f"### #{rank_num}: {ticker} - {company_name}")
+            formatted_output.append("")
+            formatted_output.append(
+                f"**Price:** {price_str} | **Strategy:** {strategy} | **Score:** {final_score} | **Confidence:** {confidence}/10"
+            )
+            formatted_output.append("")
+            if description:
+                formatted_output.append(f"*{description}*")
+                formatted_output.append("")
+            formatted_output.append("**Investment Thesis:**")
+            formatted_output.append(f"{reason}")
+            formatted_output.append("")
+            formatted_output.append("---")
+            formatted_output.append("")
+
+        final_ranking_text = "\n".join(formatted_output)
+    except Exception:
+        # Fallback to raw text
+        final_ranking_text = extract_text_from_content(final_ranking)
+
     console.print(f"\n[dim]Results saved to: {results_dir}[/dim]\n")
 
     # Display results
-    console.print(Panel(
-        Markdown(final_ranking_text),
-        title="Top Investment Opportunities",
-        border_style="green"
-    ))
+    if getattr(discovery_graph, "console_price_charts", False) and rankings_list:
+        window_order = [
+            str(window).strip().lower()
+            for window in getattr(discovery_graph, "price_chart_windows", ["1m"])
+        ]
+        original_chart_width = getattr(discovery_graph, "price_chart_width", 60)
+        try:
+            # Fit multiple window charts side-by-side when possible.
+            if window_order:
+                target_width = max(24, (console.size.width - 12) // max(1, len(window_order)))
+                discovery_graph.price_chart_width = min(original_chart_width, target_width)
+            bundle_map = discovery_graph.build_price_chart_bundle(rankings_list)
+        finally:
+            discovery_graph.price_chart_width = original_chart_width
+        for rank in rankings_list:
+            ticker = (rank.get("ticker") or "UNKNOWN").upper()
+            company_name = rank.get("company_name", ticker)
+            current_price = rank.get("current_price")
+            description = rank.get("description", "")
+            strategy = rank.get("strategy_match", "N/A")
+            final_score = rank.get("final_score", 0)
+            confidence = rank.get("confidence", 0)
+            reason = rank.get("reason", "")
+            rank_num = rank.get("rank", "?")
+
+            price_str = f"${current_price:.2f}" if current_price else "N/A"
+            ticker_bundle = bundle_map.get(ticker, {})
+            movement = ticker_bundle.get("movement", {})
+            movement_line = (
+                format_movement_stats(movement)
+                if getattr(discovery_graph, "price_chart_show_movement_stats", True)
+                else ""
+            )
+
+            lines = [
+                f"**Price:** {price_str} | **Strategy:** {strategy} | **Score:** {final_score} | **Confidence:** {confidence}/10",
+            ]
+            if movement_line:
+                lines.append(movement_line)
+            if description:
+                lines.append(f"*{description}*")
+            lines.append("**Investment Thesis:**")
+            lines.append(reason)
+            per_rank_md = "\n\n".join(lines)
+
+            renderables = [Markdown(per_rank_md)]
+            charts = ticker_bundle.get("charts", {})
+            if charts:
+                chart_columns = []
+                for key in window_order:
+                    chart = charts.get(key)
+                    if chart:
+                        chart_columns.append(Text.from_ansi(chart))
+                if chart_columns:
+                    renderables.append(Columns(chart_columns, equal=True, expand=True))
+            else:
+                chart = ticker_bundle.get("chart")
+                if chart:
+                    renderables.append(Text.from_ansi(chart))
+
+            console.print(
+                Panel(
+                    Group(*renderables),
+                    title=f"#{rank_num}: {ticker} - {company_name}",
+                    border_style="green",
+                )
+            )
+    else:
+        console.print(
+            Panel(
+                (
+                    Markdown(final_ranking_text)
+                    if final_ranking_text
+                    else "[yellow]No recommendations generated[/yellow]"
+                ),
+                title="Top Investment Opportunities",
+                border_style="green",
+            )
+        )
 
     # Extract tickers from the ranking using the discovery graph's LLM
-    discovered_tickers = extract_tickers_from_ranking(final_ranking_text, discovery_graph.quick_thinking_llm)
-    
+    discovered_tickers = extract_tickers_from_ranking(
+        final_ranking_text, discovery_graph.quick_thinking_llm
+    )
+
     # Loop: Ask if they want to analyze any of the discovered tickers
     while True:
         if not discovered_tickers:
             console.print("\n[yellow]No tickers found in discovery results[/yellow]")
             break
-            
+
         console.print(f"\n[bold]Discovered tickers:[/bold] {', '.join(discovered_tickers)}")
-        
-        run_trading = typer.confirm("\nWould you like to run trading analysis on one of these tickers?", default=False)
-        
+
+        run_trading = typer.confirm(
+            "\nWould you like to run trading analysis on one of these tickers?", default=False
+        )
+
         if not run_trading:
             console.print("\n[green]Discovery complete! Exiting...[/green]")
             break
-        
+
         # Let user select a ticker
-        console.print(f"\n[bold]Select a ticker to analyze:[/bold]")
+        console.print("\n[bold]Select a ticker to analyze:[/bold]")
         for i, ticker in enumerate(discovered_tickers, 1):
             console.print(f"[{i}] {ticker}")
-        
+
         while True:
             choice = typer.prompt("Enter number", default="1")
             try:
@@ -931,31 +1031,31 @@ def run_discovery_analysis(selections):
                 console.print("[red]Invalid choice. Try again.[/red]")
             except ValueError:
                 console.print("[red]Invalid number. Try again.[/red]")
-        
+
         console.print(f"\n[green]Selected: {selected_ticker}[/green]\n")
-        
+
         # Update selections with the selected ticker
         trading_selections = selections.copy()
         trading_selections["ticker"] = selected_ticker
         trading_selections["mode"] = "trading"
-        
+
         # If analysts weren't selected (discovery mode), select default
         if not trading_selections.get("analysts"):
             trading_selections["analysts"] = [
                 AnalystType("market"),
-                AnalystType("social"), 
+                AnalystType("social"),
                 AnalystType("news"),
-                AnalystType("fundamentals")
+                AnalystType("fundamentals"),
             ]
-        
+
         # If research depth wasn't selected, use default
         if not trading_selections.get("research_depth"):
             trading_selections["research_depth"] = 1
-        
+
         # Run trading analysis
         run_trading_analysis(trading_selections)
-        
-        console.print("\n" + "="*70 + "\n")
+
+        console.print("\n" + "=" * 70 + "\n")
 
 
 def extract_tickers_from_ranking(ranking_text, llm=None):
@@ -970,19 +1070,20 @@ def extract_tickers_from_ranking(ranking_text, llm=None):
     """
     import json
     import re
+
     from langchain_core.messages import HumanMessage
 
     # Try to extract from JSON first (fast path)
     try:
         # Look for JSON array in the text
-        json_match = re.search(r'\[[\s\S]*\]', ranking_text)
+        json_match = re.search(r"\[[\s\S]*\]", ranking_text)
         if json_match:
             data = json.loads(json_match.group())
             if isinstance(data, list):
                 tickers = [item.get("ticker", "").upper() for item in data if item.get("ticker")]
                 if tickers:
                     return tickers
-    except:
+    except Exception:
         pass
 
     # Use LLM to extract tickers if available
@@ -1010,7 +1111,7 @@ Tickers:"""
             tickers = [t.strip().upper() for t in response_text.split(",") if t.strip()]
 
             # Basic validation: 1-5 uppercase letters
-            valid_tickers = [t for t in tickers if re.match(r'^[A-Z]{1,5}$', t)]
+            valid_tickers = [t for t in tickers if re.match(r"^[A-Z]{1,5}$", t)]
 
             # Remove duplicates while preserving order
             seen = set()
@@ -1023,11 +1124,34 @@ Tickers:"""
             return unique_tickers[:10]  # Limit to first 10
 
         except Exception as e:
-            console.print(f"[yellow]Warning: LLM ticker extraction failed ({e}), using regex fallback[/yellow]")
+            console.print(
+                f"[yellow]Warning: LLM ticker extraction failed ({e}), using regex fallback[/yellow]"
+            )
 
     # Regex fallback (used when no LLM provided or LLM extraction fails)
-    tickers = re.findall(r'\b[A-Z]{1,5}\b', ranking_text)
-    exclude = {'THE', 'AND', 'OR', 'FOR', 'NOT', 'BUT', 'TOP', 'USD', 'USA', 'AI', 'IT', 'IS', 'AS', 'AT', 'IN', 'ON', 'TO', 'BY', 'RMB', 'BTC'}
+    tickers = re.findall(r"\b[A-Z]{1,5}\b", ranking_text)
+    exclude = {
+        "THE",
+        "AND",
+        "OR",
+        "FOR",
+        "NOT",
+        "BUT",
+        "TOP",
+        "USD",
+        "USA",
+        "AI",
+        "IT",
+        "IS",
+        "AS",
+        "AT",
+        "IN",
+        "ON",
+        "TO",
+        "BY",
+        "RMB",
+        "BTC",
+    }
     tickers = [t for t in tickers if t not in exclude]
     seen = set()
     unique_tickers = []
@@ -1055,7 +1179,9 @@ def run_trading_analysis(selections):
     )
 
     # Create result directory
-    results_dir = Path(config["results_dir"]) / "trading" / selections["analysis_date"] / selections["ticker"]
+    results_dir = (
+        Path(config["results_dir"]) / "trading" / selections["analysis_date"] / selections["ticker"]
+    )
     results_dir.mkdir(parents=True, exist_ok=True)
     report_dir = results_dir / "reports"
     report_dir.mkdir(parents=True, exist_ok=True)
@@ -1067,11 +1193,16 @@ def run_trading_analysis(selections):
     # we must reset any previously wrapped methods; otherwise decorators stack and later runs
     # write logs/reports into earlier tickers' folders.
     message_buffer.add_message = MessageBuffer.add_message.__get__(message_buffer, MessageBuffer)
-    message_buffer.add_tool_call = MessageBuffer.add_tool_call.__get__(message_buffer, MessageBuffer)
-    message_buffer.update_report_section = MessageBuffer.update_report_section.__get__(message_buffer, MessageBuffer)
+    message_buffer.add_tool_call = MessageBuffer.add_tool_call.__get__(
+        message_buffer, MessageBuffer
+    )
+    message_buffer.update_report_section = MessageBuffer.update_report_section.__get__(
+        message_buffer, MessageBuffer
+    )
 
     def save_message_decorator(obj, func_name):
         func = getattr(obj, func_name)
+
         @wraps(func)
         def wrapper(*args, **kwargs):
             func(*args, **kwargs)
@@ -1079,10 +1210,12 @@ def run_trading_analysis(selections):
             content = content.replace("\n", " ")  # Replace newlines with spaces
             with open(log_file, "a") as f:
                 f.write(f"{timestamp} [{message_type}] {content}\n")
+
         return wrapper
-    
+
     def save_tool_call_decorator(obj, func_name):
         func = getattr(obj, func_name)
+
         @wraps(func)
         def wrapper(*args, **kwargs):
             func(*args, **kwargs)
@@ -1090,14 +1223,19 @@ def run_trading_analysis(selections):
             args_str = ", ".join(f"{k}={v}" for k, v in args.items())
             with open(log_file, "a") as f:
                 f.write(f"{timestamp} [Tool Call] {tool_name}({args_str})\n")
+
         return wrapper
 
     def save_report_section_decorator(obj, func_name):
         func = getattr(obj, func_name)
+
         @wraps(func)
         def wrapper(section_name, content):
             func(section_name, content)
-            if section_name in obj.report_sections and obj.report_sections[section_name] is not None:
+            if (
+                section_name in obj.report_sections
+                and obj.report_sections[section_name] is not None
+            ):
                 content = obj.report_sections[section_name]
                 if content:
                     file_name = f"{section_name}.md"
@@ -1105,11 +1243,14 @@ def run_trading_analysis(selections):
                         # Extract text from LangChain content blocks
                         content_text = extract_text_from_content(content)
                         f.write(content_text)
+
         return wrapper
 
     message_buffer.add_message = save_message_decorator(message_buffer, "add_message")
     message_buffer.add_tool_call = save_tool_call_decorator(message_buffer, "add_tool_call")
-    message_buffer.update_report_section = save_report_section_decorator(message_buffer, "update_report_section")
+    message_buffer.update_report_section = save_report_section_decorator(
+        message_buffer, "update_report_section"
+    )
 
     # Reset UI buffers for a clean per-ticker run
     message_buffer.messages.clear()
@@ -1124,9 +1265,7 @@ def run_trading_analysis(selections):
 
         # Add initial messages
         message_buffer.add_message("System", f"Selected ticker: {selections['ticker']}")
-        message_buffer.add_message(
-            "System", f"Analysis date: {selections['analysis_date']}"
-        )
+        message_buffer.add_message("System", f"Analysis date: {selections['analysis_date']}")
         message_buffer.add_message(
             "System",
             f"Selected analysts: {', '.join(analyst.value for analyst in selections['analysts'])}",
@@ -1149,9 +1288,7 @@ def run_trading_analysis(selections):
         update_display(layout)
 
         # Create spinner text
-        spinner_text = (
-            f"Analyzing {selections['ticker']} on {selections['analysis_date']}..."
-        )
+        spinner_text = f"Analyzing {selections['ticker']} on {selections['analysis_date']}..."
         update_display(layout, spinner_text)
 
         # Initialize state and get graph args
@@ -1169,38 +1306,34 @@ def run_trading_analysis(selections):
 
                 # Extract message content and type
                 if hasattr(last_message, "content"):
-                    content = extract_content_string(last_message.content)  # Use the helper function
+                    content = extract_content_string(
+                        last_message.content
+                    )  # Use the helper function
                     msg_type = "Reasoning"
                 else:
                     content = str(last_message)
                     msg_type = "System"
 
                 # Add message to buffer
-                message_buffer.add_message(msg_type, content)                
+                message_buffer.add_message(msg_type, content)
 
                 # If it's a tool call, add it to tool calls
                 if hasattr(last_message, "tool_calls"):
                     for tool_call in last_message.tool_calls:
                         # Handle both dictionary and object tool calls
                         if isinstance(tool_call, dict):
-                            message_buffer.add_tool_call(
-                                tool_call["name"], tool_call["args"]
-                            )
+                            message_buffer.add_tool_call(tool_call["name"], tool_call["args"])
                         else:
                             message_buffer.add_tool_call(tool_call.name, tool_call.args)
 
                 # Update reports and agent status based on chunk content
                 # Analyst Team Reports
                 if "market_report" in chunk and chunk["market_report"]:
-                    message_buffer.update_report_section(
-                        "market_report", chunk["market_report"]
-                    )
+                    message_buffer.update_report_section("market_report", chunk["market_report"])
                     message_buffer.update_agent_status("Market Analyst", "completed")
                     # Set next analyst to in_progress
                     if "social" in selections["analysts"]:
-                        message_buffer.update_agent_status(
-                            "Social Analyst", "in_progress"
-                        )
+                        message_buffer.update_agent_status("Social Analyst", "in_progress")
 
                 if "sentiment_report" in chunk and chunk["sentiment_report"]:
                     message_buffer.update_report_section(
@@ -1209,36 +1342,25 @@ def run_trading_analysis(selections):
                     message_buffer.update_agent_status("Social Analyst", "completed")
                     # Set next analyst to in_progress
                     if "news" in selections["analysts"]:
-                        message_buffer.update_agent_status(
-                            "News Analyst", "in_progress"
-                        )
+                        message_buffer.update_agent_status("News Analyst", "in_progress")
 
                 if "news_report" in chunk and chunk["news_report"]:
-                    message_buffer.update_report_section(
-                        "news_report", chunk["news_report"]
-                    )
+                    message_buffer.update_report_section("news_report", chunk["news_report"])
                     message_buffer.update_agent_status("News Analyst", "completed")
                     # Set next analyst to in_progress
                     if "fundamentals" in selections["analysts"]:
-                        message_buffer.update_agent_status(
-                            "Fundamentals Analyst", "in_progress"
-                        )
+                        message_buffer.update_agent_status("Fundamentals Analyst", "in_progress")
 
                 if "fundamentals_report" in chunk and chunk["fundamentals_report"]:
                     message_buffer.update_report_section(
                         "fundamentals_report", chunk["fundamentals_report"]
                     )
-                    message_buffer.update_agent_status(
-                        "Fundamentals Analyst", "completed"
-                    )
+                    message_buffer.update_agent_status("Fundamentals Analyst", "completed")
                     # Set all research team members to in_progress
                     update_research_team_status("in_progress")
 
                 # Research Team - Handle Investment Debate State
-                if (
-                    "investment_debate_state" in chunk
-                    and chunk["investment_debate_state"]
-                ):
+                if "investment_debate_state" in chunk and chunk["investment_debate_state"]:
                     debate_state = chunk["investment_debate_state"]
 
                     # Update Bull Researcher status and report
@@ -1272,10 +1394,7 @@ def run_trading_analysis(selections):
                             )
 
                     # Update Research Manager status and final decision
-                    if (
-                        "judge_decision" in debate_state
-                        and debate_state["judge_decision"]
-                    ):
+                    if "judge_decision" in debate_state and debate_state["judge_decision"]:
                         # Keep all research team members in progress until final decision
                         update_research_team_status("in_progress")
                         message_buffer.add_message(
@@ -1290,15 +1409,10 @@ def run_trading_analysis(selections):
                         # Mark all research team members as completed
                         update_research_team_status("completed")
                         # Set first risk analyst to in_progress
-                        message_buffer.update_agent_status(
-                            "Risky Analyst", "in_progress"
-                        )
+                        message_buffer.update_agent_status("Risky Analyst", "in_progress")
 
                 # Trading Team
-                if (
-                    "trader_investment_plan" in chunk
-                    and chunk["trader_investment_plan"]
-                ):
+                if "trader_investment_plan" in chunk and chunk["trader_investment_plan"]:
                     message_buffer.update_report_section(
                         "trader_investment_plan", chunk["trader_investment_plan"]
                     )
@@ -1314,9 +1428,7 @@ def run_trading_analysis(selections):
                         "current_risky_response" in risk_state
                         and risk_state["current_risky_response"]
                     ):
-                        message_buffer.update_agent_status(
-                            "Risky Analyst", "in_progress"
-                        )
+                        message_buffer.update_agent_status("Risky Analyst", "in_progress")
                         message_buffer.add_message(
                             "Reasoning",
                             f"Risky Analyst: {risk_state['current_risky_response']}",
@@ -1332,9 +1444,7 @@ def run_trading_analysis(selections):
                         "current_safe_response" in risk_state
                         and risk_state["current_safe_response"]
                     ):
-                        message_buffer.update_agent_status(
-                            "Safe Analyst", "in_progress"
-                        )
+                        message_buffer.update_agent_status("Safe Analyst", "in_progress")
                         message_buffer.add_message(
                             "Reasoning",
                             f"Safe Analyst: {risk_state['current_safe_response']}",
@@ -1350,9 +1460,7 @@ def run_trading_analysis(selections):
                         "current_neutral_response" in risk_state
                         and risk_state["current_neutral_response"]
                     ):
-                        message_buffer.update_agent_status(
-                            "Neutral Analyst", "in_progress"
-                        )
+                        message_buffer.update_agent_status("Neutral Analyst", "in_progress")
                         message_buffer.add_message(
                             "Reasoning",
                             f"Neutral Analyst: {risk_state['current_neutral_response']}",
@@ -1365,9 +1473,7 @@ def run_trading_analysis(selections):
 
                     # Update Portfolio Manager status and final decision
                     if "judge_decision" in risk_state and risk_state["judge_decision"]:
-                        message_buffer.update_agent_status(
-                            "Portfolio Manager", "in_progress"
-                        )
+                        message_buffer.update_agent_status("Portfolio Manager", "in_progress")
                         message_buffer.add_message(
                             "Reasoning",
                             f"Portfolio Manager: {risk_state['judge_decision']}",
@@ -1380,12 +1486,8 @@ def run_trading_analysis(selections):
                         # Mark risk analysts as completed
                         message_buffer.update_agent_status("Risky Analyst", "completed")
                         message_buffer.update_agent_status("Safe Analyst", "completed")
-                        message_buffer.update_agent_status(
-                            "Neutral Analyst", "completed"
-                        )
-                        message_buffer.update_agent_status(
-                            "Portfolio Manager", "completed"
-                        )
+                        message_buffer.update_agent_status("Neutral Analyst", "completed")
+                        message_buffer.update_agent_status("Portfolio Manager", "completed")
 
                 # Update the display
                 update_display(layout)
@@ -1418,55 +1520,42 @@ def run_trading_analysis(selections):
 @app.command()
 def build_memories(
     start_date: str = typer.Option(
-        "2023-01-01",
-        "--start-date",
-        "-s",
-        help="Start date for scanning high movers (YYYY-MM-DD)"
+        "2023-01-01", "--start-date", "-s", help="Start date for scanning high movers (YYYY-MM-DD)"
     ),
     end_date: str = typer.Option(
-        "2024-12-01",
-        "--end-date",
-        "-e",
-        help="End date for scanning high movers (YYYY-MM-DD)"
+        "2024-12-01", "--end-date", "-e", help="End date for scanning high movers (YYYY-MM-DD)"
     ),
     tickers: str = typer.Option(
         None,
         "--tickers",
         "-t",
-        help="Comma-separated list of tickers to scan (overrides --use-alpha-vantage)"
+        help="Comma-separated list of tickers to scan (overrides --use-alpha-vantage)",
     ),
     use_alpha_vantage: bool = typer.Option(
         False,
         "--use-alpha-vantage",
         "-a",
-        help="Use Alpha Vantage top gainers/losers to get ticker list"
+        help="Use Alpha Vantage top gainers/losers to get ticker list",
     ),
     av_limit: int = typer.Option(
         20,
         "--av-limit",
-        help="Number of tickers to get from each Alpha Vantage category (gainers/losers)"
+        help="Number of tickers to get from each Alpha Vantage category (gainers/losers)",
     ),
     min_move_pct: float = typer.Option(
-        15.0,
-        "--min-move",
-        "-m",
-        help="Minimum percentage move to qualify as high mover"
+        15.0, "--min-move", "-m", help="Minimum percentage move to qualify as high mover"
     ),
     analysis_windows: str = typer.Option(
         "7,30",
         "--windows",
         "-w",
-        help="Comma-separated list of days before move to analyze (e.g., '7,30')"
+        help="Comma-separated list of days before move to analyze (e.g., '7,30')",
     ),
     max_samples: int = typer.Option(
-        20,
-        "--max-samples",
-        help="Maximum number of high movers to analyze (reduces runtime)"
+        20, "--max-samples", help="Maximum number of high movers to analyze (reduces runtime)"
     ),
     sample_strategy: str = typer.Option(
-        "diverse",
-        "--strategy",
-        help="Sampling strategy: diverse, largest, recent, or random"
+        "diverse", "--strategy", help="Sampling strategy: diverse, largest, recent, or random"
     ),
 ):
     """
@@ -1488,20 +1577,27 @@ def build_memories(
         # Customize date range and parameters
         python cli/main.py build-memories --use-alpha-vantage --start-date 2023-01-01 --min-move 20.0
     """
-    console.print("\n[bold cyan]═══════════════════════════════════════════════════════[/bold cyan]")
+    console.print(
+        "\n[bold cyan]═══════════════════════════════════════════════════════[/bold cyan]"
+    )
     console.print("[bold cyan]      TRADINGAGENTS MEMORY BUILDER[/bold cyan]")
-    console.print("[bold cyan]═══════════════════════════════════════════════════════[/bold cyan]\n")
+    console.print(
+        "[bold cyan]═══════════════════════════════════════════════════════[/bold cyan]\n"
+    )
 
     # Determine ticker source
     if use_alpha_vantage and not tickers:
         console.print("[bold yellow]📡 Using Alpha Vantage to fetch top movers...[/bold yellow]")
         try:
             from tradingagents.agents.utils.historical_memory_builder import HistoricalMemoryBuilder
+
             builder_temp = HistoricalMemoryBuilder(DEFAULT_CONFIG)
             ticker_list = builder_temp.get_tickers_from_alpha_vantage(limit=av_limit)
 
             if not ticker_list:
-                console.print("\n[bold red]❌ No tickers found from Alpha Vantage. Please check your API key or try --tickers instead.[/bold red]\n")
+                console.print(
+                    "\n[bold red]❌ No tickers found from Alpha Vantage. Please check your API key or try --tickers instead.[/bold red]\n"
+                )
                 raise typer.Exit(code=1)
         except Exception as e:
             console.print(f"\n[bold red]❌ Error fetching from Alpha Vantage: {e}[/bold red]")
@@ -1514,12 +1610,14 @@ def build_memories(
         # Default tickers if neither option specified
         default_tickers = "AAPL,MSFT,GOOGL,NVDA,TSLA,META,AMZN,AMD,NFLX,DIS"
         ticker_list = [t.strip().upper() for t in default_tickers.split(",")]
-        console.print(f"[bold yellow]No ticker source specified. Using default list.[/bold yellow]")
-        console.print(f"[dim]Tip: Use --use-alpha-vantage for dynamic ticker discovery or --tickers for custom list[/dim]")
+        console.print("[bold yellow]No ticker source specified. Using default list.[/bold yellow]")
+        console.print(
+            "[dim]Tip: Use --use-alpha-vantage for dynamic ticker discovery or --tickers for custom list[/dim]"
+        )
 
     window_list = [int(w.strip()) for w in analysis_windows.split(",")]
 
-    console.print(f"\n[bold]Configuration:[/bold]")
+    console.print("\n[bold]Configuration:[/bold]")
     console.print(f"  Ticker Source: {'Alpha Vantage' if use_alpha_vantage else 'Manual/Default'}")
     console.print(f"  Date Range: {start_date} to {end_date}")
     console.print(f"  Tickers: {len(ticker_list)} stocks")
@@ -1544,11 +1642,13 @@ def build_memories(
             min_move_pct=min_move_pct,
             analysis_windows=window_list,
             max_samples=max_samples,
-            sample_strategy=sample_strategy
+            sample_strategy=sample_strategy,
         )
 
         if not memories:
-            console.print("\n[bold yellow]⚠️  No memories created. Try adjusting parameters.[/bold yellow]\n")
+            console.print(
+                "\n[bold yellow]⚠️  No memories created. Try adjusting parameters.[/bold yellow]\n"
+            )
             return
 
         # Display summary table
@@ -1564,9 +1664,9 @@ def build_memories(
             stats = memory.get_statistics()
             table.add_row(
                 agent_type.upper(),
-                str(stats['total_memories']),
+                str(stats["total_memories"]),
                 f"{stats['accuracy_rate']:.1f}%",
-                f"{stats['avg_move_pct']:.1f}%"
+                f"{stats['avg_move_pct']:.1f}%",
             )
 
         console.print(table)
@@ -1584,16 +1684,21 @@ def build_memories(
         for agent_type, memory in list(memories.items())[:2]:  # Test first 2 agents
             results = memory.get_memories(test_situation, n_matches=1)
             if results:
-                console.print(f"  [cyan]{agent_type.upper()}[/cyan]: Found {len(results)} relevant memory")
+                console.print(
+                    f"  [cyan]{agent_type.upper()}[/cyan]: Found {len(results)} relevant memory"
+                )
                 console.print(f"    Similarity: {results[0]['similarity_score']:.2f}")
 
         console.print("\n[bold green]🎉 Memory bank ready for use![/bold green]")
-        console.print("\n[dim]Note: These memories will be used automatically in future trading analyses when memory is enabled in config.[/dim]\n")
+        console.print(
+            "\n[dim]Note: These memories will be used automatically in future trading analyses when memory is enabled in config.[/dim]\n"
+        )
 
     except Exception as e:
-        console.print(f"\n[bold red]❌ Error building memories:[/bold red]")
+        console.print("\n[bold red]❌ Error building memories:[/bold red]")
         console.print(f"[red]{str(e)}[/red]\n")
         import traceback
+
         console.print(f"[dim]{traceback.format_exc()}[/dim]")
         raise typer.Exit(code=1)
 

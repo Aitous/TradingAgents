@@ -3,11 +3,14 @@ Yahoo Finance API - Short Interest Data using yfinance
 Identifies potential short squeeze candidates with high short interest
 """
 
-import os
-import yfinance as yf
-from typing import Annotated
-import re
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from typing import Annotated
+
+from tradingagents.dataflows.market_data_utils import format_markdown_table, format_market_cap
+from tradingagents.dataflows.y_finance import get_ticker_info
+from tradingagents.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 def get_short_interest(
@@ -37,33 +40,70 @@ def get_short_interest(
         # In a production system, this would come from a screener API
         watchlist = [
             # Meme stocks & high short interest candidates
-            "GME", "AMC", "BBBY", "BYND", "CLOV", "WISH", "PLTR", "SPCE",
+            "GME",
+            "AMC",
+            "BBBY",
+            "BYND",
+            "CLOV",
+            "WISH",
+            "PLTR",
+            "SPCE",
             # EV & Tech
-            "RIVN", "LCID", "NIO", "TSLA", "NKLA", "PLUG", "FCEL",
+            "RIVN",
+            "LCID",
+            "NIO",
+            "TSLA",
+            "NKLA",
+            "PLUG",
+            "FCEL",
             # Biotech (often heavily shorted)
-            "SAVA", "NVAX", "MRNA", "BNTX", "VXRT", "SESN", "OCGN",
+            "SAVA",
+            "NVAX",
+            "MRNA",
+            "BNTX",
+            "VXRT",
+            "SESN",
+            "OCGN",
             # Retail & Consumer
-            "PTON", "W", "CVNA", "DASH", "UBER", "LYFT",
+            "PTON",
+            "W",
+            "CVNA",
+            "DASH",
+            "UBER",
+            "LYFT",
             # Finance & REITs
-            "SOFI", "HOOD", "COIN", "SQ", "AFRM",
+            "SOFI",
+            "HOOD",
+            "COIN",
+            "SQ",
+            "AFRM",
             # Small caps with squeeze potential
-            "APRN", "ATER", "BBIG", "CEI", "PROG", "SNDL",
+            "APRN",
+            "ATER",
+            "BBIG",
+            "CEI",
+            "PROG",
+            "SNDL",
             # Others
-            "TDOC", "ZM", "PTON", "NFLX", "SNAP", "PINS",
+            "TDOC",
+            "ZM",
+            "PTON",
+            "NFLX",
+            "SNAP",
+            "PINS",
         ]
 
-        print(f"   Checking short interest for {len(watchlist)} tickers...")
+        logger.info(f"Checking short interest for {len(watchlist)} tickers...")
 
         high_si_candidates = []
 
         # Use threading to speed up API calls
         def fetch_short_data(ticker):
             try:
-                stock = yf.Ticker(ticker)
-                info = stock.info
+                info = get_ticker_info(ticker)
 
                 # Get short interest data
-                short_pct = info.get('shortPercentOfFloat', info.get('sharesPercentSharesOut', 0))
+                short_pct = info.get("shortPercentOfFloat", info.get("sharesPercentSharesOut", 0))
                 if short_pct and isinstance(short_pct, (int, float)):
                     short_pct = short_pct * 100  # Convert to percentage
                 else:
@@ -72,9 +112,9 @@ def get_short_interest(
                 # Only include if meets criteria
                 if short_pct >= min_short_interest_pct:
                     # Get other data
-                    price = info.get('currentPrice', info.get('regularMarketPrice', 0))
-                    market_cap = info.get('marketCap', 0)
-                    volume = info.get('volume', info.get('regularMarketVolume', 0))
+                    price = info.get("currentPrice", info.get("regularMarketPrice", 0))
+                    market_cap = info.get("marketCap", 0)
+                    volume = info.get("volume", info.get("regularMarketVolume", 0))
 
                     # Categorize squeeze potential
                     if short_pct >= 30:
@@ -111,34 +151,40 @@ def get_short_interest(
 
         # Sort by short interest percentage (highest first)
         sorted_candidates = sorted(
-            high_si_candidates,
-            key=lambda x: x["short_interest_pct"],
-            reverse=True
+            high_si_candidates, key=lambda x: x["short_interest_pct"], reverse=True
         )[:top_n]
 
         # Format output
-        report = f"# High Short Interest Stocks (Yahoo Finance Data)\n\n"
+        report = "# High Short Interest Stocks (Yahoo Finance Data)\n\n"
         report += f"**Criteria**: Short Interest >{min_short_interest_pct}%\n"
-        report += f"**Data Source**: Yahoo Finance via yfinance\n"
+        report += "**Data Source**: Yahoo Finance via yfinance\n"
         report += f"**Checked**: {len(watchlist)} tickers from watchlist\n\n"
         report += f"**Found**: {len(sorted_candidates)} stocks with high short interest\n\n"
+        report += f"**Found**: {len(sorted_candidates)} stocks with high short interest\n\n"
         report += "## Potential Short Squeeze Candidates\n\n"
-        report += "| Ticker | Price | Market Cap | Volume | Short % | Signal |\n"
-        report += "|--------|-------|------------|--------|---------|--------|\n"
 
+        headers = ["Ticker", "Price", "Market Cap", "Volume", "Short %", "Signal"]
+        rows = []
         for candidate in sorted_candidates:
-            market_cap_str = format_market_cap(candidate['market_cap'])
-            report += f"| {candidate['ticker']} | "
-            report += f"${candidate['price']:.2f} | "
-            report += f"{market_cap_str} | "
-            report += f"{candidate['volume']:,} | "
-            report += f"{candidate['short_interest_pct']:.1f}% | "
-            report += f"{candidate['signal']} |\n"
+            rows.append(
+                [
+                    candidate["ticker"],
+                    f"${candidate['price']:.2f}",
+                    format_market_cap(candidate["market_cap"]),
+                    f"{candidate['volume']:,}",
+                    f"{candidate['short_interest_pct']:.1f}%",
+                    candidate["signal"],
+                ]
+            )
+
+        report += format_markdown_table(headers, rows)
 
         report += "\n\n## Signal Definitions\n\n"
         report += "- **extreme_squeeze_risk**: Short interest >30% - Very high squeeze potential\n"
         report += "- **high_squeeze_potential**: Short interest 20-30% - High squeeze risk\n"
-        report += "- **moderate_squeeze_potential**: Short interest 15-20% - Moderate squeeze risk\n"
+        report += (
+            "- **moderate_squeeze_potential**: Short interest 15-20% - Moderate squeeze risk\n"
+        )
         report += "- **low_squeeze_potential**: Short interest 10-15% - Lower squeeze risk\n\n"
         report += "**Note**: High short interest alone doesn't guarantee a squeeze. Look for positive catalysts.\n"
         report += "**Limitation**: This checks a curated watchlist. For comprehensive scanning, use a stock screener with short interest filters.\n"
@@ -147,41 +193,6 @@ def get_short_interest(
 
     except Exception as e:
         return f"Unexpected error in short interest detection: {str(e)}"
-
-
-def parse_market_cap(market_cap_text: str) -> float:
-    """Parse market cap from Finviz format (e.g., '1.23B', '456M')."""
-    if not market_cap_text or market_cap_text == '-':
-        return 0.0
-
-    market_cap_text = market_cap_text.upper().strip()
-
-    # Extract number and multiplier
-    match = re.match(r'([0-9.]+)([BMK])?', market_cap_text)
-    if not match:
-        return 0.0
-
-    number = float(match.group(1))
-    multiplier = match.group(2)
-
-    if multiplier == 'B':
-        return number * 1_000_000_000
-    elif multiplier == 'M':
-        return number * 1_000_000
-    elif multiplier == 'K':
-        return number * 1_000
-    else:
-        return number
-
-
-def format_market_cap(market_cap: float) -> str:
-    """Format market cap for display."""
-    if market_cap >= 1_000_000_000:
-        return f"${market_cap / 1_000_000_000:.2f}B"
-    elif market_cap >= 1_000_000:
-        return f"${market_cap / 1_000_000:.2f}M"
-    else:
-        return f"${market_cap:,.0f}"
 
 
 def get_fmp_short_interest(

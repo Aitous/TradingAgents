@@ -1,10 +1,14 @@
 """Earnings calendar scanner for upcoming earnings events."""
-from typing import Any, Dict, List
-from datetime import datetime, timedelta
 
-from tradingagents.dataflows.discovery.scanner_registry import BaseScanner, SCANNER_REGISTRY
+from datetime import datetime, timedelta
+from typing import Any, Dict, List
+
+from tradingagents.dataflows.discovery.scanner_registry import SCANNER_REGISTRY, BaseScanner
 from tradingagents.dataflows.discovery.utils import Priority
 from tradingagents.tools.executor import execute_tool
+from tradingagents.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 class EarningsCalendarScanner(BaseScanner):
@@ -23,17 +27,19 @@ class EarningsCalendarScanner(BaseScanner):
         if not self.is_enabled():
             return []
 
-        print(f"   📅 Scanning earnings calendar (next {self.max_days_until_earnings} days)...")
+        logger.info(f"📅 Scanning earnings calendar (next {self.max_days_until_earnings} days)...")
 
         try:
             # Get earnings calendar from Finnhub or Alpha Vantage
             from_date = datetime.now().strftime("%Y-%m-%d")
-            to_date = (datetime.now() + timedelta(days=self.max_days_until_earnings)).strftime("%Y-%m-%d")
+            to_date = (datetime.now() + timedelta(days=self.max_days_until_earnings)).strftime(
+                "%Y-%m-%d"
+            )
 
             result = execute_tool("get_earnings_calendar", from_date=from_date, to_date=to_date)
 
             if not result:
-                print(f"      Found 0 earnings events")
+                logger.info("Found 0 earnings events")
                 return []
 
             candidates = []
@@ -55,21 +61,23 @@ class EarningsCalendarScanner(BaseScanner):
             candidates.sort(key=lambda x: x.get("days_until", 999))
 
             # Apply limit
-            candidates = candidates[:self.limit]
+            candidates = candidates[: self.limit]
 
-            print(f"      Found {len(candidates)} upcoming earnings")
+            logger.info(f"Found {len(candidates)} upcoming earnings")
             return candidates
 
         except Exception as e:
-            print(f"      ⚠️  Earnings calendar failed: {e}")
+            logger.warning(f"⚠️  Earnings calendar failed: {e}")
             return []
 
-    def _parse_structured_earnings(self, earnings_list: List[Dict], seen_tickers: set) -> List[Dict[str, Any]]:
+    def _parse_structured_earnings(
+        self, earnings_list: List[Dict], seen_tickers: set
+    ) -> List[Dict[str, Any]]:
         """Parse structured earnings data."""
         candidates = []
         today = datetime.now().date()
 
-        for event in earnings_list[:self.max_candidates * 2]:
+        for event in earnings_list[: self.max_candidates * 2]:
             ticker = event.get("ticker", event.get("symbol", "")).upper()
             if not ticker or ticker in seen_tickers:
                 continue
@@ -82,7 +90,9 @@ class EarningsCalendarScanner(BaseScanner):
             try:
                 # Parse date (handle different formats)
                 if isinstance(earnings_date_str, str):
-                    earnings_date = datetime.strptime(earnings_date_str.split()[0], "%Y-%m-%d").date()
+                    earnings_date = datetime.strptime(
+                        earnings_date_str.split()[0], "%Y-%m-%d"
+                    ).date()
                 else:
                     earnings_date = earnings_date_str
 
@@ -107,15 +117,19 @@ class EarningsCalendarScanner(BaseScanner):
                 else:
                     priority = Priority.LOW.value
 
-                candidates.append({
-                    "ticker": ticker,
-                    "source": self.name,
-                    "context": f"Earnings in {days_until} day(s) on {earnings_date_str}",
-                    "priority": priority,
-                    "strategy": "pre_earnings_accumulation" if days_until > 1 else "earnings_play",
-                    "days_until": days_until,
-                    "earnings_date": earnings_date_str,
-                })
+                candidates.append(
+                    {
+                        "ticker": ticker,
+                        "source": self.name,
+                        "context": f"Earnings in {days_until} day(s) on {earnings_date_str}",
+                        "priority": priority,
+                        "strategy": (
+                            "pre_earnings_accumulation" if days_until > 1 else "earnings_play"
+                        ),
+                        "days_until": days_until,
+                        "earnings_date": earnings_date_str,
+                    }
+                )
 
                 if len(candidates) >= self.max_candidates:
                     break
@@ -133,12 +147,12 @@ class EarningsCalendarScanner(BaseScanner):
         today = datetime.now().date()
 
         # Split by date sections (### 2026-02-05)
-        date_sections = re.split(r'###\s+(\d{4}-\d{2}-\d{2})', text)
+        date_sections = re.split(r"###\s+(\d{4}-\d{2}-\d{2})", text)
 
         current_date = None
         for i, section in enumerate(date_sections):
             # Check if this is a date line
-            if re.match(r'\d{4}-\d{2}-\d{2}', section):
+            if re.match(r"\d{4}-\d{2}-\d{2}", section):
                 current_date = section
                 continue
 
@@ -146,7 +160,7 @@ class EarningsCalendarScanner(BaseScanner):
                 continue
 
             # Find tickers in this section (format: **TICKER** (timing))
-            ticker_pattern = r'\*\*([A-Z]{2,5})\*\*\s*\(([^\)]+)\)'
+            ticker_pattern = r"\*\*([A-Z]{2,5})\*\*\s*\(([^\)]+)\)"
             ticker_matches = re.findall(ticker_pattern, section)
 
             for ticker, timing in ticker_matches:
@@ -174,20 +188,24 @@ class EarningsCalendarScanner(BaseScanner):
                     if timing == "bmo":  # Before market open
                         strategy = "earnings_play"
                     elif timing == "amc":  # After market close
-                        strategy = "pre_earnings_accumulation" if days_until > 0 else "earnings_play"
+                        strategy = (
+                            "pre_earnings_accumulation" if days_until > 0 else "earnings_play"
+                        )
                     else:
                         strategy = "pre_earnings_accumulation"
 
-                    candidates.append({
-                        "ticker": ticker,
-                        "source": self.name,
-                        "context": f"Earnings {timing} in {days_until} day(s) on {current_date}",
-                        "priority": priority,
-                        "strategy": strategy,
-                        "days_until": days_until,
-                        "earnings_date": current_date,
-                        "timing": timing,
-                    })
+                    candidates.append(
+                        {
+                            "ticker": ticker,
+                            "source": self.name,
+                            "context": f"Earnings {timing} in {days_until} day(s) on {current_date}",
+                            "priority": priority,
+                            "strategy": strategy,
+                            "days_until": days_until,
+                            "earnings_date": current_date,
+                            "timing": timing,
+                        }
+                    )
 
                     if len(candidates) >= self.max_candidates:
                         return candidates

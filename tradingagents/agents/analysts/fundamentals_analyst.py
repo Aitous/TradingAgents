@@ -1,23 +1,10 @@
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-import time
-import json
-from tradingagents.tools.generator import get_agent_tools
-from tradingagents.dataflows.config import get_config
-from tradingagents.agents.utils.prompt_templates import (
-    BASE_COLLABORATIVE_BOILERPLATE,
-    get_date_awareness_section,
-)
+from tradingagents.agents.utils.agent_utils import create_analyst_node
+from tradingagents.agents.utils.prompt_templates import get_date_awareness_section
 
 
 def create_fundamentals_analyst(llm):
-    def fundamentals_analyst_node(state):
-        current_date = state["trade_date"]
-        ticker = state["company_of_interest"]
-        company_name = state["company_of_interest"]
-
-        tools = get_agent_tools("fundamentals")
-
-        system_message = f"""You are a Fundamental Analyst assessing {ticker}'s financial health with SHORT-TERM trading relevance.
+    def _build_prompt(ticker, current_date):
+        return f"""You are a Fundamental Analyst assessing {ticker}'s financial health with SHORT-TERM trading relevance.
 
 {get_date_awareness_section(current_date)}
 
@@ -91,31 +78,4 @@ For each fundamental metric, ask:
 
 Date: {current_date} | Ticker: {ticker}"""
 
-        tool_names_str = ", ".join([tool.name for tool in tools])
-        full_system_message = (
-            f"{BASE_COLLABORATIVE_BOILERPLATE}\n\n{system_message}\n\n"
-            f"Context: {ticker} | Date: {current_date} | Tools: {tool_names_str}"
-        )
-
-        prompt = ChatPromptTemplate.from_messages(
-            [
-                ("system", full_system_message),
-                MessagesPlaceholder(variable_name="messages"),
-            ]
-        )
-
-        chain = prompt | llm.bind_tools(tools)
-
-        result = chain.invoke(state["messages"])
-
-        report = ""
-
-        if len(result.tool_calls) == 0:
-            report = result.content
-
-        return {
-            "messages": [result],
-            "fundamentals_report": report,
-        }
-
-    return fundamentals_analyst_node
+    return create_analyst_node(llm, "fundamentals", "fundamentals_report", _build_prompt)

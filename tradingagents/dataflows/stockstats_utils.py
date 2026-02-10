@@ -1,9 +1,10 @@
-import pandas as pd
-import yfinance as yf
-from stockstats import wrap
-from typing import Annotated
 import os
-from .config import get_config, DATA_DIR
+from typing import Annotated
+
+import pandas as pd
+from stockstats import wrap
+
+from .config import DATA_DIR, get_config
 
 
 class StockstatsUtils:
@@ -13,9 +14,7 @@ class StockstatsUtils:
         indicator: Annotated[
             str, "quantitative indicators based off of the stock data for the company"
         ],
-        curr_date: Annotated[
-            str, "curr date for retrieving stock price data, YYYY-mm-dd"
-        ],
+        curr_date: Annotated[str, "curr date for retrieving stock price data, YYYY-mm-dd"],
     ):
         # Get config and set up data directory path
         config = get_config()
@@ -57,7 +56,9 @@ class StockstatsUtils:
                 data = pd.read_csv(data_file)
                 data["Date"] = pd.to_datetime(data["Date"])
             else:
-                data = yf.download(
+                from .y_finance import download_history
+
+                data = download_history(
                     symbol,
                     start=start_date,
                     end=end_date,

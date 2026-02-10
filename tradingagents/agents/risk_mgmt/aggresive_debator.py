@@ -1,12 +1,11 @@
-import time
-import json
+from tradingagents.agents.utils.agent_utils import update_risk_debate_state
+from tradingagents.agents.utils.llm_utils import parse_llm_response
 
 
 def create_risky_debator(llm):
     def risky_node(state) -> dict:
         risk_debate_state = state["risk_debate_state"]
         history = risk_debate_state.get("history", "")
-        risky_history = risk_debate_state.get("risky_history", "")
 
         current_safe_response = risk_debate_state.get("current_safe_response", "")
         current_neutral_response = risk_debate_state.get("current_neutral_response", "")
@@ -67,23 +66,9 @@ State whether you agree with the Trader's direction (BUY/SELL) or flip it (no HO
 **If no other arguments yet:** Present your strongest case for why this trade can work soon, using only the provided data."""
 
         response = llm.invoke(prompt)
+        response_text = parse_llm_response(response.content)
+        argument = f"Risky Analyst: {response_text}"
 
-        argument = f"Risky Analyst: {response.content}"
-
-        new_risk_debate_state = {
-            "history": history + "\n" + argument,
-            "risky_history": risky_history + "\n" + argument,
-            "safe_history": risk_debate_state.get("safe_history", ""),
-            "neutral_history": risk_debate_state.get("neutral_history", ""),
-            "latest_speaker": "Risky",
-            "current_risky_response": argument,
-            "current_safe_response": risk_debate_state.get("current_safe_response", ""),
-            "current_neutral_response": risk_debate_state.get(
-                "current_neutral_response", ""
-            ),
-            "count": risk_debate_state["count"] + 1,
-        }
-
-        return {"risk_debate_state": new_risk_debate_state}
+        return {"risk_debate_state": update_risk_debate_state(risk_debate_state, argument, "Risky")}
 
     return risky_node

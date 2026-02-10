@@ -1,5 +1,5 @@
-import time
-import json
+from tradingagents.agents.utils.agent_utils import format_memory_context
+from tradingagents.agents.utils.llm_utils import parse_llm_response
 
 
 def create_risk_manager(llm, memory):
@@ -15,25 +15,10 @@ def create_risk_manager(llm, memory):
         sentiment_report = state["sentiment_report"]
         trader_plan = state.get("trader_investment_plan") or state.get("investment_plan", "")
 
-        curr_situation = f"{market_research_report}\n\n{sentiment_report}\n\n{news_report}\n\n{fundamentals_report}"
-        
-        if memory:
-            past_memories = memory.get_memories(curr_situation, n_matches=2)
-        else:
-            past_memories = []
+        past_memory_str = format_memory_context(memory, state)
 
-
-        if past_memories:
-            past_memory_str = "### Past Lessons Applied\\n**Reflections from Similar Situations:**\\n"
-            for i, rec in enumerate(past_memories, 1):
-                past_memory_str += rec["recommendation"] + "\\n\\n"
-            past_memory_str += "\\n\\n**How I'm Using These Lessons:**\\n"
-            past_memory_str += "- [Specific adjustment based on past mistake/success]\\n"
-            past_memory_str += "- [Impact on current conviction level]\\n"
-        else:
-            past_memory_str = ""  # Don't include placeholder when no memories
-
-        prompt = f"""You are the Final Trade Decider for {company_name}. Make the final SHORT-TERM call (5-14 days) based on the risk debate and the provided data.
+        prompt = (
+            f"""You are the Final Trade Decider for {company_name}. Make the final SHORT-TERM call (5-14 days) based on the risk debate and the provided data.
 
 ## CORE RULES (CRITICAL)
 - Evaluate this ticker IN ISOLATION (no portfolio sizing, no portfolio impact, no correlation analysis).
@@ -66,13 +51,19 @@ If evidence is contradictory, still choose BUY or SELL and set conviction to Low
 
 ### Key Risks
 - [2 bullets max: main ways it fails]
-""" + (f"""
+"""
+            + (
+                f"""
 ## PAST LESSONS - CRITICAL
 Review past mistakes to avoid repeating trade-setup errors:
 {past_memory_str}
 
 **Self-Check:** Have similar setups failed before? What was the key mistake (timing, catalyst read, or stop placement)?
-""" if past_memory_str else "") + f"""
+"""
+                if past_memory_str
+                else ""
+            )
+            + f"""
 ---
 
 **RISK DEBATE TO JUDGE:**
@@ -84,11 +75,13 @@ Sentiment: {sentiment_report}
 News: {news_report}
 Fundamentals: {fundamentals_report}
 """
+        )
 
         response = llm.invoke(prompt)
+        response_text = parse_llm_response(response.content)
 
         new_risk_debate_state = {
-            "judge_decision": response.content,
+            "judge_decision": response_text,
             "history": risk_debate_state["history"],
             "risky_history": risk_debate_state["risky_history"],
             "safe_history": risk_debate_state["safe_history"],
@@ -102,7 +95,7 @@ Fundamentals: {fundamentals_report}
 
         return {
             "risk_debate_state": new_risk_debate_state,
-            "final_trade_decision": response.content,
+            "final_trade_decision": response_text,
         }
 
     return risk_manager_node

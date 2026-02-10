@@ -1,13 +1,82 @@
-from typing import Annotated, List, Optional, Union
-from datetime import datetime
-from dateutil.relativedelta import relativedelta
-import yfinance as yf
-import pandas as pd
 import os
-import requests
-from concurrent.futures import ThreadPoolExecutor, as_completed
+import sys
+import warnings
+from contextlib import contextmanager
+from datetime import datetime, timedelta
 from pathlib import Path
+from typing import Annotated, Any, Dict, List, Optional, Union
+
+import pandas as pd
+import yfinance as yf
+from dateutil.relativedelta import relativedelta
+
+from tradingagents.dataflows.technical_analyst import TechnicalAnalyst
+from tradingagents.utils.logger import get_logger
+
 from .stockstats_utils import StockstatsUtils
+
+logger = get_logger(__name__)
+
+
+@contextmanager
+def suppress_yfinance_warnings():
+    """Suppress yfinance stderr warnings about delisted tickers."""
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore")
+        # Redirect stderr to devnull temporarily
+        old_stderr = sys.stderr
+        sys.stderr = open(os.devnull, "w")
+        try:
+            yield
+        finally:
+            sys.stderr.close()
+            sys.stderr = old_stderr
+
+
+def get_ticker_info(symbol: str) -> dict:
+    """Get ticker info dict with warning suppression. Returns {} on error."""
+    with suppress_yfinance_warnings():
+        try:
+            return yf.Ticker(symbol.upper()).info or {}
+        except Exception:
+            return {}
+
+
+def download_history(symbol: str, **kwargs) -> pd.DataFrame:
+    """Download historical data via yf.download() with warning suppression."""
+    with suppress_yfinance_warnings():
+        try:
+            return yf.download(symbol.upper(), **kwargs)
+        except Exception:
+            return pd.DataFrame()
+
+
+def get_ticker_history(symbol: str, **kwargs) -> pd.DataFrame:
+    """Get ticker history via Ticker.history() with warning suppression."""
+    with suppress_yfinance_warnings():
+        try:
+            return yf.Ticker(symbol.upper()).history(**kwargs)
+        except Exception:
+            return pd.DataFrame()
+
+
+def get_ticker_options(symbol: str) -> tuple:
+    """Get available option expiration dates. Returns () on error."""
+    with suppress_yfinance_warnings():
+        try:
+            return yf.Ticker(symbol.upper()).options
+        except Exception:
+            return ()
+
+
+def get_option_chain(symbol: str, expiration: str):
+    """Get option chain for a specific expiration. Returns None on error."""
+    with suppress_yfinance_warnings():
+        try:
+            return yf.Ticker(symbol.upper()).option_chain(expiration)
+        except Exception:
+            return None
+
 
 def get_YFin_data_online(
     symbol: Annotated[str, "ticker symbol of the company"],
@@ -26,9 +95,7 @@ def get_YFin_data_online(
 
     # Check if data is empty
     if data.empty:
-        return (
-            f"No data found for symbol '{symbol}' between {start_date} and {end_date}"
-        )
+        return f"No data found for symbol '{symbol}' between {start_date} and {end_date}"
 
     # Remove timezone info from index for cleaner output
     if data.index.tz is not None:
@@ -50,12 +117,72 @@ def get_YFin_data_online(
 
     return header + csv_string
 
+
+def get_average_volume(
+    symbol: Annotated[str, "ticker symbol of the company"],
+    lookback_days: Annotated[int, "number of trading days to average"] = 20,
+    curr_date: Annotated[str, "current date (YYYY-mm-dd) for reference"] = None,
+) -> dict:
+    """Get average volume over a recent window for liquidity filtering."""
+    try:
+        if curr_date:
+            end_dt = datetime.strptime(curr_date, "%Y-%m-%d")
+        else:
+            end_dt = datetime.now()
+        start_dt = end_dt - timedelta(days=lookback_days * 2)
+
+        with suppress_yfinance_warnings():
+            data = yf.download(
+                symbol,
+                start=start_dt.strftime("%Y-%m-%d"),
+                end=end_dt.strftime("%Y-%m-%d"),
+                multi_level_index=False,
+                progress=False,
+                auto_adjust=True,
+            )
+
+        if data.empty or "Volume" not in data.columns:
+            return {
+                "symbol": symbol.upper(),
+                "average_volume": None,
+                "latest_volume": None,
+                "lookback_days": lookback_days,
+                "error": "No volume data found",
+            }
+
+        volume_series = data["Volume"].dropna()
+        if volume_series.empty:
+            return {
+                "symbol": symbol.upper(),
+                "average_volume": None,
+                "latest_volume": None,
+                "lookback_days": lookback_days,
+                "error": "No volume data found",
+            }
+
+        average_volume = float(volume_series.tail(lookback_days).mean())
+        latest_volume = float(volume_series.iloc[-1])
+
+        return {
+            "symbol": symbol.upper(),
+            "average_volume": average_volume,
+            "latest_volume": latest_volume,
+            "lookback_days": lookback_days,
+        }
+    except Exception as e:
+        return {
+            "symbol": symbol.upper(),
+            "average_volume": None,
+            "latest_volume": None,
+            "lookback_days": lookback_days,
+            "error": f"{e}",
+        }
+
+
 def get_stock_stats_indicators_window(
     symbol: Annotated[str, "ticker symbol of the company"],
     indicator: Annotated[str, "technical indicator to get the analysis and report of"],
-    curr_date: Annotated[
-        str, "The current trading date you are trading on, YYYY-mm-dd"
-    ],
+    curr_date: Annotated[str, "The current trading date you are trading on, YYYY-mm-dd"],
     look_back_days: Annotated[int, "how many days to look back"],
 ) -> str:
 
@@ -144,30 +271,30 @@ def get_stock_stats_indicators_window(
     # Optimized: Get stock data once and calculate indicators for all dates
     try:
         indicator_data = _get_stock_stats_bulk(symbol, indicator, curr_date)
-        
+
         # Generate the date range we need
         current_dt = curr_date_dt
         date_values = []
-        
+
         while current_dt >= before:
-            date_str = current_dt.strftime('%Y-%m-%d')
-            
+            date_str = current_dt.strftime("%Y-%m-%d")
+
             # Look up the indicator value for this date
             if date_str in indicator_data:
                 indicator_value = indicator_data[date_str]
             else:
                 indicator_value = "N/A: Not a trading day (weekend or holiday)"
-            
+
             date_values.append((date_str, indicator_value))
             current_dt = current_dt - relativedelta(days=1)
-        
+
         # Build the result string
         ind_string = ""
         for date_str, value in date_values:
             ind_string += f"{date_str}: {value}\n"
-        
+
     except Exception as e:
-        print(f"Error getting bulk stockstats data: {e}")
+        logger.error(f"Error getting bulk stockstats data: {e}")
         # Fallback to original implementation if bulk method fails
         ind_string = ""
         curr_date_dt = datetime.strptime(curr_date, "%Y-%m-%d")
@@ -191,21 +318,21 @@ def get_stock_stats_indicators_window(
 def _get_stock_stats_bulk(
     symbol: Annotated[str, "ticker symbol of the company"],
     indicator: Annotated[str, "technical indicator to calculate"],
-    curr_date: Annotated[str, "current date for reference"]
+    curr_date: Annotated[str, "current date for reference"],
 ) -> dict:
     """
     Optimized bulk calculation of stock stats indicators.
     Fetches data once and calculates indicator for all available dates.
     Returns dict mapping date strings to indicator values.
     """
-    from .config import get_config
     import pandas as pd
     from stockstats import wrap
-    import os
-    
+
+    from .config import get_config
+
     config = get_config()
     online = config["data_vendors"]["technical_indicators"] != "local"
-    
+
     if not online:
         # Local data path
         try:
@@ -222,19 +349,19 @@ def _get_stock_stats_bulk(
         # Online data fetching with caching
         today_date = pd.Timestamp.today()
         curr_date_dt = pd.to_datetime(curr_date)
-        
+
         end_date = today_date
         start_date = today_date - pd.DateOffset(years=2)
         start_date_str = start_date.strftime("%Y-%m-%d")
         end_date_str = end_date.strftime("%Y-%m-%d")
-        
+
         os.makedirs(config["data_cache_dir"], exist_ok=True)
-        
+
         data_file = os.path.join(
             config["data_cache_dir"],
             f"{symbol}-YFin-data-{start_date_str}-{end_date_str}.csv",
         )
-        
+
         if os.path.exists(data_file):
             data = pd.read_csv(data_file)
             data["Date"] = pd.to_datetime(data["Date"])
@@ -249,34 +376,32 @@ def _get_stock_stats_bulk(
             )
             data = data.reset_index()
             data.to_csv(data_file, index=False)
-        
+
         df = wrap(data)
         df["Date"] = df["Date"].dt.strftime("%Y-%m-%d")
-    
+
     # Calculate the indicator for all rows at once
     df[indicator]  # This triggers stockstats to calculate the indicator
-    
+
     # Create a dictionary mapping date strings to indicator values
     result_dict = {}
     for _, row in df.iterrows():
         date_str = row["Date"]
         indicator_value = row[indicator]
-        
+
         # Handle NaN/None values
         if pd.isna(indicator_value):
             result_dict[date_str] = "N/A"
         else:
             result_dict[date_str] = str(indicator_value)
-    
+
     return result_dict
 
 
 def get_stockstats_indicator(
     symbol: Annotated[str, "ticker symbol of the company"],
     indicator: Annotated[str, "technical indicator to get the analysis and report of"],
-    curr_date: Annotated[
-        str, "The current trading date you are trading on, YYYY-mm-dd"
-    ],
+    curr_date: Annotated[str, "The current trading date you are trading on, YYYY-mm-dd"],
 ) -> str:
 
     curr_date_dt = datetime.strptime(curr_date, "%Y-%m-%d")
@@ -289,7 +414,7 @@ def get_stockstats_indicator(
             curr_date,
         )
     except Exception as e:
-        print(
+        logger.error(
             f"Error getting stockstats indicator data for indicator {indicator} on {curr_date}: {e}"
         )
         return ""
@@ -303,543 +428,177 @@ def get_technical_analysis(
 ) -> str:
     """
     Get a concise technical analysis summary with key indicators, signals, and trend interpretation.
-    
+
     Returns analysis-ready output instead of verbose day-by-day data.
     """
-    from .config import get_config
     from stockstats import wrap
-    
-    # Default indicators to analyze
-    indicators = ["rsi", "stoch", "macd", "adx", "close_20_ema", "close_50_sma", "close_200_sma", "boll", "atr", "obv", "vwap", "fib"]
-    
-    # Fetch price data (last 60 days for indicator calculation)
+
+    # Fetch price data (last 200 days for indicator calculation)
     curr_date_dt = pd.to_datetime(curr_date)
-    start_date = curr_date_dt - pd.DateOffset(days=200)  # Need enough history for 200 SMA
-    
+    start_date = curr_date_dt - pd.DateOffset(days=300)  # Need enough history for 200 SMA
+
     try:
-        data = yf.download(
-            symbol,
-            start=start_date.strftime("%Y-%m-%d"),
-            end=curr_date_dt.strftime("%Y-%m-%d"),
-            multi_level_index=False,
-            progress=False,
-            auto_adjust=True,
-        )
-        
+        with suppress_yfinance_warnings():
+            data = yf.download(
+                symbol,
+                start=start_date.strftime("%Y-%m-%d"),
+                end=curr_date_dt.strftime("%Y-%m-%d"),
+                multi_level_index=False,
+                progress=False,
+                auto_adjust=True,
+            )
+
         if data.empty:
             return f"No data found for {symbol}"
-        
+
         data = data.reset_index()
         df = wrap(data)
-        
+
         # Get latest values
         latest = df.iloc[-1]
-        prev = df.iloc[-2] if len(df) > 1 else latest
-        prev_5 = df.iloc[-5] if len(df) > 5 else latest
-        
-        current_price = float(latest['close'])
-        
-        # Build analysis
-        analysis = []
-        analysis.append(f"# Technical Analysis for {symbol.upper()}")
-        analysis.append(f"**Date:** {curr_date}")
-        analysis.append(f"**Current Price:** ${current_price:.2f}")
-        analysis.append("")
-        
-        # Price action summary
-        daily_change = ((current_price - float(prev['close'])) / float(prev['close'])) * 100
-        weekly_change = ((current_price - float(prev_5['close'])) / float(prev_5['close'])) * 100
-        analysis.append(f"## Price Action")
-        analysis.append(f"- **Daily Change:** {daily_change:+.2f}%")
-        analysis.append(f"- **5-Day Change:** {weekly_change:+.2f}%")
-        analysis.append("")
-        
-        # RSI Analysis
-        if 'rsi' in indicators:
-            try:
-                df['rsi']  # Trigger calculation
-                rsi = float(df.iloc[-1]['rsi'])
-                rsi_prev = float(df.iloc[-5]['rsi']) if len(df) > 5 else rsi
-                
-                if rsi > 70:
-                    rsi_signal = "OVERBOUGHT ⚠️"
-                elif rsi < 30:
-                    rsi_signal = "OVERSOLD ⚡"
-                elif rsi > 50:
-                    rsi_signal = "Bullish"
-                else:
-                    rsi_signal = "Bearish"
-                    
-                rsi_trend = "↑" if rsi > rsi_prev else "↓"
-                analysis.append(f"## RSI (14)")
-                analysis.append(f"- **Value:** {rsi:.1f} {rsi_trend}")
-                analysis.append(f"- **Signal:** {rsi_signal}")
-                analysis.append("")
-            except Exception as e:
-                pass
-        
-        # MACD Analysis
-        if 'macd' in indicators:
-            try:
-                df['macd']
-                df['macds']
-                df['macdh']
-                macd = float(df.iloc[-1]['macd'])
-                signal = float(df.iloc[-1]['macds'])
-                histogram = float(df.iloc[-1]['macdh'])
-                hist_prev = float(df.iloc[-2]['macdh']) if len(df) > 1 else histogram
-                
-                if macd > signal and histogram > 0:
-                    macd_signal = "BULLISH CROSSOVER ⚡" if histogram > hist_prev else "Bullish"
-                elif macd < signal and histogram < 0:
-                    macd_signal = "BEARISH CROSSOVER ⚠️" if histogram < hist_prev else "Bearish"
-                else:
-                    macd_signal = "Neutral"
-                
-                momentum = "Strengthening ↑" if abs(histogram) > abs(hist_prev) else "Weakening ↓"
-                analysis.append(f"## MACD")
-                analysis.append(f"- **MACD Line:** {macd:.3f}")
-                analysis.append(f"- **Signal Line:** {signal:.3f}")
-                analysis.append(f"- **Histogram:** {histogram:.3f} ({momentum})")
-                analysis.append(f"- **Signal:** {macd_signal}")
-                analysis.append("")
-            except Exception as e:
-                pass
-        
-        # Moving Averages
-        if 'close_50_sma' in indicators or 'close_200_sma' in indicators:
-            try:
-                df['close_50_sma']
-                df['close_200_sma']
-                sma_50 = float(df.iloc[-1]['close_50_sma'])
-                sma_200 = float(df.iloc[-1]['close_200_sma'])
-                
-                # Trend determination
-                if current_price > sma_50 > sma_200:
-                    trend = "STRONG UPTREND ⚡"
-                elif current_price > sma_50:
-                    trend = "Uptrend"
-                elif current_price < sma_50 < sma_200:
-                    trend = "STRONG DOWNTREND ⚠️"
-                elif current_price < sma_50:
-                    trend = "Downtrend"
-                else:
-                    trend = "Sideways"
-                
-                # Golden/Death cross detection
-                sma_50_prev = float(df.iloc[-5]['close_50_sma']) if len(df) > 5 else sma_50
-                sma_200_prev = float(df.iloc[-5]['close_200_sma']) if len(df) > 5 else sma_200
-                
-                cross = ""
-                if sma_50 > sma_200 and sma_50_prev < sma_200_prev:
-                    cross = " (GOLDEN CROSS ⚡)"
-                elif sma_50 < sma_200 and sma_50_prev > sma_200_prev:
-                    cross = " (DEATH CROSS ⚠️)"
-                
-                analysis.append(f"## Moving Averages")
-                analysis.append(f"- **50 SMA:** ${sma_50:.2f} ({'+' if current_price > sma_50 else ''}{((current_price - sma_50) / sma_50 * 100):.1f}% from price)")
-                analysis.append(f"- **200 SMA:** ${sma_200:.2f} ({'+' if current_price > sma_200 else ''}{((current_price - sma_200) / sma_200 * 100):.1f}% from price)")
-                analysis.append(f"- **Trend:** {trend}{cross}")
-                analysis.append("")
-            except Exception as e:
-                pass
-        
-        # Bollinger Bands
-        if 'boll' in indicators:
-            try:
-                df['boll']
-                df['boll_ub']
-                df['boll_lb']
-                middle = float(df.iloc[-1]['boll'])
-                upper = float(df.iloc[-1]['boll_ub'])
-                lower = float(df.iloc[-1]['boll_lb'])
-                
-                # Position within bands (0 = lower, 1 = upper)
-                band_position = (current_price - lower) / (upper - lower) if upper != lower else 0.5
-                
-                if band_position > 0.95:
-                    bb_signal = "AT UPPER BAND - Potential reversal ⚠️"
-                elif band_position < 0.05:
-                    bb_signal = "AT LOWER BAND - Potential bounce ⚡"
-                elif band_position > 0.8:
-                    bb_signal = "Near upper band"
-                elif band_position < 0.2:
-                    bb_signal = "Near lower band"
-                else:
-                    bb_signal = "Within bands"
-                
-                bandwidth = ((upper - lower) / middle) * 100
-                analysis.append(f"## Bollinger Bands (20,2)")
-                analysis.append(f"- **Upper:** ${upper:.2f}")
-                analysis.append(f"- **Middle:** ${middle:.2f}")
-                analysis.append(f"- **Lower:** ${lower:.2f}")
-                analysis.append(f"- **Band Position:** {band_position:.0%}")
-                analysis.append(f"- **Bandwidth:** {bandwidth:.1f}% (volatility indicator)")
-                analysis.append(f"- **Signal:** {bb_signal}")
-                analysis.append("")
-            except Exception as e:
-                pass
-        
-        # ATR (Volatility)
-        if 'atr' in indicators:
-            try:
-                df['atr']
-                atr = float(df.iloc[-1]['atr'])
-                atr_pct = (atr / current_price) * 100
-                
-                if atr_pct > 5:
-                    vol_level = "HIGH VOLATILITY ⚠️"
-                elif atr_pct > 2:
-                    vol_level = "Moderate volatility"
-                else:
-                    vol_level = "Low volatility"
-                
-                analysis.append(f"## ATR (Volatility)")
-                analysis.append(f"- **ATR:** ${atr:.2f} ({atr_pct:.1f}% of price)")
-                analysis.append(f"- **Level:** {vol_level}")
-                analysis.append(f"- **Suggested Stop-Loss:** ${current_price - (1.5 * atr):.2f} (1.5x ATR)")
-                analysis.append("")
-            except Exception as e:
-                pass
-        
-        # Stochastic Oscillator
-        if 'stoch' in indicators:
-            try:
-                df['kdjk']  # Stochastic %K
-                df['kdjd']  # Stochastic %D
-                stoch_k = float(df.iloc[-1]['kdjk'])
-                stoch_d = float(df.iloc[-1]['kdjd'])
-                stoch_k_prev = float(df.iloc[-2]['kdjk']) if len(df) > 1 else stoch_k
-                
-                if stoch_k > 80 and stoch_d > 80:
-                    stoch_signal = "OVERBOUGHT ⚠️"
-                elif stoch_k < 20 and stoch_d < 20:
-                    stoch_signal = "OVERSOLD ⚡"
-                elif stoch_k > stoch_d and stoch_k_prev < stoch_d:
-                    stoch_signal = "Bullish crossover ⚡"
-                elif stoch_k < stoch_d and stoch_k_prev > stoch_d:
-                    stoch_signal = "Bearish crossover ⚠️"
-                elif stoch_k > 50:
-                    stoch_signal = "Bullish"
-                else:
-                    stoch_signal = "Bearish"
-                
-                analysis.append(f"## Stochastic (14,3,3)")
-                analysis.append(f"- **%K:** {stoch_k:.1f}")
-                analysis.append(f"- **%D:** {stoch_d:.1f}")
-                analysis.append(f"- **Signal:** {stoch_signal}")
-                analysis.append("")
-            except Exception as e:
-                pass
-        
-        # ADX (Trend Strength)
-        if 'adx' in indicators:
-            try:
-                df['adx']
-                df['dx']  
-                adx = float(df.iloc[-1]['adx'])
-                adx_prev = float(df.iloc[-5]['adx']) if len(df) > 5 else adx
-                
-                if adx > 50:
-                    trend_strength = "VERY STRONG TREND ⚡"
-                elif adx > 25:
-                    trend_strength = "Strong trend"
-                elif adx > 20:
-                    trend_strength = "Trending"
-                else:
-                    trend_strength = "WEAK/NO TREND (range-bound) ⚠️"
-                
-                adx_direction = "Strengthening ↑" if adx > adx_prev else "Weakening ↓"
-                analysis.append(f"## ADX (Trend Strength)")
-                analysis.append(f"- **ADX:** {adx:.1f} ({adx_direction})")
-                analysis.append(f"- **Interpretation:** {trend_strength}")
-                analysis.append("")
-            except Exception as e:
-                pass
-        
-        # 20 EMA (Short-term trend)
-        if 'close_20_ema' in indicators:
-            try:
-                df['close_20_ema']
-                ema_20 = float(df.iloc[-1]['close_20_ema'])
-                
-                pct_from_ema = ((current_price - ema_20) / ema_20) * 100
-                if current_price > ema_20:
-                    ema_signal = "Price ABOVE 20 EMA (short-term bullish)"
-                else:
-                    ema_signal = "Price BELOW 20 EMA (short-term bearish)"
-                
-                analysis.append(f"## 20 EMA")
-                analysis.append(f"- **Value:** ${ema_20:.2f} ({pct_from_ema:+.1f}% from price)")
-                analysis.append(f"- **Signal:** {ema_signal}")
-                analysis.append("")
-            except Exception as e:
-                pass
-        
-        # OBV (On-Balance Volume)
-        if 'obv' in indicators:
-            try:
-                # Calculate OBV manually since stockstats may not have it
-                obv = 0
-                obv_values = [0]
-                for i in range(1, len(df)):
-                    if float(df.iloc[i]['close']) > float(df.iloc[i-1]['close']):
-                        obv += float(df.iloc[i]['volume'])
-                    elif float(df.iloc[i]['close']) < float(df.iloc[i-1]['close']):
-                        obv -= float(df.iloc[i]['volume'])
-                    obv_values.append(obv)
-                
-                current_obv = obv_values[-1]
-                obv_5_ago = obv_values[-5] if len(obv_values) > 5 else obv_values[0]
-                
-                if current_obv > obv_5_ago and current_price > float(df.iloc[-5]['close']):
-                    obv_signal = "Confirmed uptrend (price & volume rising)"
-                elif current_obv < obv_5_ago and current_price < float(df.iloc[-5]['close']):
-                    obv_signal = "Confirmed downtrend (price & volume falling)"
-                elif current_obv > obv_5_ago and current_price < float(df.iloc[-5]['close']):
-                    obv_signal = "BULLISH DIVERGENCE ⚡ (accumulation)"
-                elif current_obv < obv_5_ago and current_price > float(df.iloc[-5]['close']):
-                    obv_signal = "BEARISH DIVERGENCE ⚠️ (distribution)"
-                else:
-                    obv_signal = "Neutral"
-                
-                obv_formatted = f"{current_obv/1e6:.1f}M" if abs(current_obv) > 1e6 else f"{current_obv/1e3:.1f}K"
-                analysis.append(f"## OBV (On-Balance Volume)")
-                analysis.append(f"- **Value:** {obv_formatted}")
-                analysis.append(f"- **5-Day Trend:** {'Rising ↑' if current_obv > obv_5_ago else 'Falling ↓'}")
-                analysis.append(f"- **Signal:** {obv_signal}")
-                analysis.append("")
-            except Exception as e:
-                pass
-        
-        # VWAP (Volume Weighted Average Price)
-        if 'vwap' in indicators:
-            try:
-                # Calculate VWAP for today (simplified - using recent data)
-                typical_price = (float(df.iloc[-1]['high']) + float(df.iloc[-1]['low']) + float(df.iloc[-1]['close'])) / 3
-                
-                # Calculate cumulative VWAP (last 20 periods approximation)
-                recent_df = df.tail(20)
-                tp_vol = ((recent_df['high'] + recent_df['low'] + recent_df['close']) / 3) * recent_df['volume']
-                vwap = float(tp_vol.sum() / recent_df['volume'].sum())
-                
-                pct_from_vwap = ((current_price - vwap) / vwap) * 100
-                if current_price > vwap:
-                    vwap_signal = "Price ABOVE VWAP (institutional buying)"
-                else:
-                    vwap_signal = "Price BELOW VWAP (institutional selling)"
-                
-                analysis.append(f"## VWAP (20-period)")
-                analysis.append(f"- **VWAP:** ${vwap:.2f}")
-                analysis.append(f"- **Current vs VWAP:** {pct_from_vwap:+.1f}%")
-                analysis.append(f"- **Signal:** {vwap_signal}")
-                analysis.append("")
-            except Exception as e:
-                pass
-        
-        # Fibonacci Retracement Levels
-        if 'fib' in indicators:
-            try:
-                # Get high and low from last 50 periods
-                recent_high = float(df.tail(50)['high'].max())
-                recent_low = float(df.tail(50)['low'].min())
-                diff = recent_high - recent_low
-                
-                fib_levels = {
-                    "0.0% (High)": recent_high,
-                    "23.6%": recent_high - (diff * 0.236),
-                    "38.2%": recent_high - (diff * 0.382),
-                    "50.0%": recent_high - (diff * 0.5),
-                    "61.8%": recent_high - (diff * 0.618),
-                    "78.6%": recent_high - (diff * 0.786),
-                    "100% (Low)": recent_low,
-                }
-                
-                # Find nearest support and resistance
-                support = None
-                resistance = None
-                for level_name, level_price in fib_levels.items():
-                    if level_price < current_price and (support is None or level_price > support[1]):
-                        support = (level_name, level_price)
-                    if level_price > current_price and (resistance is None or level_price < resistance[1]):
-                        resistance = (level_name, level_price)
-                
-                analysis.append(f"## Fibonacci Levels (50-period)")
-                analysis.append(f"- **Recent High:** ${recent_high:.2f}")
-                analysis.append(f"- **Recent Low:** ${recent_low:.2f}")
-                if resistance:
-                    analysis.append(f"- **Next Resistance:** ${resistance[1]:.2f} ({resistance[0]})")
-                if support:
-                    analysis.append(f"- **Next Support:** ${support[1]:.2f} ({support[0]})")
-                analysis.append("")
-            except Exception as e:
-                pass
-        
-        # Overall Summary
-        analysis.append("## Summary")
-        signals = []
-        
-        # Collect all signals for summary
-        try:
-            rsi = float(df.iloc[-1]['rsi'])
-            if rsi > 70:
-                signals.append("RSI overbought")
-            elif rsi < 30:
-                signals.append("RSI oversold")
-        except:
-            pass
-            
-        try:
-            if current_price > float(df.iloc[-1]['close_50_sma']):
-                signals.append("Above 50 SMA")
-            else:
-                signals.append("Below 50 SMA")
-        except:
-            pass
-        
-        if signals:
-            analysis.append(f"- **Key Signals:** {', '.join(signals)}")
-        
-        return "\n".join(analysis)
-        
+        current_price = float(latest["close"])
+
+        # Instantiate analyst and generate report
+        analyst = TechnicalAnalyst(df, current_price)
+        return analyst.generate_report(symbol, curr_date)
+
     except Exception as e:
+        logger.error(f"Error analyzing {symbol}: {str(e)}")
         return f"Error analyzing {symbol}: {str(e)}"
+
+
+def _get_financial_statement(ticker: str, statement_type: str, freq: str) -> str:
+    """Helper to retrieve financial statements from yfinance."""
+    try:
+        ticker_obj = yf.Ticker(ticker.upper())
+
+        if statement_type == "balance_sheet":
+            data = (
+                ticker_obj.quarterly_balance_sheet
+                if freq.lower() == "quarterly"
+                else ticker_obj.balance_sheet
+            )
+            name = "Balance Sheet"
+        elif statement_type == "cashflow":
+            data = (
+                ticker_obj.quarterly_cashflow
+                if freq.lower() == "quarterly"
+                else ticker_obj.cashflow
+            )
+            name = "Cash Flow"
+        elif statement_type == "income_statement":
+            data = (
+                ticker_obj.quarterly_income_stmt
+                if freq.lower() == "quarterly"
+                else ticker_obj.income_stmt
+            )
+            name = "Income Statement"
+        else:
+            return f"Error: Unknown statement type '{statement_type}'"
+
+        if data.empty:
+            return f"No {name.lower()} data found for symbol '{ticker}'"
+
+        # Convert to CSV string for consistency with other functions
+        csv_string = data.to_csv()
+
+        # Add header information
+        header = f"# {name} data for {ticker.upper()} ({freq})\n"
+        header += f"# Data retrieved on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
+
+        return header + csv_string
+
+    except Exception as e:
+        return f"Error retrieving {name.lower()} for {ticker}: {str(e)}"
 
 
 def get_balance_sheet(
     ticker: Annotated[str, "ticker symbol of the company"],
     freq: Annotated[str, "frequency of data: 'annual' or 'quarterly'"] = "quarterly",
-    curr_date: Annotated[str, "current date (not used for yfinance)"] = None
+    curr_date: Annotated[str, "current date (not used for yfinance)"] = None,
 ):
     """Get balance sheet data from yfinance."""
-    try:
-        ticker_obj = yf.Ticker(ticker.upper())
-        
-        if freq.lower() == "quarterly":
-            data = ticker_obj.quarterly_balance_sheet
-        else:
-            data = ticker_obj.balance_sheet
-            
-        if data.empty:
-            return f"No balance sheet data found for symbol '{ticker}'"
-            
-        # Convert to CSV string for consistency with other functions
-        csv_string = data.to_csv()
-        
-        # Add header information
-        header = f"# Balance Sheet data for {ticker.upper()} ({freq})\n"
-        header += f"# Data retrieved on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
-        
-        return header + csv_string
-        
-    except Exception as e:
-        return f"Error retrieving balance sheet for {ticker}: {str(e)}"
+    return _get_financial_statement(ticker, "balance_sheet", freq)
 
 
 def get_cashflow(
     ticker: Annotated[str, "ticker symbol of the company"],
     freq: Annotated[str, "frequency of data: 'annual' or 'quarterly'"] = "quarterly",
-    curr_date: Annotated[str, "current date (not used for yfinance)"] = None
+    curr_date: Annotated[str, "current date (not used for yfinance)"] = None,
 ):
     """Get cash flow data from yfinance."""
-    try:
-        ticker_obj = yf.Ticker(ticker.upper())
-        
-        if freq.lower() == "quarterly":
-            data = ticker_obj.quarterly_cashflow
-        else:
-            data = ticker_obj.cashflow
-            
-        if data.empty:
-            return f"No cash flow data found for symbol '{ticker}'"
-            
-        # Convert to CSV string for consistency with other functions
-        csv_string = data.to_csv()
-        
-        # Add header information
-        header = f"# Cash Flow data for {ticker.upper()} ({freq})\n"
-        header += f"# Data retrieved on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
-        
-        return header + csv_string
-        
-    except Exception as e:
-        return f"Error retrieving cash flow for {ticker}: {str(e)}"
+    return _get_financial_statement(ticker, "cashflow", freq)
 
 
 def get_income_statement(
     ticker: Annotated[str, "ticker symbol of the company"],
     freq: Annotated[str, "frequency of data: 'annual' or 'quarterly'"] = "quarterly",
-    curr_date: Annotated[str, "current date (not used for yfinance)"] = None
+    curr_date: Annotated[str, "current date (not used for yfinance)"] = None,
 ):
     """Get income statement data from yfinance."""
-    try:
-        ticker_obj = yf.Ticker(ticker.upper())
-        
-        if freq.lower() == "quarterly":
-            data = ticker_obj.quarterly_income_stmt
-        else:
-            data = ticker_obj.income_stmt
-            
-        if data.empty:
-            return f"No income statement data found for symbol '{ticker}'"
-            
-        # Convert to CSV string for consistency with other functions
-        csv_string = data.to_csv()
-        
-        # Add header information
-        header = f"# Income Statement data for {ticker.upper()} ({freq})\n"
-        header += f"# Data retrieved on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
-        
-        return header + csv_string
-        
-    except Exception as e:
-        return f"Error retrieving income statement for {ticker}: {str(e)}"
+    return _get_financial_statement(ticker, "income_statement", freq)
 
 
 def get_insider_transactions(
     ticker: Annotated[str, "ticker symbol of the company"],
-    curr_date: Annotated[str, "current date (not used for yfinance)"] = None
+    curr_date: Annotated[str, "current date (not used for yfinance)"] = None,
 ):
     """Get insider transactions data from yfinance with parsed transaction types."""
     try:
         ticker_obj = yf.Ticker(ticker.upper())
         data = ticker_obj.insider_transactions
-        
+
         if data is None or data.empty:
             return f"No insider transactions data found for symbol '{ticker}'"
-        
+
         # Parse the Text column to populate Transaction type
         def classify_transaction(text):
-            if pd.isna(text) or text == '':
-                return 'Unknown'
+            if pd.isna(text) or text == "":
+                return "Unknown"
             text_lower = str(text).lower()
-            if 'sale' in text_lower:
-                return 'Sale'
-            elif 'purchase' in text_lower or 'buy' in text_lower:
-                return 'Purchase'
-            elif 'gift' in text_lower:
-                return 'Gift'
-            elif 'exercise' in text_lower or 'option' in text_lower:
-                return 'Option Exercise'
-            elif 'award' in text_lower or 'grant' in text_lower:
-                return 'Award/Grant'
-            elif 'conversion' in text_lower:
-                return 'Conversion'
+            if "sale" in text_lower:
+                return "Sale"
+            elif "purchase" in text_lower or "buy" in text_lower:
+                return "Purchase"
+            elif "gift" in text_lower:
+                return "Gift"
+            elif "exercise" in text_lower or "option" in text_lower:
+                return "Option Exercise"
+            elif "award" in text_lower or "grant" in text_lower:
+                return "Award/Grant"
+            elif "conversion" in text_lower:
+                return "Conversion"
             else:
-                return 'Other'
-        
+                return "Other"
+
         # Apply classification
-        data['Transaction'] = data['Text'].apply(classify_transaction)
-        
+        data["Transaction"] = data["Text"].apply(classify_transaction)
+
+        # Limit to the last 3 months to keep output focused and small
+        if curr_date:
+            curr_dt = datetime.strptime(curr_date, "%Y-%m-%d")
+        else:
+            curr_dt = datetime.now()
+        cutoff_dt = curr_dt - relativedelta(months=1)
+
+        if "Start Date" in data.columns:
+            data["Start Date"] = pd.to_datetime(data["Start Date"], errors="coerce")
+            data = data[data["Start Date"].notna()]
+            data = data[data["Start Date"] >= cutoff_dt]
+            data = data.sort_values(by="Start Date", ascending=False)
+
+        if data.empty:
+            return f"No insider transactions found for {ticker.upper()} in the last 3 months."
+
         # Calculate summary statistics
-        transaction_counts = data['Transaction'].value_counts().to_dict()
-        total_sales_value = data[data['Transaction'] == 'Sale']['Value'].sum()
-        total_purchases_value = data[data['Transaction'] == 'Purchase']['Value'].sum()
-        
+        transaction_counts = data["Transaction"].value_counts().to_dict()
+        total_sales_value = data[data["Transaction"] == "Sale"]["Value"].sum()
+        total_purchases_value = data[data["Transaction"] == "Purchase"]["Value"].sum()
+
         # Determine insider sentiment
-        sales_count = transaction_counts.get('Sale', 0)
-        purchases_count = transaction_counts.get('Purchase', 0)
-        
+        sales_count = transaction_counts.get("Sale", 0)
+        purchases_count = transaction_counts.get("Purchase", 0)
+
         if purchases_count > sales_count:
             sentiment = "BULLISH ⚡ (more buying than selling)"
         elif sales_count > purchases_count * 2:
@@ -848,7 +607,7 @@ def get_insider_transactions(
             sentiment = "Slightly bearish (more selling than buying)"
         else:
             sentiment = "Neutral"
-        
+
         # Build summary header
         header = f"# Insider Transactions for {ticker.upper()}\n"
         header += f"# Data retrieved on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
@@ -860,18 +619,95 @@ def get_insider_transactions(
             header += f"- **Total Sales Value:** ${total_sales_value:,.0f}\n"
         if total_purchases_value > 0:
             header += f"- **Total Purchases Value:** ${total_purchases_value:,.0f}\n"
+
+        def _coerce_numeric(series: pd.Series) -> pd.Series:
+            return pd.to_numeric(
+                series.astype(str).str.replace(r"[^0-9.\\-]", "", regex=True),
+                errors="coerce",
+            )
+
+        def _format_txn(row: pd.Series) -> str:
+            date_val = row.get("Start Date", "")
+            if isinstance(date_val, pd.Timestamp):
+                date_val = date_val.strftime("%Y-%m-%d")
+            insider = row.get("Insider", "N/A")
+            position = row.get("Position", "N/A")
+            shares = row.get("Shares", "N/A")
+            value = row.get("Value", "N/A")
+            ownership = row.get("Ownership", "N/A")
+            return f"{date_val} | {insider} ({position}) | {shares} shares | ${value} | Ownership: {ownership}"
+
+        # Highlight largest purchase/sale by value in the last 3 months
+        if "Value" in data.columns:
+            value_numeric = _coerce_numeric(data["Value"])
+            data = data.assign(_value_numeric=value_numeric)
+
+            purchases = data[data["Transaction"] == "Purchase"]
+            sales = data[data["Transaction"] == "Sale"]
+
+            if not purchases.empty and purchases["_value_numeric"].notna().any():
+                top_purchase = purchases.loc[purchases["_value_numeric"].idxmax()]
+                header += f"- **Largest Purchase (3mo):** {_format_txn(top_purchase)}\n"
+            if not sales.empty and sales["_value_numeric"].notna().any():
+                top_sale = sales.loc[sales["_value_numeric"].idxmax()]
+                header += f"- **Largest Sale (3mo):** {_format_txn(top_sale)}\n"
         header += "\n## Transaction Details\n\n"
-        
+
         # Select key columns for output
-        output_cols = ['Start Date', 'Insider', 'Position', 'Transaction', 'Shares', 'Value', 'Ownership']
+        output_cols = [
+            "Start Date",
+            "Insider",
+            "Position",
+            "Transaction",
+            "Shares",
+            "Value",
+            "Ownership",
+        ]
         available_cols = [c for c in output_cols if c in data.columns]
-        
+
         csv_string = data[available_cols].to_csv(index=False)
-        
+
         return header + csv_string
-        
+
     except Exception as e:
         return f"Error retrieving insider transactions for {ticker}: {str(e)}"
+
+
+def get_stock_price(
+    ticker: Annotated[str, "ticker symbol of the company"],
+    curr_date: Annotated[str, "current date (for reference)"] = None,
+) -> float:
+    """
+    Get the current/latest stock price for a ticker.
+
+    Args:
+        ticker: Stock symbol
+        curr_date: Optional date (not used, included for API consistency)
+
+    Returns:
+        Current stock price as a float, or None if unavailable
+    """
+    try:
+        with suppress_yfinance_warnings():
+            stock = yf.Ticker(ticker.upper())
+            # Try fast_info first (more efficient)
+            try:
+                price = stock.fast_info.get("lastPrice")
+                if price is not None:
+                    return float(price)
+            except Exception:
+                pass
+
+            # Fallback to history
+            hist = stock.history(period="1d")
+            if not hist.empty:
+                return float(hist["Close"].iloc[-1])
+
+        return None
+    except Exception as e:
+        logger.error(f"Error getting stock price for {ticker}: {e}")
+        return None
+
 
 def validate_ticker(symbol: str) -> bool:
     """
@@ -883,34 +719,68 @@ def validate_ticker(symbol: str) -> bool:
         # fast_info attributes are lazy-loaded
         _ = ticker.fast_info.get("lastPrice")
         return True
-            
+
     except Exception:
         # Fallback to older method if fast_info fails or is missing
         try:
             return not ticker.history(period="1d", progress=False).empty
-        except:
+        except Exception:
             return False
+
+
+def validate_tickers_batch(symbols: Annotated[List[str], "list of ticker symbols"]) -> dict:
+    """Validate multiple tickers by downloading minimal recent data."""
+    if not symbols:
+        return {"valid": [], "invalid": []}
+
+    cleaned = []
+    for symbol in symbols:
+        if not symbol:
+            continue
+        cleaned.append(str(symbol).strip().upper())
+    cleaned = [s for s in cleaned if s]
+    if not cleaned:
+        return {"valid": [], "invalid": []}
+
+    data = yf.download(
+        cleaned,
+        period="1d",
+        group_by="ticker",
+        progress=False,
+        auto_adjust=False,
+    )
+    valid = []
+    if isinstance(data.columns, pd.MultiIndex):
+        available = set(data.columns.get_level_values(0))
+        valid = [s for s in cleaned if s in available and not data[s].dropna(how="all").empty]
+    else:
+        # Single ticker case
+        if not data.empty:
+            valid = [cleaned[0]]
+    invalid = [s for s in cleaned if s not in valid]
+    return {"valid": valid, "invalid": invalid}
 
 
 def get_fundamentals(
     ticker: Annotated[str, "ticker symbol of the company"],
-    curr_date: Annotated[str, "current date (for reference)"] = None
+    curr_date: Annotated[str, "current date (for reference)"] = None,
 ) -> str:
     """
     Get comprehensive fundamental data for a ticker using yfinance.
     Returns data in a format similar to Alpha Vantage's OVERVIEW endpoint.
-    
+
     This is a FREE alternative to Alpha Vantage with no rate limits.
     """
     import json
-    
+
     try:
-        ticker_obj = yf.Ticker(ticker.upper())
-        info = ticker_obj.info
-        
-        if not info or info.get('regularMarketPrice') is None:
+        with suppress_yfinance_warnings():
+            ticker_obj = yf.Ticker(ticker.upper())
+            info = ticker_obj.info
+
+        if not info or info.get("regularMarketPrice") is None:
             return f"No fundamental data found for symbol '{ticker}'"
-        
+
         # Build a structured response similar to Alpha Vantage
         fundamentals = {
             # Company Info
@@ -926,7 +796,6 @@ def get_fundamentals(
             "Address": f"{info.get('address1', '')} {info.get('city', '')}, {info.get('state', '')} {info.get('zip', '')}".strip(),
             "OfficialSite": info.get("website", "N/A"),
             "FiscalYearEnd": info.get("fiscalYearEnd", "N/A"),
-            
             # Valuation
             "MarketCapitalization": str(info.get("marketCap", "N/A")),
             "EBITDA": str(info.get("ebitda", "N/A")),
@@ -938,7 +807,6 @@ def get_fundamentals(
             "PriceToSalesRatioTTM": str(info.get("priceToSalesTrailing12Months", "N/A")),
             "EVToRevenue": str(info.get("enterpriseToRevenue", "N/A")),
             "EVToEBITDA": str(info.get("enterpriseToEbitda", "N/A")),
-            
             # Earnings & Revenue
             "EPS": str(info.get("trailingEps", "N/A")),
             "ForwardEPS": str(info.get("forwardEps", "N/A")),
@@ -947,20 +815,17 @@ def get_fundamentals(
             "GrossProfitTTM": str(info.get("grossProfits", "N/A")),
             "QuarterlyRevenueGrowthYOY": str(info.get("revenueGrowth", "N/A")),
             "QuarterlyEarningsGrowthYOY": str(info.get("earningsGrowth", "N/A")),
-            
             # Margins & Returns
             "ProfitMargin": str(info.get("profitMargins", "N/A")),
             "OperatingMarginTTM": str(info.get("operatingMargins", "N/A")),
             "GrossMargins": str(info.get("grossMargins", "N/A")),
             "ReturnOnAssetsTTM": str(info.get("returnOnAssets", "N/A")),
             "ReturnOnEquityTTM": str(info.get("returnOnEquity", "N/A")),
-            
             # Dividend
             "DividendPerShare": str(info.get("dividendRate", "N/A")),
             "DividendYield": str(info.get("dividendYield", "N/A")),
             "ExDividendDate": str(info.get("exDividendDate", "N/A")),
             "PayoutRatio": str(info.get("payoutRatio", "N/A")),
-            
             # Balance Sheet
             "TotalCash": str(info.get("totalCash", "N/A")),
             "TotalDebt": str(info.get("totalDebt", "N/A")),
@@ -969,7 +834,6 @@ def get_fundamentals(
             "DebtToEquity": str(info.get("debtToEquity", "N/A")),
             "FreeCashFlow": str(info.get("freeCashflow", "N/A")),
             "OperatingCashFlow": str(info.get("operatingCashflow", "N/A")),
-            
             # Trading Info
             "Beta": str(info.get("beta", "N/A")),
             "52WeekHigh": str(info.get("fiftyTwoWeekHigh", "N/A")),
@@ -981,11 +845,9 @@ def get_fundamentals(
             "SharesShort": str(info.get("sharesShort", "N/A")),
             "ShortRatio": str(info.get("shortRatio", "N/A")),
             "ShortPercentOfFloat": str(info.get("shortPercentOfFloat", "N/A")),
-            
             # Ownership
             "PercentInsiders": str(info.get("heldPercentInsiders", "N/A")),
             "PercentInstitutions": str(info.get("heldPercentInstitutions", "N/A")),
-            
             # Analyst
             "AnalystTargetPrice": str(info.get("targetMeanPrice", "N/A")),
             "AnalystTargetHigh": str(info.get("targetHighPrice", "N/A")),
@@ -994,10 +856,10 @@ def get_fundamentals(
             "RecommendationKey": info.get("recommendationKey", "N/A"),
             "RecommendationMean": str(info.get("recommendationMean", "N/A")),
         }
-        
+
         # Return as formatted JSON string
         return json.dumps(fundamentals, indent=4)
-        
+
     except Exception as e:
         return f"Error retrieving fundamentals for {ticker}: {str(e)}"
 
@@ -1005,106 +867,116 @@ def get_fundamentals(
 def get_options_activity(
     ticker: Annotated[str, "ticker symbol of the company"],
     num_expirations: Annotated[int, "number of nearest expiration dates to analyze"] = 3,
-    curr_date: Annotated[str, "current date (for reference)"] = None
+    curr_date: Annotated[str, "current date (for reference)"] = None,
 ) -> str:
     """
     Get options activity for a specific ticker using yfinance.
     Analyzes volume, open interest, and put/call ratios.
-    
+
     This is a FREE alternative to Tradier with no API key required.
     """
     try:
         ticker_obj = yf.Ticker(ticker.upper())
-        
+
         # Get available expiration dates
         expirations = ticker_obj.options
         if not expirations:
             return f"No options data available for {ticker}"
-        
+
         # Analyze the nearest N expiration dates
-        expirations_to_analyze = expirations[:min(num_expirations, len(expirations))]
-        
+        expirations_to_analyze = expirations[: min(num_expirations, len(expirations))]
+
         report = f"## Options Activity for {ticker.upper()}\n\n"
         report += f"**Available Expirations:** {len(expirations)} dates\n"
         report += f"**Analyzing:** {', '.join(expirations_to_analyze)}\n\n"
-        
+
         total_call_volume = 0
         total_put_volume = 0
         total_call_oi = 0
         total_put_oi = 0
-        
+
         unusual_activity = []
-        
+
         for exp_date in expirations_to_analyze:
             try:
                 opt = ticker_obj.option_chain(exp_date)
                 calls = opt.calls
                 puts = opt.puts
-                
+
                 if calls.empty and puts.empty:
                     continue
-                
+
                 # Calculate totals for this expiration
-                call_vol = calls['volume'].sum() if 'volume' in calls.columns else 0
-                put_vol = puts['volume'].sum() if 'volume' in puts.columns else 0
-                call_oi = calls['openInterest'].sum() if 'openInterest' in calls.columns else 0
-                put_oi = puts['openInterest'].sum() if 'openInterest' in puts.columns else 0
-                
+                call_vol = calls["volume"].sum() if "volume" in calls.columns else 0
+                put_vol = puts["volume"].sum() if "volume" in puts.columns else 0
+                call_oi = calls["openInterest"].sum() if "openInterest" in calls.columns else 0
+                put_oi = puts["openInterest"].sum() if "openInterest" in puts.columns else 0
+
                 # Handle NaN values
                 call_vol = 0 if pd.isna(call_vol) else int(call_vol)
                 put_vol = 0 if pd.isna(put_vol) else int(put_vol)
                 call_oi = 0 if pd.isna(call_oi) else int(call_oi)
                 put_oi = 0 if pd.isna(put_oi) else int(put_oi)
-                
+
                 total_call_volume += call_vol
                 total_put_volume += put_vol
                 total_call_oi += call_oi
                 total_put_oi += put_oi
-                
+
                 # Find unusual activity (high volume relative to OI)
                 for _, row in calls.iterrows():
-                    vol = row.get('volume', 0)
-                    oi = row.get('openInterest', 0)
+                    vol = row.get("volume", 0)
+                    oi = row.get("openInterest", 0)
                     if pd.notna(vol) and pd.notna(oi) and oi > 0 and vol > oi * 0.5 and vol > 100:
-                        unusual_activity.append({
-                            'type': 'CALL',
-                            'expiration': exp_date,
-                            'strike': row['strike'],
-                            'volume': int(vol),
-                            'openInterest': int(oi),
-                            'vol_oi_ratio': round(vol / oi, 2) if oi > 0 else 0,
-                            'impliedVolatility': round(row.get('impliedVolatility', 0) * 100, 1)
-                        })
-                
+                        unusual_activity.append(
+                            {
+                                "type": "CALL",
+                                "expiration": exp_date,
+                                "strike": row["strike"],
+                                "volume": int(vol),
+                                "openInterest": int(oi),
+                                "vol_oi_ratio": round(vol / oi, 2) if oi > 0 else 0,
+                                "impliedVolatility": round(
+                                    row.get("impliedVolatility", 0) * 100, 1
+                                ),
+                            }
+                        )
+
                 for _, row in puts.iterrows():
-                    vol = row.get('volume', 0)
-                    oi = row.get('openInterest', 0)
+                    vol = row.get("volume", 0)
+                    oi = row.get("openInterest", 0)
                     if pd.notna(vol) and pd.notna(oi) and oi > 0 and vol > oi * 0.5 and vol > 100:
-                        unusual_activity.append({
-                            'type': 'PUT',
-                            'expiration': exp_date,
-                            'strike': row['strike'],
-                            'volume': int(vol),
-                            'openInterest': int(oi),
-                            'vol_oi_ratio': round(vol / oi, 2) if oi > 0 else 0,
-                            'impliedVolatility': round(row.get('impliedVolatility', 0) * 100, 1)
-                        })
-                        
+                        unusual_activity.append(
+                            {
+                                "type": "PUT",
+                                "expiration": exp_date,
+                                "strike": row["strike"],
+                                "volume": int(vol),
+                                "openInterest": int(oi),
+                                "vol_oi_ratio": round(vol / oi, 2) if oi > 0 else 0,
+                                "impliedVolatility": round(
+                                    row.get("impliedVolatility", 0) * 100, 1
+                                ),
+                            }
+                        )
+
             except Exception as e:
                 report += f"*Error fetching {exp_date}: {str(e)}*\n"
                 continue
-        
+
         # Calculate put/call ratios
-        pc_volume_ratio = round(total_put_volume / total_call_volume, 3) if total_call_volume > 0 else 0
+        pc_volume_ratio = (
+            round(total_put_volume / total_call_volume, 3) if total_call_volume > 0 else 0
+        )
         pc_oi_ratio = round(total_put_oi / total_call_oi, 3) if total_call_oi > 0 else 0
-        
+
         # Summary
         report += "### Summary\n"
         report += "| Metric | Calls | Puts | Put/Call Ratio |\n"
         report += "|--------|-------|------|----------------|\n"
         report += f"| Volume | {total_call_volume:,} | {total_put_volume:,} | {pc_volume_ratio} |\n"
         report += f"| Open Interest | {total_call_oi:,} | {total_put_oi:,} | {pc_oi_ratio} |\n\n"
-        
+
         # Sentiment interpretation
         report += "### Sentiment Analysis\n"
         if pc_volume_ratio < 0.7:
@@ -1113,20 +985,20 @@ def get_options_activity(
             report += "- **Volume P/C Ratio:** Bearish (more put volume)\n"
         else:
             report += "- **Volume P/C Ratio:** Neutral\n"
-            
+
         if pc_oi_ratio < 0.7:
             report += "- **OI P/C Ratio:** Bullish positioning\n"
         elif pc_oi_ratio > 1.3:
             report += "- **OI P/C Ratio:** Bearish positioning\n"
         else:
             report += "- **OI P/C Ratio:** Neutral positioning\n"
-        
+
         # Unusual activity
         if unusual_activity:
             # Sort by volume/OI ratio
-            unusual_activity.sort(key=lambda x: x['vol_oi_ratio'], reverse=True)
+            unusual_activity.sort(key=lambda x: x["vol_oi_ratio"], reverse=True)
             top_unusual = unusual_activity[:10]
-            
+
             report += "\n### Unusual Activity (High Volume vs Open Interest)\n"
             report += "| Type | Expiry | Strike | Volume | OI | Vol/OI | IV |\n"
             report += "|------|--------|--------|--------|----|---------|----|---|\n"
@@ -1134,16 +1006,149 @@ def get_options_activity(
                 report += f"| {item['type']} | {item['expiration']} | ${item['strike']} | {item['volume']:,} | {item['openInterest']:,} | {item['vol_oi_ratio']}x | {item['impliedVolatility']}% |\n"
         else:
             report += "\n*No unusual options activity detected.*\n"
-        
+
         return report
-        
+
     except Exception as e:
         return f"Error retrieving options activity for {ticker}: {str(e)}"
 
 
+def analyze_options_flow(
+    ticker: Annotated[str, "ticker symbol of the company"],
+    num_expirations: Annotated[int, "number of nearest expiration dates to analyze"] = 3,
+) -> Dict[str, Any]:
+    """
+    Analyze options flow to detect unusual activity that signals informed trading.
+
+    Returns structured data for filtering/ranking decisions.
+
+    Signals:
+    - very_bullish: P/C ratio < 0.5 (heavy call buying)
+    - bullish: P/C ratio 0.5-0.7
+    - neutral: P/C ratio 0.7-1.3
+    - bearish: P/C ratio 1.3-2.0
+    - very_bearish: P/C ratio > 2.0 (heavy put buying)
+
+    Returns:
+        Dict with signal, ratios, unusual activity flags
+    """
+    result = {
+        "ticker": ticker.upper(),
+        "signal": "neutral",
+        "pc_volume_ratio": None,
+        "pc_oi_ratio": None,
+        "total_call_volume": 0,
+        "total_put_volume": 0,
+        "unusual_calls": 0,
+        "unusual_puts": 0,
+        "has_unusual_activity": False,
+        "is_bullish_flow": False,
+        "error": None,
+    }
+
+    try:
+        ticker_obj = yf.Ticker(ticker.upper())
+        expirations = ticker_obj.options
+
+        if not expirations:
+            result["error"] = "No options data"
+            return result
+
+        expirations_to_analyze = expirations[: min(num_expirations, len(expirations))]
+
+        total_call_volume = 0
+        total_put_volume = 0
+        total_call_oi = 0
+        total_put_oi = 0
+        unusual_calls = 0
+        unusual_puts = 0
+
+        for exp_date in expirations_to_analyze:
+            try:
+                opt = ticker_obj.option_chain(exp_date)
+                calls = opt.calls
+                puts = opt.puts
+
+                if calls.empty and puts.empty:
+                    continue
+
+                # Calculate totals
+                call_vol = calls["volume"].sum() if "volume" in calls.columns else 0
+                put_vol = puts["volume"].sum() if "volume" in puts.columns else 0
+                call_oi = calls["openInterest"].sum() if "openInterest" in calls.columns else 0
+                put_oi = puts["openInterest"].sum() if "openInterest" in puts.columns else 0
+
+                call_vol = 0 if pd.isna(call_vol) else int(call_vol)
+                put_vol = 0 if pd.isna(put_vol) else int(put_vol)
+                call_oi = 0 if pd.isna(call_oi) else int(call_oi)
+                put_oi = 0 if pd.isna(put_oi) else int(put_oi)
+
+                total_call_volume += call_vol
+                total_put_volume += put_vol
+                total_call_oi += call_oi
+                total_put_oi += put_oi
+
+                # Count unusual activity (volume > 50% of OI and volume > 100)
+                for _, row in calls.iterrows():
+                    vol = row.get("volume", 0)
+                    oi = row.get("openInterest", 0)
+                    if pd.notna(vol) and pd.notna(oi) and oi > 0 and vol > oi * 0.5 and vol > 100:
+                        unusual_calls += 1
+
+                for _, row in puts.iterrows():
+                    vol = row.get("volume", 0)
+                    oi = row.get("openInterest", 0)
+                    if pd.notna(vol) and pd.notna(oi) and oi > 0 and vol > oi * 0.5 and vol > 100:
+                        unusual_puts += 1
+
+            except Exception:
+                continue
+
+        # Calculate ratios
+        pc_volume_ratio = (
+            round(total_put_volume / total_call_volume, 3) if total_call_volume > 0 else None
+        )
+        pc_oi_ratio = round(total_put_oi / total_call_oi, 3) if total_call_oi > 0 else None
+
+        # Determine signal based on P/C ratio
+        signal = "neutral"
+        if pc_volume_ratio is not None:
+            if pc_volume_ratio < 0.5:
+                signal = "very_bullish"
+            elif pc_volume_ratio < 0.7:
+                signal = "bullish"
+            elif pc_volume_ratio > 2.0:
+                signal = "very_bearish"
+            elif pc_volume_ratio > 1.3:
+                signal = "bearish"
+
+        # Determine if there's unusual bullish flow
+        has_unusual = (unusual_calls + unusual_puts) > 0
+        is_bullish_flow = has_unusual and unusual_calls > unusual_puts * 2
+
+        result.update(
+            {
+                "signal": signal,
+                "pc_volume_ratio": pc_volume_ratio,
+                "pc_oi_ratio": pc_oi_ratio,
+                "total_call_volume": total_call_volume,
+                "total_put_volume": total_put_volume,
+                "unusual_calls": unusual_calls,
+                "unusual_puts": unusual_puts,
+                "has_unusual_activity": has_unusual,
+                "is_bullish_flow": is_bullish_flow,
+            }
+        )
+
+        return result
+
+    except Exception as e:
+        result["error"] = str(e)
+        return result
+
+
 def _get_ticker_universe(
-    tickers: Optional[Union[str, List[str]]] = None,
-    max_tickers: Optional[int] = None
+    tickers: Optional[Union[str, List[str]]] = None, max_tickers: Optional[int] = None
 ) -> List[str]:
     """
     Get a list of ticker symbols.
@@ -1162,42 +1167,124 @@ def _get_ticker_universe(
 
     # Load from config file
     from tradingagents.default_config import DEFAULT_CONFIG
+
     ticker_file = DEFAULT_CONFIG.get("tickers_file")
 
     if not ticker_file:
-        print("Warning: tickers_file not configured, using fallback list")
+        logger.warning("tickers_file not configured, using fallback list")
         return _get_default_tickers()[:max_tickers] if max_tickers else _get_default_tickers()
 
     # Load tickers from file
     try:
         ticker_path = Path(ticker_file)
         if ticker_path.exists():
-            with open(ticker_path, 'r') as f:
+            with open(ticker_path, "r") as f:
                 ticker_list = [line.strip().upper() for line in f if line.strip()]
             # Remove duplicates while preserving order
             seen = set()
             ticker_list = [t for t in ticker_list if t and t not in seen and not seen.add(t)]
             return ticker_list[:max_tickers] if max_tickers else ticker_list
         else:
-            print(f"Warning: Ticker file not found at {ticker_file}, using fallback list")
+            logger.warning(f"Ticker file not found at {ticker_file}, using fallback list")
             return _get_default_tickers()[:max_tickers] if max_tickers else _get_default_tickers()
     except Exception as e:
-        print(f"Warning: Could not load ticker list from file: {e}, using fallback")
+        logger.warning(f"Could not load ticker list from file: {e}, using fallback")
         return _get_default_tickers()[:max_tickers] if max_tickers else _get_default_tickers()
 
 
 def _get_default_tickers() -> List[str]:
     """Fallback list of major US stocks if ticker file is not found."""
     return [
-        "AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "META", "TSLA", "BRK-B", "V", "UNH",
-        "XOM", "JNJ", "JPM", "WMT", "MA", "PG", "LLY", "AVGO", "HD", "MRK",
-        "COST", "ABBV", "PEP", "ADBE", "TMO", "CSCO", "NFLX", "ACN", "DHR", "ABT",
-        "VZ", "WFC", "CRM", "PM", "LIN", "DIS", "BMY", "NKE", "TXN", "RTX",
-        "QCOM", "UPS", "HON", "AMGN", "DE", "INTU", "AMAT", "LOW", "SBUX", "C",
-        "BKNG", "ADP", "GE", "TJX", "AXP", "SPGI", "MDT", "GILD", "ISRG", "BLK",
-        "SYK", "ZTS", "CI", "CME", "ICE", "EQIX", "REGN", "APH", "KLAC", "CDNS",
-        "SNPS", "MCHP", "FTNT", "ANSS", "CTSH", "WDAY", "ON", "NXPI", "MPWR", "CRWD",
-        "AMD", "INTC", "MU", "LRCX", "PANW", "NOW", "DDOG", "ZS", "NET", "TEAM"
+        "AAPL",
+        "MSFT",
+        "GOOGL",
+        "AMZN",
+        "NVDA",
+        "META",
+        "TSLA",
+        "BRK-B",
+        "V",
+        "UNH",
+        "XOM",
+        "JNJ",
+        "JPM",
+        "WMT",
+        "MA",
+        "PG",
+        "LLY",
+        "AVGO",
+        "HD",
+        "MRK",
+        "COST",
+        "ABBV",
+        "PEP",
+        "ADBE",
+        "TMO",
+        "CSCO",
+        "NFLX",
+        "ACN",
+        "DHR",
+        "ABT",
+        "VZ",
+        "WFC",
+        "CRM",
+        "PM",
+        "LIN",
+        "DIS",
+        "BMY",
+        "NKE",
+        "TXN",
+        "RTX",
+        "QCOM",
+        "UPS",
+        "HON",
+        "AMGN",
+        "DE",
+        "INTU",
+        "AMAT",
+        "LOW",
+        "SBUX",
+        "C",
+        "BKNG",
+        "ADP",
+        "GE",
+        "TJX",
+        "AXP",
+        "SPGI",
+        "MDT",
+        "GILD",
+        "ISRG",
+        "BLK",
+        "SYK",
+        "ZTS",
+        "CI",
+        "CME",
+        "ICE",
+        "EQIX",
+        "REGN",
+        "APH",
+        "KLAC",
+        "CDNS",
+        "SNPS",
+        "MCHP",
+        "FTNT",
+        "ANSS",
+        "CTSH",
+        "WDAY",
+        "ON",
+        "NXPI",
+        "MPWR",
+        "CRWD",
+        "AMD",
+        "INTC",
+        "MU",
+        "LRCX",
+        "PANW",
+        "NOW",
+        "DDOG",
+        "ZS",
+        "NET",
+        "TEAM",
     ]
 
 
@@ -1226,38 +1313,38 @@ def get_pre_earnings_accumulation_signal(
         # Get 1 month of data to calculate baseline
         hist = stock.history(period="1mo")
         if len(hist) < 20:
-            return {'signal': False, 'reason': 'Insufficient data'}
+            return {"signal": False, "reason": "Insufficient data"}
 
         # Baseline volume (excluding recent period)
-        baseline_volume = hist['Volume'][:-lookback_days].mean()
+        baseline_volume = hist["Volume"][:-lookback_days].mean()
 
         # Recent volume
-        recent_volume = hist['Volume'][-lookback_days:].mean()
+        recent_volume = hist["Volume"][-lookback_days:].mean()
 
         # Volume ratio
         volume_ratio = recent_volume / baseline_volume if baseline_volume > 0 else 0
 
         # Price movement in recent period
-        price_start = hist['Close'].iloc[-lookback_days]
-        price_end = hist['Close'].iloc[-1]
+        price_start = hist["Close"].iloc[-lookback_days]
+        price_end = hist["Close"].iloc[-1]
         price_change_pct = ((price_end - price_start) / price_start) * 100
 
         # SIGNAL CRITERIA:
         # - Volume up at least 50% (1.5x)
         # - Price relatively flat (< 5% move)
-        accumulation_signal = volume_ratio >= 1.5 and abs(price_change_pct) < 5.0
+        accumulation_signal = volume_ratio >= 2.0 and abs(price_change_pct) < 5.0
 
         return {
-            'signal': accumulation_signal,
-            'volume_ratio': round(volume_ratio, 2),
-            'price_change_pct': round(price_change_pct, 2),
-            'current_price': round(price_end, 2),
-            'baseline_volume': int(baseline_volume),
-            'recent_volume': int(recent_volume),
+            "signal": accumulation_signal,
+            "volume_ratio": round(volume_ratio, 2),
+            "price_change_pct": round(price_change_pct, 2),
+            "current_price": round(price_end, 2),
+            "baseline_volume": int(baseline_volume),
+            "recent_volume": int(recent_volume),
         }
 
     except Exception as e:
-        return {'signal': False, 'reason': str(e)}
+        return {"signal": False, "reason": str(e)}
 
 
 def check_if_price_reacted(
@@ -1286,22 +1373,89 @@ def check_if_price_reacted(
         # Get recent history
         hist = stock.history(period="1mo")
         if len(hist) < lookback_days:
-            return {'reacted': None, 'reason': 'Insufficient data', 'status': 'unknown'}
+            return {"reacted": None, "reason": "Insufficient data", "status": "unknown"}
 
         # Check price movement in lookback period
-        price_start = hist['Close'].iloc[-lookback_days]
-        price_end = hist['Close'].iloc[-1]
+        price_start = hist["Close"].iloc[-lookback_days]
+        price_end = hist["Close"].iloc[-1]
         price_change_pct = ((price_end - price_start) / price_start) * 100
 
         # Determine if already reacted
         reacted = abs(price_change_pct) >= reaction_threshold
 
         return {
-            'reacted': reacted,
-            'price_change_pct': round(price_change_pct, 2),
-            'status': 'lagging' if reacted else 'leading',
-            'current_price': round(price_end, 2),
+            "reacted": reacted,
+            "price_change_pct": round(price_change_pct, 2),
+            "status": "lagging" if reacted else "leading",
+            "current_price": round(price_end, 2),
         }
 
     except Exception as e:
-        return {'reacted': None, 'reason': str(e), 'status': 'unknown'}
+        return {"reacted": None, "reason": str(e), "status": "unknown"}
+
+
+def check_intraday_movement(
+    ticker: Annotated[str, "ticker symbol to analyze"],
+    movement_threshold: Annotated[float, "% change to consider as 'already moved'"] = 15.0,
+) -> dict:
+    """
+    Check if a stock has already moved significantly today (intraday).
+
+    This helps filter out stocks that have already experienced their major price move,
+    avoiding "chasing" stocks that have already run.
+
+    Args:
+        ticker: Stock symbol to check
+        movement_threshold: Intraday % change to consider as "already moved" (default 15%)
+
+    Returns:
+        Dict with:
+        - 'already_moved': bool (True if price moved more than threshold)
+        - 'intraday_change_pct': float (% change from open to current/last)
+        - 'open_price': float
+        - 'current_price': float
+        - 'status': str ('fresh' if not moved, 'stale' if already moved)
+    """
+    try:
+        with suppress_yfinance_warnings():
+            stock = yf.Ticker(ticker.upper())
+
+            # Get today's intraday data (1-day period with 1-minute interval)
+            # This gives us open, current price, high, low for today
+            hist = stock.history(period="1d", interval="1m")
+
+            if hist.empty:
+                # Fallback to daily data if intraday not available
+                hist_daily = stock.history(period="5d")
+                if hist_daily.empty or len(hist_daily) == 0:
+                    return {
+                        "already_moved": None,
+                        "reason": "No price data available",
+                        "status": "unknown",
+                    }
+
+                # Use today's open and close from daily data
+                today_data = hist_daily.iloc[-1]
+                open_price = today_data["Open"]
+                current_price = today_data["Close"]
+            else:
+                # Use intraday data - first candle's open vs latest candle's close
+                open_price = hist["Open"].iloc[0]
+                current_price = hist["Close"].iloc[-1]
+
+            # Calculate intraday change percentage
+            intraday_change_pct = ((current_price - open_price) / open_price) * 100
+
+            # Determine if stock already moved significantly
+            already_moved = abs(intraday_change_pct) >= movement_threshold
+
+            return {
+                "already_moved": already_moved,
+                "intraday_change_pct": round(intraday_change_pct, 2),
+                "open_price": round(open_price, 2),
+                "current_price": round(current_price, 2),
+                "status": "stale" if already_moved else "fresh",
+            }
+
+    except Exception as e:
+        return {"already_moved": None, "reason": str(e), "status": "unknown"}

@@ -1,35 +1,29 @@
 # TradingAgents/graph/trading_graph.py
 
+import json
 import os
 from pathlib import Path
-import json
-from datetime import date
-from typing import Dict, Any, Tuple, List, Optional
-
-from langchain_openai import ChatOpenAI
-from langchain_anthropic import ChatAnthropic
-from langchain_google_genai import ChatGoogleGenerativeAI
+from typing import Any, Dict
 
 from langgraph.prebuilt import ToolNode
 
 from tradingagents.agents import *
-from tradingagents.default_config import DEFAULT_CONFIG
 from tradingagents.agents.utils.memory import FinancialSituationMemory
-from tradingagents.agents.utils.agent_states import (
-    AgentState,
-    InvestDebateState,
-    RiskDebateState,
-)
 from tradingagents.dataflows.config import set_config
+from tradingagents.default_config import DEFAULT_CONFIG
 
 # Import tools from new registry-based system
 from tradingagents.tools.generator import get_agent_tools
 
+from tradingagents.utils.logger import get_logger
+
 from .conditional_logic import ConditionalLogic
-from .setup import GraphSetup
 from .propagation import Propagator
 from .reflection import Reflector
+from .setup import GraphSetup
 from .signal_processing import SignalProcessor
+
+logger = get_logger(__name__)
 
 
 class TradingAgentsGraph:
@@ -61,22 +55,10 @@ class TradingAgentsGraph:
         )
 
         # Initialize LLMs
-        if self.config["llm_provider"].lower() == "openai" or self.config["llm_provider"] == "ollama" or self.config["llm_provider"] == "openrouter":
-            self.deep_thinking_llm = ChatOpenAI(model=self.config["deep_think_llm"], api_key=os.getenv("OPENAI_API_KEY"))
-            self.quick_thinking_llm = ChatOpenAI(model=self.config["quick_think_llm"], api_key=os.getenv("OPENAI_API_KEY"))
-        elif self.config["llm_provider"].lower() == "anthropic":
-            self.deep_thinking_llm = ChatAnthropic(model=self.config["deep_think_llm"], api_key=os.getenv("ANTHROPIC_API_KEY"))
-            self.quick_thinking_llm = ChatAnthropic(model=self.config["quick_think_llm"], api_key=os.getenv("ANTHROPIC_API_KEY"))
-        elif self.config["llm_provider"].lower() == "google":
-            # Explicitly pass Google API key from environment
-            google_api_key = os.getenv("GOOGLE_API_KEY")
-            if not google_api_key:
-                raise ValueError("GOOGLE_API_KEY environment variable not set. Please add it to your .env file.")
-            self.deep_thinking_llm = ChatGoogleGenerativeAI(model=self.config["deep_think_llm"], google_api_key=google_api_key)
-            self.quick_thinking_llm = ChatGoogleGenerativeAI(model=self.config["quick_think_llm"], google_api_key=google_api_key)
-        else:
-            raise ValueError(f"Unsupported LLM provider: {self.config['llm_provider']}")
-        
+        from tradingagents.utils.llm_factory import create_llms
+
+        self.deep_thinking_llm, self.quick_thinking_llm = create_llms(self.config)
+
         # Initialize memories only if enabled
         if self.config.get("enable_memory", False):
             self.bull_memory = FinancialSituationMemory("bull_memory", self.config)
@@ -127,24 +109,26 @@ class TradingAgentsGraph:
 
     def _load_historical_memories(self):
         """Load pre-built historical memories from disk."""
-        import pickle
         import glob
+        import pickle
 
-        memory_dir = self.config.get("memory_dir", os.path.join(self.config["data_dir"], "memories"))
+        memory_dir = self.config.get(
+            "memory_dir", os.path.join(self.config["data_dir"], "memories")
+        )
 
         if not os.path.exists(memory_dir):
-            print(f"⚠️  Memory directory not found: {memory_dir}")
-            print("   Run scripts/build_historical_memories.py to create memories")
+            logger.warning(f"⚠️  Memory directory not found: {memory_dir}")
+            logger.warning("Run scripts/build_historical_memories.py to create memories")
             return
 
-        print(f"\n📚 Loading historical memories from {memory_dir}...")
+        logger.info(f"📚 Loading historical memories from {memory_dir}...")
 
         memory_map = {
             "bull": self.bull_memory,
             "bear": self.bear_memory,
             "trader": self.trader_memory,
             "invest_judge": self.invest_judge_memory,
-            "risk_manager": self.risk_manager_memory
+            "risk_manager": self.risk_manager_memory,
         }
 
         for agent_type, memory in memory_map.items():
@@ -153,14 +137,14 @@ class TradingAgentsGraph:
             files = glob.glob(pattern)
 
             if not files:
-                print(f"   ⚠️  No historical memories found for {agent_type}")
+                logger.warning(f"⚠️  No historical memories found for {agent_type}")
                 continue
 
             # Use the most recent file
             latest_file = max(files, key=os.path.getmtime)
 
             try:
-                with open(latest_file, 'rb') as f:
+                with open(latest_file, "rb") as f:
                     data = pickle.load(f)
 
                 # Add memories to the collection
@@ -169,17 +153,19 @@ class TradingAgentsGraph:
                         documents=data["documents"],
                         metadatas=data["metadatas"],
                         embeddings=data["embeddings"],
-                        ids=data["ids"]
+                        ids=data["ids"],
                     )
 
-                    print(f"   ✅ {agent_type}: Loaded {len(data['documents'])} memories from {os.path.basename(latest_file)}")
+                    logger.info(
+                        f"✅ {agent_type}: Loaded {len(data['documents'])} memories from {os.path.basename(latest_file)}"
+                    )
                 else:
-                    print(f"   ⚠️  {agent_type}: Empty memory file")
+                    logger.warning(f"⚠️  {agent_type}: Empty memory file")
 
             except Exception as e:
-                print(f"   ❌ Error loading {agent_type} memories: {e}")
+                logger.error(f"❌ Error loading {agent_type} memories: {e}")
 
-        print("📚 Historical memory loading complete\n")
+        logger.info("📚 Historical memory loading complete")
 
     def _create_tool_nodes(self) -> Dict[str, ToolNode]:
         """Create tool nodes for different agents using registry-based system.
@@ -197,9 +183,6 @@ class TradingAgentsGraph:
             if agent_tools:
                 tool_nodes[agent_name] = ToolNode(agent_tools)
             else:
-                # Log warning if no tools found for this agent
-                import logging
-                logger = logging.getLogger(__name__)
                 logger.warning(f"No tools found for agent '{agent_name}' in registry")
 
         return tool_nodes
@@ -210,9 +193,7 @@ class TradingAgentsGraph:
         self.ticker = company_name
 
         # Initialize state
-        init_agent_state = self.propagator.create_initial_state(
-            company_name, trade_date
-        )
+        init_agent_state = self.propagator.create_initial_state(company_name, trade_date)
         args = self.propagator.get_graph_args()
 
         if self.debug:
@@ -252,12 +233,8 @@ class TradingAgentsGraph:
                 "bull_history": final_state["investment_debate_state"]["bull_history"],
                 "bear_history": final_state["investment_debate_state"]["bear_history"],
                 "history": final_state["investment_debate_state"]["history"],
-                "current_response": final_state["investment_debate_state"][
-                    "current_response"
-                ],
-                "judge_decision": final_state["investment_debate_state"][
-                    "judge_decision"
-                ],
+                "current_response": final_state["investment_debate_state"]["current_response"],
+                "judge_decision": final_state["investment_debate_state"]["judge_decision"],
             },
             "trader_investment_decision": final_state["trader_investment_plan"],
             "risk_debate_state": {
@@ -286,16 +263,10 @@ class TradingAgentsGraph:
         # Skip reflection if memory is disabled
         if not self.config.get("enable_memory", False):
             return
-            
-        self.reflector.reflect_bull_researcher(
-            self.curr_state, returns_losses, self.bull_memory
-        )
-        self.reflector.reflect_bear_researcher(
-            self.curr_state, returns_losses, self.bear_memory
-        )
-        self.reflector.reflect_trader(
-            self.curr_state, returns_losses, self.trader_memory
-        )
+
+        self.reflector.reflect_bull_researcher(self.curr_state, returns_losses, self.bull_memory)
+        self.reflector.reflect_bear_researcher(self.curr_state, returns_losses, self.bear_memory)
+        self.reflector.reflect_trader(self.curr_state, returns_losses, self.trader_memory)
         self.reflector.reflect_invest_judge(
             self.curr_state, returns_losses, self.invest_judge_memory
         )
@@ -307,25 +278,26 @@ class TradingAgentsGraph:
         """Process a signal to extract the core decision."""
         return self.signal_processor.process_signal(full_signal)
 
+
 if __name__ == "__main__":
     # Build the full TradingAgents graph
     tg = TradingAgentsGraph()
-    
-    print("Generating graph diagrams...")
-    
+
+    logger.info("Generating graph diagrams...")
+
     # Export a PNG diagram (requires Graphviz)
     try:
         # get_graph() returns the drawable graph structure
         tg.graph.get_graph().draw_png("trading_graph.png")
-        print("✅ PNG diagram saved as trading_graph.png")
+        logger.info("✅ PNG diagram saved as trading_graph.png")
     except Exception as e:
-        print(f"⚠️  Could not generate PNG (Graphviz may be missing): {e}")
-        
+        logger.warning(f"⚠️  Could not generate PNG (Graphviz may be missing): {e}")
+
     # Export a Mermaid markdown file for easy embedding in docs/README
     try:
         mermaid_src = tg.graph.get_graph().draw_mermaid()
         with open("trading_graph.mmd", "w") as f:
             f.write(mermaid_src)
-        print("✅ Mermaid diagram saved as trading_graph.mmd")
+        logger.info("✅ Mermaid diagram saved as trading_graph.mmd")
     except Exception as e:
-        print(f"⚠️  Could not generate Mermaid diagram: {e}")
+        logger.warning(f"⚠️  Could not generate Mermaid diagram: {e}")

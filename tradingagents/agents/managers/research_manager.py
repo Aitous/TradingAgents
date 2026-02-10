@@ -1,5 +1,5 @@
-import time
-import json
+from tradingagents.agents.utils.agent_utils import format_memory_context
+from tradingagents.agents.utils.llm_utils import parse_llm_response
 
 
 def create_research_manager(llm, memory):
@@ -12,25 +12,10 @@ def create_research_manager(llm, memory):
 
         investment_debate_state = state["investment_debate_state"]
 
-        curr_situation = f"{market_research_report}\n\n{sentiment_report}\n\n{news_report}\n\n{fundamentals_report}"
-        
-        if memory:
-            past_memories = memory.get_memories(curr_situation, n_matches=2)
-        else:
-            past_memories = []
+        past_memory_str = format_memory_context(memory, state)
 
-
-        if past_memories:
-            past_memory_str = "### Past Lessons Applied\\n**Reflections from Similar Situations:**\\n"
-            for i, rec in enumerate(past_memories, 1):
-                past_memory_str += rec["recommendation"] + "\\n\\n"
-            past_memory_str += "\\n\\n**How I'm Using These Lessons:**\\n"
-            past_memory_str += "- [Specific adjustment based on past mistake/success]\\n"
-            past_memory_str += "- [Impact on current conviction level]\\n"
-        else:
-            past_memory_str = ""  # Don't include placeholder when no memories
-
-        prompt = f"""You are the Trade Judge for {state["company_of_interest"]}. Decide if there is a SHORT-TERM edge to trade this stock (1-2 weeks).
+        prompt = (
+            f"""You are the Trade Judge for {state["company_of_interest"]}. Decide if there is a SHORT-TERM edge to trade this stock (1-2 weeks).
 
 ## CORE RULES (CRITICAL)
 - Evaluate this ticker IN ISOLATION (no portfolio sizing, no portfolio impact, no correlation talk).
@@ -64,13 +49,19 @@ Choose the direction with the higher score. If tied, choose BUY.
 
 ### What Could Break It
 - [2 bullets max: key risks]
-""" + (f"""
+"""
+            + (
+                f"""
 ## PAST LESSONS
 Here are reflections on past mistakes - apply these lessons:
 {past_memory_str}
 
 **Learning Check:** How are you adjusting based on these past situations?
-""" if past_memory_str else "") + f"""
+"""
+                if past_memory_str
+                else ""
+            )
+            + f"""
 ---
 
 **DEBATE TO JUDGE:**
@@ -81,20 +72,22 @@ Technical: {market_research_report}
 Sentiment: {sentiment_report}
 News: {news_report}
 Fundamentals: {fundamentals_report}"""
+        )
         response = llm.invoke(prompt)
+        response_text = parse_llm_response(response.content)
 
         new_investment_debate_state = {
-            "judge_decision": response.content,
+            "judge_decision": response_text,
             "history": investment_debate_state.get("history", ""),
             "bear_history": investment_debate_state.get("bear_history", ""),
             "bull_history": investment_debate_state.get("bull_history", ""),
-            "current_response": response.content,
+            "current_response": response_text,
             "count": investment_debate_state["count"],
         }
 
         return {
             "investment_debate_state": new_investment_debate_state,
-            "investment_plan": response.content,
+            "investment_plan": response_text,
         }
 
     return research_manager_node

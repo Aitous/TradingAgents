@@ -5,6 +5,10 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List
 
+from tradingagents.utils.logger import get_logger
+
+logger = get_logger(__name__)
+
 
 class DiscoveryAnalytics:
     """
@@ -18,10 +22,10 @@ class DiscoveryAnalytics:
 
     def update_performance_tracking(self):
         """Update performance metrics for all open recommendations."""
-        print("📊 Updating recommendation performance tracking...")
+        logger.info("📊 Updating recommendation performance tracking...")
 
         if not self.recommendations_dir.exists():
-            print("   No historical recommendations to track yet.")
+            logger.info("No historical recommendations to track yet.")
             return
 
         # Load all recommendations
@@ -44,15 +48,15 @@ class DiscoveryAnalytics:
                         )
                         all_recs.append(rec)
             except Exception as e:
-                print(f"   Warning: Error loading {filepath}: {e}")
+                logger.warning(f"Error loading {filepath}: {e}")
 
         if not all_recs:
-            print("   No recommendations found to track.")
+            logger.info("No recommendations found to track.")
             return
 
         # Filter to only track open positions
         open_recs = [r for r in all_recs if r.get("status") != "closed"]
-        print(f"   Tracking {len(open_recs)} open positions (out of {len(all_recs)} total)...")
+        logger.info(f"Tracking {len(open_recs)} open positions (out of {len(all_recs)} total)...")
 
         # Update performance
         today = datetime.now().strftime("%Y-%m-%d")
@@ -109,10 +113,10 @@ class DiscoveryAnalytics:
                 pass
 
         if updated_count > 0:
-            print(f"   Updated {updated_count} positions")
+            logger.info(f"Updated {updated_count} positions")
             self._save_performance_db(all_recs)
         else:
-            print("   No updates needed")
+            logger.info("No updates needed")
 
     def _save_performance_db(self, all_recs: List[Dict]):
         """Save the aggregated performance database and recalculate stats."""
@@ -142,7 +146,7 @@ class DiscoveryAnalytics:
         with open(stats_path, "w") as f:
             json.dump(stats, f, indent=2)
 
-        print("   💾 Updated performance database and statistics")
+        logger.info("💾 Updated performance database and statistics")
 
     def calculate_statistics(self, recommendations: list) -> dict:
         """Calculate aggregate statistics from historical performance."""
@@ -259,7 +263,7 @@ class DiscoveryAnalytics:
             return insights
 
         except Exception as e:
-            print(f"   Warning: Could not load historical stats: {e}")
+            logger.warning(f"Could not load historical stats: {e}")
             return {"available": False, "message": "Error loading historical data"}
 
     def format_stats_summary(self, stats: dict) -> str:
@@ -315,7 +319,7 @@ class DiscoveryAnalytics:
             try:
                 entry_price = get_stock_price(ticker, curr_date=trade_date)
             except Exception as e:
-                print(f"   Warning: Could not get entry price for {ticker}: {e}")
+                logger.warning(f"Could not get entry price for {ticker}: {e}")
                 entry_price = None
 
             enriched_rankings.append(
@@ -345,7 +349,7 @@ class DiscoveryAnalytics:
                 indent=2,
             )
 
-        print(f"   📊 Saved {len(enriched_rankings)} recommendations for tracking: {output_file}")
+        logger.info(f"   📊 Saved {len(enriched_rankings)} recommendations for tracking: {output_file}")
 
     def save_discovery_results(self, state: dict, trade_date: str, config: Dict[str, Any]):
         """Save full discovery results and tool logs."""
@@ -390,7 +394,7 @@ class DiscoveryAnalytics:
                         f.write(f"- **{ticker}** ({strategy})\n")
 
         except Exception as e:
-            print(f"   Error saving results: {e}")
+            logger.error(f"Error saving results: {e}")
 
         # Save as JSON
         try:
@@ -404,19 +408,17 @@ class DiscoveryAnalytics:
                 }
                 json.dump(json_state, f, indent=2)
         except Exception as e:
-            print(f"   Error saving JSON: {e}")
+            logger.error(f"Error saving JSON: {e}")
 
         # Save tool logs
         tool_logs = state.get("tool_logs", [])
         if tool_logs:
             tool_log_max_chars = (
-                config.get("discovery", {}).get("tool_log_max_chars", 10_000)
-                if config
-                else 10_000
+                config.get("discovery", {}).get("tool_log_max_chars", 10_000) if config else 10_000
             )
             self._save_tool_logs(results_dir, tool_logs, trade_date, tool_log_max_chars)
 
-        print(f"   Results saved to: {results_dir}")
+        logger.info(f"   Results saved to: {results_dir}")
 
     def _write_ranking_md(self, f, final_ranking):
         try:
@@ -513,4 +515,4 @@ class DiscoveryAnalytics:
                         f.write(f"### Output\n```\n{output}\n```\n\n")
                     f.write("---\n\n")
         except Exception as e:
-            print(f"   Error saving tool logs: {e}")
+            logger.error(f"Error saving tool logs: {e}")

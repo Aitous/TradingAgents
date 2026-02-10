@@ -1,8 +1,12 @@
 """Semantic news scanner for early catalyst detection."""
+
 from typing import Any, Dict, List
 
-from tradingagents.dataflows.discovery.scanner_registry import BaseScanner, SCANNER_REGISTRY
+from tradingagents.dataflows.discovery.scanner_registry import SCANNER_REGISTRY, BaseScanner
 from tradingagents.dataflows.discovery.utils import Priority
+from tradingagents.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 class SemanticNewsScanner(BaseScanner):
@@ -22,11 +26,12 @@ class SemanticNewsScanner(BaseScanner):
         if not self.is_enabled():
             return []
 
-        print(f"   📰 Scanning news catalysts...")
+        logger.info("📰 Scanning news catalysts...")
 
         try:
-            from tradingagents.tools.executor import execute_tool
             from datetime import datetime
+
+            from tradingagents.tools.executor import execute_tool
 
             # Get recent global news
             date_str = datetime.now().strftime("%Y-%m-%d")
@@ -37,30 +42,44 @@ class SemanticNewsScanner(BaseScanner):
 
             # Extract tickers mentioned in news
             import re
-            ticker_pattern = r'\b([A-Z]{2,5})\b|\$([A-Z]{2,5})'
+
+            ticker_pattern = r"\b([A-Z]{2,5})\b|\$([A-Z]{2,5})"
             matches = re.findall(ticker_pattern, result)
 
             tickers = list(set([t[0] or t[1] for t in matches if t[0] or t[1]]))
-            stop_words = {'NYSE', 'NASDAQ', 'CEO', 'CFO', 'IPO', 'ETF', 'USA', 'SEC', 'NEWS', 'STOCK', 'MARKET'}
+            stop_words = {
+                "NYSE",
+                "NASDAQ",
+                "CEO",
+                "CFO",
+                "IPO",
+                "ETF",
+                "USA",
+                "SEC",
+                "NEWS",
+                "STOCK",
+                "MARKET",
+            }
             tickers = [t for t in tickers if t not in stop_words]
 
             candidates = []
-            for ticker in tickers[:self.limit]:
-                candidates.append({
-                    "ticker": ticker,
-                    "source": self.name,
-                    "context": "Mentioned in recent market news",
-                    "priority": Priority.MEDIUM.value,
-                    "strategy": "news_catalyst",
-                })
+            for ticker in tickers[: self.limit]:
+                candidates.append(
+                    {
+                        "ticker": ticker,
+                        "source": self.name,
+                        "context": "Mentioned in recent market news",
+                        "priority": Priority.MEDIUM.value,
+                        "strategy": "news_catalyst",
+                    }
+                )
 
-            print(f"      Found {len(candidates)} news mentions")
+            logger.info(f"Found {len(candidates)} news mentions")
             return candidates
 
         except Exception as e:
-            print(f"      ⚠️  News scan failed: {e}")
+            logger.warning(f"⚠️  News scan failed: {e}")
             return []
-
 
 
 SCANNER_REGISTRY.register(SemanticNewsScanner)

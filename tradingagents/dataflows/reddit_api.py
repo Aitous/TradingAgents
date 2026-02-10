@@ -1,22 +1,22 @@
-import os
-import praw
 from datetime import datetime, timedelta
 from typing import Annotated
 
+import praw
+
+from tradingagents.config import config
+from tradingagents.utils.logger import get_logger
+
+logger = get_logger(__name__)
+
+
 def get_reddit_client():
     """Initialize and return a PRAW Reddit instance."""
-    client_id = os.getenv("REDDIT_CLIENT_ID")
-    client_secret = os.getenv("REDDIT_CLIENT_SECRET")
-    user_agent = os.getenv("REDDIT_USER_AGENT", "trading_agents_bot/1.0")
+    client_id = config.validate_key("reddit_client_id", "Reddit Client ID")
+    client_secret = config.validate_key("reddit_client_secret", "Reddit Client Secret")
+    user_agent = config.reddit_user_agent
 
-    if not client_id or not client_secret:
-        raise ValueError("REDDIT_CLIENT_ID and REDDIT_CLIENT_SECRET must be set in environment variables.")
+    return praw.Reddit(client_id=client_id, client_secret=client_secret, user_agent=user_agent)
 
-    return praw.Reddit(
-        client_id=client_id,
-        client_secret=client_secret,
-        user_agent=user_agent
-    )
 
 def get_reddit_news(
     ticker: Annotated[str, "Ticker symbol"] = None,
@@ -33,133 +33,163 @@ def get_reddit_news(
 
     try:
         reddit = get_reddit_client()
-        
+
         start_dt = datetime.strptime(start_date, "%Y-%m-%d")
         end_dt = datetime.strptime(end_date, "%Y-%m-%d")
         # Add one day to end_date to include the full day
         end_dt = end_dt + timedelta(days=1)
-        
+
         # Subreddits to search
         subreddits = "stocks+investing+wallstreetbets+stockmarket"
-        
+
         # Search queries - try multiple variations
         queries = [
             target_query,
             f"${target_query}",  # Common format on WSB
             target_query.lower(),
         ]
-        
+
         posts = []
         seen_ids = set()  # Avoid duplicates
         subreddit = reddit.subreddit(subreddits)
-        
+
         # Try multiple search strategies
         for q in queries:
             # Strategy 1: Search by relevance
-            for submission in subreddit.search(q, sort='relevance', time_filter='all', limit=50):
+            for submission in subreddit.search(q, sort="relevance", time_filter="all", limit=50):
                 if submission.id in seen_ids:
                     continue
-                    
+
                 post_date = datetime.fromtimestamp(submission.created_utc)
-                
+
                 if start_dt <= post_date <= end_dt:
                     seen_ids.add(submission.id)
-                    
+
                     # Fetch top comments for this post
-                    submission.comment_sort = 'top'
+                    submission.comment_sort = "top"
                     submission.comments.replace_more(limit=0)
-                    
+
                     top_comments = []
                     for comment in submission.comments[:5]:  # Top 5 comments
-                        if hasattr(comment, 'body') and hasattr(comment, 'score'):
-                            top_comments.append({
-                                'body': comment.body[:300] + "..." if len(comment.body) > 300 else comment.body,
-                                'score': comment.score,
-                                'author': str(comment.author) if comment.author else '[deleted]'
-                            })
-                    
-                    posts.append({
-                        "title": submission.title,
-                        "score": submission.score,
-                        "num_comments": submission.num_comments,
-                        "date": post_date.strftime("%Y-%m-%d"),
-                        "url": submission.url,
-                        "text": submission.selftext[:500] + "..." if len(submission.selftext) > 500 else submission.selftext,
-                        "subreddit": submission.subreddit.display_name,
-                        "top_comments": top_comments
-                    })
-            
+                        if hasattr(comment, "body") and hasattr(comment, "score"):
+                            top_comments.append(
+                                {
+                                    "body": (
+                                        comment.body[:300] + "..."
+                                        if len(comment.body) > 300
+                                        else comment.body
+                                    ),
+                                    "score": comment.score,
+                                    "author": (
+                                        str(comment.author) if comment.author else "[deleted]"
+                                    ),
+                                }
+                            )
+
+                    posts.append(
+                        {
+                            "title": submission.title,
+                            "score": submission.score,
+                            "num_comments": submission.num_comments,
+                            "date": post_date.strftime("%Y-%m-%d"),
+                            "url": submission.url,
+                            "text": (
+                                submission.selftext[:500] + "..."
+                                if len(submission.selftext) > 500
+                                else submission.selftext
+                            ),
+                            "subreddit": submission.subreddit.display_name,
+                            "top_comments": top_comments,
+                        }
+                    )
+
             # Strategy 2: Search by new (for recent posts)
-            for submission in subreddit.search(q, sort='new', time_filter='week', limit=50):
+            for submission in subreddit.search(q, sort="new", time_filter="week", limit=50):
                 if submission.id in seen_ids:
                     continue
-                    
+
                 post_date = datetime.fromtimestamp(submission.created_utc)
-                
+
                 if start_dt <= post_date <= end_dt:
                     seen_ids.add(submission.id)
-                    
-                    submission.comment_sort = 'top'
+
+                    submission.comment_sort = "top"
                     submission.comments.replace_more(limit=0)
-                    
+
                     top_comments = []
                     for comment in submission.comments[:5]:
-                        if hasattr(comment, 'body') and hasattr(comment, 'score'):
-                            top_comments.append({
-                                'body': comment.body[:300] + "..." if len(comment.body) > 300 else comment.body,
-                                'score': comment.score,
-                                'author': str(comment.author) if comment.author else '[deleted]'
-                            })
-                    
-                    posts.append({
-                        "title": submission.title,
-                        "score": submission.score,
-                        "num_comments": submission.num_comments,
-                        "date": post_date.strftime("%Y-%m-%d"),
-                        "url": submission.url,
-                        "text": submission.selftext[:500] + "..." if len(submission.selftext) > 500 else submission.selftext,
-                        "subreddit": submission.subreddit.display_name,
-                        "top_comments": top_comments
-                    })
-                
+                        if hasattr(comment, "body") and hasattr(comment, "score"):
+                            top_comments.append(
+                                {
+                                    "body": (
+                                        comment.body[:300] + "..."
+                                        if len(comment.body) > 300
+                                        else comment.body
+                                    ),
+                                    "score": comment.score,
+                                    "author": (
+                                        str(comment.author) if comment.author else "[deleted]"
+                                    ),
+                                }
+                            )
+
+                    posts.append(
+                        {
+                            "title": submission.title,
+                            "score": submission.score,
+                            "num_comments": submission.num_comments,
+                            "date": post_date.strftime("%Y-%m-%d"),
+                            "url": submission.url,
+                            "text": (
+                                submission.selftext[:500] + "..."
+                                if len(submission.selftext) > 500
+                                else submission.selftext
+                            ),
+                            "subreddit": submission.subreddit.display_name,
+                            "top_comments": top_comments,
+                        }
+                    )
+
         if not posts:
             return f"No Reddit posts found for {target_query} between {start_date} and {end_date}."
-            
+
         # Format output
         report = f"## Reddit Discussions for {target_query} ({start_date} to {end_date})\n\n"
         report += f"**Total Posts Found:** {len(posts)}\n\n"
-        
+
         # Sort by score (popularity)
         posts.sort(key=lambda x: x["score"], reverse=True)
-        
+
         # Detailed view of top posts
         report += "### Top Posts with Community Reactions\n\n"
         for i, post in enumerate(posts[:10], 1):  # Top 10 posts
             report += f"#### {i}. [{post['subreddit']}] {post['title']}\n"
             report += f"**Score:** {post['score']} | **Comments:** {post['num_comments']} | **Date:** {post['date']}\n\n"
-            
-            if post['text']:
+
+            if post["text"]:
                 report += f"**Post Content:**\n{post['text']}\n\n"
-            
-            if post['top_comments']:
+
+            if post["top_comments"]:
                 report += f"**Top Community Reactions ({len(post['top_comments'])} comments):**\n"
-                for j, comment in enumerate(post['top_comments'], 1):
+                for j, comment in enumerate(post["top_comments"], 1):
                     report += f"{j}. *[{comment['score']} upvotes]* u/{comment['author']}: {comment['body']}\n"
                 report += "\n"
-            
+
             report += f"**Link:** {post['url']}\n\n"
             report += "---\n\n"
-        
+
         # Summary statistics
-        total_engagement = sum(p['score'] + p['num_comments'] for p in posts)
-        avg_score = sum(p['score'] for p in posts) / len(posts) if posts else 0
-        
+        total_engagement = sum(p["score"] + p["num_comments"] for p in posts)
+        avg_score = sum(p["score"] for p in posts) / len(posts) if posts else 0
+
         report += "### Summary Statistics\n"
         report += f"- **Total Posts:** {len(posts)}\n"
         report += f"- **Average Score:** {avg_score:.1f}\n"
         report += f"- **Total Engagement:** {total_engagement:,} (upvotes + comments)\n"
-        report += f"- **Most Active Subreddit:** {max(posts, key=lambda x: x['score'])['subreddit']}\n"
-            
+        report += (
+            f"- **Most Active Subreddit:** {max(posts, key=lambda x: x['score'])['subreddit']}\n"
+        )
+
         return report
 
     except Exception as e:
@@ -181,43 +211,45 @@ def get_reddit_global_news(
 
     try:
         reddit = get_reddit_client()
-        
+
         curr_dt = datetime.strptime(target_date, "%Y-%m-%d")
         start_dt = curr_dt - timedelta(days=look_back_days)
-        
+
         # Subreddits for global news
         subreddits = "financenews+finance+economics+stockmarket"
-        
+
         posts = []
         subreddit = reddit.subreddit(subreddits)
-        
+
         # For global news, we just want top posts from the period
         # We can use 'top' with time_filter, but 'week' is a fixed window.
         # Better to iterate top of 'week' and filter by date.
-        
-        for submission in subreddit.top(time_filter='week', limit=50):
+
+        for submission in subreddit.top(time_filter="week", limit=50):
             post_date = datetime.fromtimestamp(submission.created_utc)
-            
+
             if start_dt <= post_date <= curr_dt + timedelta(days=1):
-                posts.append({
-                    "title": submission.title,
-                    "score": submission.score,
-                    "date": post_date.strftime("%Y-%m-%d"),
-                    "subreddit": submission.subreddit.display_name
-                })
-                
+                posts.append(
+                    {
+                        "title": submission.title,
+                        "score": submission.score,
+                        "date": post_date.strftime("%Y-%m-%d"),
+                        "subreddit": submission.subreddit.display_name,
+                    }
+                )
+
         if not posts:
             return f"No global news found on Reddit for the past {look_back_days} days."
-            
+
         # Format output
         report = f"## Global News from Reddit (Last {look_back_days} days)\n\n"
-        
+
         posts.sort(key=lambda x: x["score"], reverse=True)
-        
+
         for post in posts[:limit]:
             report += f"### [{post['subreddit']}] {post['title']} (Score: {post['score']})\n"
             report += f"**Date:** {post['date']}\n\n"
-            
+
         return report
 
     except Exception as e:
@@ -234,57 +266,64 @@ def get_reddit_trending_tickers(
     """
     try:
         reddit = get_reddit_client()
-        
+
         # Subreddits to scan
         subreddits = "wallstreetbets+stocks+investing+stockmarket"
         subreddit = reddit.subreddit(subreddits)
-        
+
         posts = []
-        
+
         # Scan hot posts
-        for submission in subreddit.hot(limit=limit * 2): # Fetch more to filter by date
+        for submission in subreddit.hot(limit=limit * 2):  # Fetch more to filter by date
             # Check date
             post_date = datetime.fromtimestamp(submission.created_utc)
             if (datetime.now() - post_date).days > look_back_days:
                 continue
-                
+
             # Fetch top comments
-            submission.comment_sort = 'top'
+            submission.comment_sort = "top"
             submission.comments.replace_more(limit=0)
-            
+
             top_comments = []
             for comment in submission.comments[:3]:
-                if hasattr(comment, 'body'):
+                if hasattr(comment, "body"):
                     top_comments.append(f"- {comment.body[:200]}...")
-            
-            posts.append({
-                "title": submission.title,
-                "score": submission.score,
-                "subreddit": submission.subreddit.display_name,
-                "text": submission.selftext[:500] + "..." if len(submission.selftext) > 500 else submission.selftext,
-                "comments": top_comments
-            })
-            
+
+            posts.append(
+                {
+                    "title": submission.title,
+                    "score": submission.score,
+                    "subreddit": submission.subreddit.display_name,
+                    "text": (
+                        submission.selftext[:500] + "..."
+                        if len(submission.selftext) > 500
+                        else submission.selftext
+                    ),
+                    "comments": top_comments,
+                }
+            )
+
             if len(posts) >= limit:
                 break
-        
+
         if not posts:
             return "No trending discussions found."
-            
+
         # Format report for LLM
         report = "## Trending Reddit Discussions\n\n"
         for i, post in enumerate(posts, 1):
             report += f"### {i}. [{post['subreddit']}] {post['title']} (Score: {post['score']})\n"
-            if post['text']:
+            if post["text"]:
                 report += f"**Content:** {post['text']}\n"
-            if post['comments']:
-                report += "**Top Comments:**\n" + "\n".join(post['comments']) + "\n"
+            if post["comments"]:
+                report += "**Top Comments:**\n" + "\n".join(post["comments"]) + "\n"
             report += "\n---\n"
-            
+
         return report
 
     except Exception as e:
         return f"Error fetching trending tickers: {str(e)}"
+
 
 def get_reddit_discussions(
     symbol: Annotated[str, "Ticker symbol"],
@@ -302,7 +341,7 @@ def get_reddit_undiscovered_dd(
     scan_limit: Annotated[int, "Number of new posts to scan"] = 100,
     top_n: Annotated[int, "Number of top DD posts to return"] = 10,
     num_comments: Annotated[int, "Number of top comments to include"] = 10,
-    llm_evaluator = None,  # Will be passed from discovery graph
+    llm_evaluator=None,  # Will be passed from discovery graph
 ) -> str:
     """
     Find high-quality undiscovered DD using LLM evaluation.
@@ -345,47 +384,77 @@ def get_reddit_undiscovered_dd(
                 continue
 
             # Get top comments for community validation
-            submission.comment_sort = 'top'
+            submission.comment_sort = "top"
             submission.comments.replace_more(limit=0)
             top_comments = []
             for comment in submission.comments[:num_comments]:
-                if hasattr(comment, 'body') and hasattr(comment, 'score'):
-                    top_comments.append({
-                        'body': comment.body[:500],  # Include more of each comment
-                        'score': comment.score,
-                    })
+                if hasattr(comment, "body") and hasattr(comment, "score"):
+                    top_comments.append(
+                        {
+                            "body": comment.body[:1000],  # Include more of each comment
+                            "score": comment.score,
+                        }
+                    )
 
-            candidate_posts.append({
-                "title": submission.title,
-                "author": str(submission.author) if submission.author else '[deleted]',
-                "score": submission.score,
-                "num_comments": submission.num_comments,
-                "subreddit": submission.subreddit.display_name,
-                "flair": submission.link_flair_text or "None",
-                "date": post_date.strftime("%Y-%m-%d %H:%M"),
-                "url": f"https://reddit.com{submission.permalink}",
-                "text": submission.selftext[:1500],  # First 1500 chars for LLM
-                "full_length": len(submission.selftext),
-                "hours_ago": int((datetime.now() - post_date).total_seconds() / 3600),
-                "top_comments": top_comments,
-            })
+            candidate_posts.append(
+                {
+                    "title": submission.title,
+                    "author": str(submission.author) if submission.author else "[deleted]",
+                    "score": submission.score,
+                    "num_comments": submission.num_comments,
+                    "subreddit": submission.subreddit.display_name,
+                    "flair": submission.link_flair_text or "None",
+                    "date": post_date.strftime("%Y-%m-%d %H:%M"),
+                    "url": f"https://reddit.com{submission.permalink}",
+                    "text": submission.selftext[:1500],  # First 1500 chars for LLM
+                    "full_length": len(submission.selftext),
+                    "hours_ago": int((datetime.now() - post_date).total_seconds() / 3600),
+                    "top_comments": top_comments,
+                }
+            )
 
         if not candidate_posts:
             return f"# Undiscovered DD\n\nNo posts found in last {lookback_hours}h."
 
-        print(f"   Scanning {len(candidate_posts)} Reddit posts with LLM...")
+        logger.info(f"Scanning {len(candidate_posts)} Reddit posts with LLM...")
 
         # LLM evaluation (parallel)
         if llm_evaluator:
             from concurrent.futures import ThreadPoolExecutor, as_completed
+            from typing import List
+
             from pydantic import BaseModel, Field
-            from typing import List, Optional
 
             # Define structured output schema
             class DDEvaluation(BaseModel):
                 score: int = Field(description="Quality score 0-100")
                 reason: str = Field(description="Brief reasoning for the score")
-                tickers: List[str] = Field(default_factory=list, description="List of stock ticker symbols mentioned (empty list if none)")
+                tickers: List[str] = Field(
+                    default_factory=list,
+                    description="List of stock ticker symbols mentioned (empty list if none)",
+                )
+
+            # Configure LLM for Reddit content (adjust safety settings if using Gemini)
+            try:
+                # Check if using Google Gemini and configure safety settings
+                if (
+                    hasattr(llm_evaluator, "model_name")
+                    and "gemini" in llm_evaluator.model_name.lower()
+                ):
+                    from langchain_google_genai import HarmBlockThreshold, HarmCategory
+
+                    # More permissive safety settings for financial content analysis
+                    llm_evaluator.safety_settings = {
+                        HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
+                        HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
+                        HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
+                        HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+                    }
+                    logger.info(
+                        "⚙️  Configured Gemini with permissive safety settings for financial content"
+                    )
+            except Exception as e:
+                logger.warning(f"Could not configure safety settings: {e}")
 
             # Create structured LLM
             structured_llm = llm_evaluator.with_structured_output(DDEvaluation)
@@ -394,10 +463,12 @@ def get_reddit_undiscovered_dd(
                 try:
                     # Build prompt with comments if available
                     comments_section = ""
-                    if post.get('top_comments') and len(post['top_comments']) > 0:
+                    if post.get("top_comments") and len(post["top_comments"]) > 0:
                         comments_section = "\n\nTop Community Comments (for validation):\n"
-                        for i, comment in enumerate(post['top_comments'], 1):
-                            comments_section += f"{i}. [{comment['score']} upvotes] {comment['body']}\n"
+                        for i, comment in enumerate(post["top_comments"], 1):
+                            comments_section += (
+                                f"{i}. [{comment['score']} upvotes] {comment['body']}\n"
+                            )
 
                     prompt = f"""Evaluate this Reddit post for investment Due Diligence quality.
 
@@ -420,22 +491,34 @@ Extract all stock ticker symbols mentioned in the post or comments."""
 
                     result = structured_llm.invoke(prompt)
 
+                    # Handle None result (Gemini blocked content despite safety settings)
+                    if result is None:
+                        logger.warning(f"⚠️  Content blocked for '{post['title'][:50]}...' - Skipping")
+                        post["quality_score"] = 0
+                        post["quality_reason"] = (
+                            "Content blocked by LLM safety filter. "
+                            "Consider using OpenAI/Anthropic for Reddit content."
+                        )
+                        post["tickers"] = []
+                        return post
+
                     # Extract values from structured response
-                    post['quality_score'] = result.score
-                    post['quality_reason'] = result.reason
-                    post['tickers'] = result.tickers  # Now a list
+                    post["quality_score"] = result.score
+                    post["quality_reason"] = result.reason
+                    post["tickers"] = result.tickers  # Now a list
 
                 except Exception as e:
-                    print(f"      Error evaluating '{post['title'][:50]}': {str(e)}")
-                    post['quality_score'] = 0
-                    post['quality_reason'] = f'Error: {str(e)}'
-                    post['tickers'] = []
+                    logger.error(f"Error evaluating '{post['title'][:50]}': {str(e)}")
+                    post["quality_score"] = 0
+                    post["quality_reason"] = f"Error: {str(e)}"
+                    post["tickers"] = []
 
                 return post
 
             # Parallel evaluation with progress tracking
             try:
                 from tqdm import tqdm
+
                 use_tqdm = True
             except ImportError:
                 use_tqdm = False
@@ -446,48 +529,49 @@ Extract all stock ticker symbols mentioned in the post or comments."""
                 if use_tqdm:
                     # With progress bar
                     evaluated = []
-                    for future in tqdm(as_completed(futures), total=len(futures), desc="   Evaluating posts"):
+                    for future in tqdm(
+                        as_completed(futures), total=len(futures), desc="   Evaluating posts"
+                    ):
                         evaluated.append(future.result())
                 else:
                     # Without progress bar (fallback)
                     evaluated = [f.result() for f in as_completed(futures)]
 
             # Filter quality threshold (55+ = decent DD)
-            quality_dd = [p for p in evaluated if p['quality_score'] >= 55]
-            quality_dd.sort(key=lambda x: x['quality_score'], reverse=True)
+            quality_dd = [p for p in evaluated if p["quality_score"] >= 55]
+            quality_dd.sort(key=lambda x: x["quality_score"], reverse=True)
 
             # Debug: show score distribution
-            all_scores = [p['quality_score'] for p in evaluated if p['quality_score'] > 0]
+            all_scores = [p["quality_score"] for p in evaluated if p["quality_score"] > 0]
             if all_scores:
                 avg_score = sum(all_scores) / len(all_scores)
                 max_score = max(all_scores)
-                print(f"   Score distribution: avg={avg_score:.1f}, max={max_score}, quality_posts={len(quality_dd)}")
+                logger.info(
+                    f"Score distribution: avg={avg_score:.1f}, max={max_score}, quality_posts={len(quality_dd)}"
+                )
 
             top_dd = quality_dd[:top_n]
 
         else:
             # No LLM - sort by length + engagement
-            candidate_posts.sort(
-                key=lambda x: x['full_length'] + (x['score'] * 10),
-                reverse=True
-            )
+            candidate_posts.sort(key=lambda x: x["full_length"] + (x["score"] * 10), reverse=True)
             top_dd = candidate_posts[:top_n]
 
         if not top_dd:
             return f"# Undiscovered DD\n\nNo high-quality DD found (scanned {len(candidate_posts)} posts)."
 
         # Build report
-        report = f"# 💎 Undiscovered DD (LLM-Filtered Quality)\n\n"
+        report = "# 💎 Undiscovered DD (LLM-Filtered Quality)\n\n"
         report += f"**Scanned:** {len(candidate_posts)} posts\n"
         report += f"**High Quality:** {len(top_dd)} DD posts (score ≥60)\n\n"
 
         for i, post in enumerate(top_dd, 1):
             report += f"## {i}. {post['title']}\n\n"
 
-            if 'quality_score' in post:
+            if "quality_score" in post:
                 report += f"**Quality:** {post['quality_score']}/100 - {post['quality_reason']}\n"
-                if post.get('tickers') and len(post['tickers']) > 0:
-                    tickers_str = ', '.join([f'${t}' for t in post['tickers']])
+                if post.get("tickers") and len(post["tickers"]) > 0:
+                    tickers_str = ", ".join([f"${t}" for t in post["tickers"]])
                     report += f"**Tickers:** {tickers_str}\n"
 
             report += f"**r/{post['subreddit']}** | {post['hours_ago']}h ago | "
@@ -500,4 +584,5 @@ Extract all stock ticker symbols mentioned in the post or comments."""
 
     except Exception as e:
         import traceback
+
         return f"# Undiscovered DD\n\nError: {str(e)}\n{traceback.format_exc()}"

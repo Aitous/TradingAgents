@@ -1,10 +1,12 @@
 """SEC Form 4 insider buying scanner."""
-import re
-from datetime import datetime, timedelta
+
 from typing import Any, Dict, List
 
-from tradingagents.dataflows.discovery.scanner_registry import BaseScanner, SCANNER_REGISTRY
+from tradingagents.dataflows.discovery.scanner_registry import SCANNER_REGISTRY, BaseScanner
 from tradingagents.dataflows.discovery.utils import Priority
+from tradingagents.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 class InsiderBuyingScanner(BaseScanner):
@@ -22,7 +24,7 @@ class InsiderBuyingScanner(BaseScanner):
         if not self.is_enabled():
             return []
 
-        print(f"   💼 Scanning insider buying (last {self.lookback_days} days)...")
+        logger.info(f"💼 Scanning insider buying (last {self.lookback_days} days)...")
 
         try:
             # Use Finviz insider buying screener
@@ -32,11 +34,11 @@ class InsiderBuyingScanner(BaseScanner):
                 transaction_type="buy",
                 lookback_days=self.lookback_days,
                 min_value=self.min_transaction_value,
-                top_n=self.limit
+                top_n=self.limit,
             )
 
             if not result or not isinstance(result, str):
-                print(f"      Found 0 insider purchases")
+                logger.info("Found 0 insider purchases")
                 return []
 
             # Parse the markdown result
@@ -45,12 +47,13 @@ class InsiderBuyingScanner(BaseScanner):
 
             # Extract tickers from markdown table
             import re
-            lines = result.split('\n')
+
+            lines = result.split("\n")
             for line in lines:
-                if '|' not in line or 'Ticker' in line or '---' in line:
+                if "|" not in line or "Ticker" in line or "---" in line:
                     continue
 
-                parts = [p.strip() for p in line.split('|')]
+                parts = [p.strip() for p in line.split("|")]
                 if len(parts) < 3:
                     continue
 
@@ -61,29 +64,30 @@ class InsiderBuyingScanner(BaseScanner):
                     continue
 
                 # Validate ticker format
-                if not re.match(r'^[A-Z]{1,5}$', ticker):
+                if not re.match(r"^[A-Z]{1,5}$", ticker):
                     continue
 
                 seen_tickers.add(ticker)
 
-                candidates.append({
-                    "ticker": ticker,
-                    "source": self.name,
-                    "context": f"Insider purchase detected (Finviz)",
-                    "priority": Priority.HIGH.value,
-                    "strategy": "insider_buying",
-                })
+                candidates.append(
+                    {
+                        "ticker": ticker,
+                        "source": self.name,
+                        "context": "Insider purchase detected (Finviz)",
+                        "priority": Priority.HIGH.value,
+                        "strategy": "insider_buying",
+                    }
+                )
 
                 if len(candidates) >= self.limit:
                     break
 
-            print(f"      Found {len(candidates)} insider purchases")
+            logger.info(f"Found {len(candidates)} insider purchases")
             return candidates
 
         except Exception as e:
-            print(f"      ⚠️  Insider buying failed: {e}")
+            logger.warning(f"⚠️  Insider buying failed: {e}")
             return []
-
 
 
 SCANNER_REGISTRY.register(InsiderBuyingScanner)

@@ -9,15 +9,16 @@ This module creates agent memories from historical stock data by:
 5. Storing memories in ChromaDB for future retrieval
 """
 
-import os
 import re
-import json
-import yfinance as yf
-import pandas as pd
 from datetime import datetime, timedelta
-from typing import List, Dict, Tuple, Optional, Any
-from tradingagents.tools.executor import execute_tool
+from typing import Any, Dict, List, Optional, Tuple
+
 from tradingagents.agents.utils.memory import FinancialSituationMemory
+from tradingagents.dataflows.y_finance import get_ticker_history
+from tradingagents.tools.executor import execute_tool
+from tradingagents.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 class HistoricalMemoryBuilder:
@@ -35,7 +36,7 @@ class HistoricalMemoryBuilder:
             "bear": 0,
             "trader": 0,
             "invest_judge": 0,
-            "risk_manager": 0
+            "risk_manager": 0,
         }
 
     def get_tickers_from_alpha_vantage(self, limit: int = 20) -> List[str]:
@@ -48,7 +49,7 @@ class HistoricalMemoryBuilder:
         Returns:
             List of ticker symbols from top gainers and losers
         """
-        print(f"\n🔍 Fetching top movers from Alpha Vantage...")
+        logger.info("🔍 Fetching top movers from Alpha Vantage...")
 
         try:
             # Use execute_tool to call the alpha vantage function
@@ -57,13 +58,13 @@ class HistoricalMemoryBuilder:
             # Parse the markdown table response to extract tickers
             tickers = set()
 
-            lines = response.split('\n')
+            lines = response.split("\n")
             for line in lines:
                 # Look for table rows with ticker data
-                if '|' in line and not line.strip().startswith('|---'):
-                    parts = [p.strip() for p in line.split('|')]
+                if "|" in line and not line.strip().startswith("|---"):
+                    parts = [p.strip() for p in line.split("|")]
                     # Table format: | Ticker | Price | Change % | Volume |
-                    if len(parts) >= 2 and parts[1] and parts[1] not in ['Ticker', '']:
+                    if len(parts) >= 2 and parts[1] and parts[1] not in ["Ticker", ""]:
                         ticker = parts[1].strip()
 
                         # Filter out warrants, units, and problematic tickers
@@ -71,14 +72,16 @@ class HistoricalMemoryBuilder:
                             tickers.add(ticker)
 
             ticker_list = sorted(list(tickers))
-            print(f"   ✅ Found {len(ticker_list)} unique tickers from Alpha Vantage")
-            print(f"   Tickers: {', '.join(ticker_list[:10])}{'...' if len(ticker_list) > 10 else ''}")
+            logger.info(f"✅ Found {len(ticker_list)} unique tickers from Alpha Vantage")
+            logger.debug(
+                f"Tickers: {', '.join(ticker_list[:10])}{'...' if len(ticker_list) > 10 else ''}"
+            )
 
             return ticker_list
 
         except Exception as e:
-            print(f"   ⚠️  Error fetching from Alpha Vantage: {e}")
-            print(f"   Falling back to empty list")
+            logger.warning(f"⚠️  Error fetching from Alpha Vantage: {e}")
+            logger.warning("Falling back to empty list")
             return []
 
     def _is_valid_ticker(self, ticker: str) -> bool:
@@ -102,23 +105,23 @@ class HistoricalMemoryBuilder:
             return False
 
         # Must be uppercase letters and numbers only
-        if not re.match(r'^[A-Z]{1,5}$', ticker):
+        if not re.match(r"^[A-Z]{1,5}$", ticker):
             return False
 
         # Filter out warrants (W, WW, WS suffix)
-        if ticker.endswith('W') or ticker.endswith('WW') or ticker.endswith('WS'):
+        if ticker.endswith("W") or ticker.endswith("WW") or ticker.endswith("WS"):
             return False
 
         # Filter out units
-        if ticker.endswith('U'):
+        if ticker.endswith("U"):
             return False
 
         # Filter out rights
-        if ticker.endswith('R') and len(ticker) > 1:
+        if ticker.endswith("R") and len(ticker) > 1:
             return False
 
         # Filter out other suffixes that indicate derivatives
-        if ticker.endswith('Z'):  # Often used for special situations
+        if ticker.endswith("Z"):  # Often used for special situations
             return False
 
         return True
@@ -129,7 +132,7 @@ class HistoricalMemoryBuilder:
         start_date: str,
         end_date: str,
         min_move_pct: float = 15.0,
-        window_days: int = 5
+        window_days: int = 5,
     ) -> List[Dict[str, Any]]:
         """
         Find stocks that had significant moves (>15% in 5 days).
@@ -153,67 +156,66 @@ class HistoricalMemoryBuilder:
         """
         high_movers = []
 
-        print(f"\n🔍 Scanning for high movers ({min_move_pct}%+ in {window_days} days)")
-        print(f"   Period: {start_date} to {end_date}")
-        print(f"   Tickers: {len(tickers)}\n")
+        logger.info(f"🔍 Scanning for high movers ({min_move_pct}%+ in {window_days} days)")
+        logger.info(f"Period: {start_date} to {end_date}")
+        logger.info(f"Tickers: {len(tickers)}")
 
         for ticker in tickers:
             try:
-                print(f"   Scanning {ticker}...", end=" ")
+                logger.info(f"Scanning {ticker}...")
 
                 # Download historical data using yfinance
-                stock = yf.Ticker(ticker)
-                df = stock.history(start=start_date, end=end_date)
+                df = get_ticker_history(ticker, start=start_date, end=end_date)
 
                 if df.empty:
-                    print("No data")
+                    logger.debug(f"{ticker}: No data")
                     continue
 
                 # Calculate rolling returns over window_days
-                df['rolling_return'] = df['Close'].pct_change(periods=window_days) * 100
+                df["rolling_return"] = df["Close"].pct_change(periods=window_days) * 100
 
                 # Find periods with moves >= min_move_pct
-                significant_moves = df[abs(df['rolling_return']) >= min_move_pct]
+                significant_moves = df[abs(df["rolling_return"]) >= min_move_pct]
 
                 if not significant_moves.empty:
                     for idx, row in significant_moves.iterrows():
                         # Get the start date (window_days before this date)
-                        move_end_date = idx.strftime('%Y-%m-%d')
-                        move_start_date = (idx - timedelta(days=window_days)).strftime('%Y-%m-%d')
+                        move_end_date = idx.strftime("%Y-%m-%d")
+                        move_start_date = (idx - timedelta(days=window_days)).strftime("%Y-%m-%d")
 
                         # Get prices
                         try:
-                            start_price = df.loc[df.index >= move_start_date, 'Close'].iloc[0]
-                            end_price = row['Close']
-                            move_pct = row['rolling_return']
+                            start_price = df.loc[df.index >= move_start_date, "Close"].iloc[0]
+                            end_price = row["Close"]
+                            move_pct = row["rolling_return"]
 
-                            high_movers.append({
-                                'ticker': ticker,
-                                'move_start_date': move_start_date,
-                                'move_end_date': move_end_date,
-                                'move_pct': move_pct,
-                                'direction': 'up' if move_pct > 0 else 'down',
-                                'start_price': start_price,
-                                'end_price': end_price
-                            })
+                            high_movers.append(
+                                {
+                                    "ticker": ticker,
+                                    "move_start_date": move_start_date,
+                                    "move_end_date": move_end_date,
+                                    "move_pct": move_pct,
+                                    "direction": "up" if move_pct > 0 else "down",
+                                    "start_price": start_price,
+                                    "end_price": end_price,
+                                }
+                            )
                         except (IndexError, KeyError):
                             continue
 
-                    print(f"Found {len([m for m in high_movers if m['ticker'] == ticker])} moves")
+                    logger.info(f"Found {len([m for m in high_movers if m['ticker'] == ticker])} moves for {ticker}")
                 else:
-                    print("No significant moves")
+                    logger.debug(f"{ticker}: No significant moves")
 
             except Exception as e:
-                print(f"Error: {e}")
+                logger.error(f"Error scanning {ticker}: {e}")
                 continue
 
-        print(f"\n✅ Total high movers found: {len(high_movers)}\n")
+        logger.info(f"✅ Total high movers found: {len(high_movers)}")
         return high_movers
 
     def run_retrospective_analysis(
-        self,
-        ticker: str,
-        analysis_date: str
+        self, ticker: str, analysis_date: str
     ) -> Optional[Dict[str, Any]]:
         """
         Run the trading graph analysis for a ticker at a specific historical date.
@@ -238,47 +240,48 @@ class HistoricalMemoryBuilder:
             # Import here to avoid circular imports
             from tradingagents.graph.trading_graph import TradingAgentsGraph
 
-            print(f"      Running analysis for {ticker} on {analysis_date}...")
+            logger.info(f"Running analysis for {ticker} on {analysis_date}...")
 
             # Create trading graph instance
             # Use fewer analysts to reduce token usage
             graph = TradingAgentsGraph(
                 selected_analysts=["market", "fundamentals"],  # Skip social/news to reduce tokens
                 config=self.config,
-                debug=False
+                debug=False,
             )
 
             # Run the analysis (returns tuple: final_state, processed_signal)
             final_state, _ = graph.propagate(ticker, analysis_date)
 
             # Extract reports and decisions (with type safety)
-            def safe_get_str(d, key, default=''):
+            def safe_get_str(d, key, default=""):
                 """Safely extract string from state, handling lists or other types."""
                 value = d.get(key, default)
                 if isinstance(value, list):
                     # If it's a list, try to extract text from messages
-                    return ' '.join(str(item) for item in value)
+                    return " ".join(str(item) for item in value)
                 return str(value) if value else default
 
             # Extract reports and decisions
             analysis_data = {
-                'market_report': safe_get_str(final_state, 'market_report'),
-                'sentiment_report': safe_get_str(final_state, 'sentiment_report'),
-                'news_report': safe_get_str(final_state, 'news_report'),
-                'fundamentals_report': safe_get_str(final_state, 'fundamentals_report'),
-                'investment_plan': safe_get_str(final_state, 'investment_plan'),
-                'final_decision': safe_get_str(final_state, 'final_trade_decision'),
+                "market_report": safe_get_str(final_state, "market_report"),
+                "sentiment_report": safe_get_str(final_state, "sentiment_report"),
+                "news_report": safe_get_str(final_state, "news_report"),
+                "fundamentals_report": safe_get_str(final_state, "fundamentals_report"),
+                "investment_plan": safe_get_str(final_state, "investment_plan"),
+                "final_decision": safe_get_str(final_state, "final_trade_decision"),
             }
 
             # Extract structured signals from reports
-            analysis_data['structured_signals'] = self.extract_structured_signals(analysis_data)
+            analysis_data["structured_signals"] = self.extract_structured_signals(analysis_data)
 
             return analysis_data
 
         except Exception as e:
-            print(f"      Error running analysis: {e}")
+            logger.error(f"Error running analysis: {e}")
             import traceback
-            print(f"      Traceback: {traceback.format_exc()}")
+
+            logger.debug(f"Traceback: {traceback.format_exc()}")
             return None
 
     def extract_structured_signals(self, reports: Dict[str, str]) -> Dict[str, Any]:
@@ -300,63 +303,101 @@ class HistoricalMemoryBuilder:
         """
         signals = {}
 
-        market_report = reports.get('market_report', '')
-        sentiment_report = reports.get('sentiment_report', '')
-        news_report = reports.get('news_report', '')
-        fundamentals_report = reports.get('fundamentals_report', '')
+        market_report = reports.get("market_report", "")
+        sentiment_report = reports.get("sentiment_report", "")
+        news_report = reports.get("news_report", "")
+        fundamentals_report = reports.get("fundamentals_report", "")
 
         # Extract volume signals
-        signals['unusual_volume'] = bool(
-            re.search(r'(unusual volume|volume spike|high volume|increased volume)', market_report, re.IGNORECASE)
+        signals["unusual_volume"] = bool(
+            re.search(
+                r"(unusual volume|volume spike|high volume|increased volume)",
+                market_report,
+                re.IGNORECASE,
+            )
         )
 
         # Extract sentiment
-        if re.search(r'(bullish|positive outlook|strong buy|buy)', sentiment_report + news_report, re.IGNORECASE):
-            signals['analyst_sentiment'] = 'bullish'
-        elif re.search(r'(bearish|negative outlook|strong sell|sell)', sentiment_report + news_report, re.IGNORECASE):
-            signals['analyst_sentiment'] = 'bearish'
+        if re.search(
+            r"(bullish|positive outlook|strong buy|buy)",
+            sentiment_report + news_report,
+            re.IGNORECASE,
+        ):
+            signals["analyst_sentiment"] = "bullish"
+        elif re.search(
+            r"(bearish|negative outlook|strong sell|sell)",
+            sentiment_report + news_report,
+            re.IGNORECASE,
+        ):
+            signals["analyst_sentiment"] = "bearish"
         else:
-            signals['analyst_sentiment'] = 'neutral'
+            signals["analyst_sentiment"] = "neutral"
 
         # Extract news sentiment
-        if re.search(r'(positive|good news|beat expectations|upgrade|growth)', news_report, re.IGNORECASE):
-            signals['news_sentiment'] = 'positive'
-        elif re.search(r'(negative|bad news|miss expectations|downgrade|decline)', news_report, re.IGNORECASE):
-            signals['news_sentiment'] = 'negative'
+        if re.search(
+            r"(positive|good news|beat expectations|upgrade|growth)", news_report, re.IGNORECASE
+        ):
+            signals["news_sentiment"] = "positive"
+        elif re.search(
+            r"(negative|bad news|miss expectations|downgrade|decline)", news_report, re.IGNORECASE
+        ):
+            signals["news_sentiment"] = "negative"
         else:
-            signals['news_sentiment'] = 'neutral'
+            signals["news_sentiment"] = "neutral"
 
         # Extract short interest
-        if re.search(r'(high short interest|heavily shorted|short squeeze)', market_report + news_report, re.IGNORECASE):
-            signals['short_interest'] = 'high'
-        elif re.search(r'(low short interest|minimal short)', market_report, re.IGNORECASE):
-            signals['short_interest'] = 'low'
+        if re.search(
+            r"(high short interest|heavily shorted|short squeeze)",
+            market_report + news_report,
+            re.IGNORECASE,
+        ):
+            signals["short_interest"] = "high"
+        elif re.search(r"(low short interest|minimal short)", market_report, re.IGNORECASE):
+            signals["short_interest"] = "low"
         else:
-            signals['short_interest'] = 'medium'
+            signals["short_interest"] = "medium"
 
         # Extract insider activity
-        if re.search(r'(insider buying|executive purchased|insider purchases)', news_report + fundamentals_report, re.IGNORECASE):
-            signals['insider_activity'] = 'buying'
-        elif re.search(r'(insider selling|executive sold|insider sales)', news_report + fundamentals_report, re.IGNORECASE):
-            signals['insider_activity'] = 'selling'
+        if re.search(
+            r"(insider buying|executive purchased|insider purchases)",
+            news_report + fundamentals_report,
+            re.IGNORECASE,
+        ):
+            signals["insider_activity"] = "buying"
+        elif re.search(
+            r"(insider selling|executive sold|insider sales)",
+            news_report + fundamentals_report,
+            re.IGNORECASE,
+        ):
+            signals["insider_activity"] = "selling"
         else:
-            signals['insider_activity'] = 'none'
+            signals["insider_activity"] = "none"
 
         # Extract price trend
-        if re.search(r'(uptrend|bullish trend|rising|moving higher|higher highs)', market_report, re.IGNORECASE):
-            signals['price_trend'] = 'uptrend'
-        elif re.search(r'(downtrend|bearish trend|falling|moving lower|lower lows)', market_report, re.IGNORECASE):
-            signals['price_trend'] = 'downtrend'
+        if re.search(
+            r"(uptrend|bullish trend|rising|moving higher|higher highs)",
+            market_report,
+            re.IGNORECASE,
+        ):
+            signals["price_trend"] = "uptrend"
+        elif re.search(
+            r"(downtrend|bearish trend|falling|moving lower|lower lows)",
+            market_report,
+            re.IGNORECASE,
+        ):
+            signals["price_trend"] = "downtrend"
         else:
-            signals['price_trend'] = 'sideways'
+            signals["price_trend"] = "sideways"
 
         # Extract volatility
-        if re.search(r'(high volatility|volatile|wild swings|sharp movements)', market_report, re.IGNORECASE):
-            signals['volatility'] = 'high'
-        elif re.search(r'(low volatility|stable|steady)', market_report, re.IGNORECASE):
-            signals['volatility'] = 'low'
+        if re.search(
+            r"(high volatility|volatile|wild swings|sharp movements)", market_report, re.IGNORECASE
+        ):
+            signals["volatility"] = "high"
+        elif re.search(r"(low volatility|stable|steady)", market_report, re.IGNORECASE):
+            signals["volatility"] = "low"
         else:
-            signals['volatility'] = 'medium'
+            signals["volatility"] = "medium"
 
         return signals
 
@@ -368,7 +409,7 @@ class HistoricalMemoryBuilder:
         min_move_pct: float = 15.0,
         analysis_windows: List[int] = [7, 30],
         max_samples: int = 50,
-        sample_strategy: str = "diverse"
+        sample_strategy: str = "diverse",
     ) -> Dict[str, FinancialSituationMemory]:
         """
         Build memories by finding high movers and running retrospective analyses.
@@ -391,25 +432,24 @@ class HistoricalMemoryBuilder:
         Returns:
             Dictionary of populated memory instances for each agent type
         """
-        print("=" * 70)
-        print("🏗️  BUILDING MEMORIES FROM HIGH MOVERS")
-        print("=" * 70)
+        logger.info("=" * 70)
+        logger.info("🏗️  BUILDING MEMORIES FROM HIGH MOVERS")
+        logger.info("=" * 70)
 
         # Step 1: Find high movers
         high_movers = self.find_high_movers(tickers, start_date, end_date, min_move_pct)
 
         if not high_movers:
-            print("⚠️  No high movers found. Try a different date range or lower threshold.")
+            logger.warning("⚠️  No high movers found. Try a different date range or lower threshold.")
             return {}
 
         # Step 1.5: Sample/filter high movers based on strategy
         sampled_movers = self._sample_high_movers(high_movers, max_samples, sample_strategy)
 
-        print(f"\n📊 Sampling Strategy: {sample_strategy}")
-        print(f"   Total high movers found: {len(high_movers)}")
-        print(f"   Samples to analyze: {len(sampled_movers)}")
-        print(f"   Estimated runtime: ~{len(sampled_movers) * len(analysis_windows) * 2} minutes")
-        print()
+        logger.info(f"📊 Sampling Strategy: {sample_strategy}")
+        logger.info(f"Total high movers found: {len(high_movers)}")
+        logger.info(f"Samples to analyze: {len(sampled_movers)}")
+        logger.info(f"Estimated runtime: ~{len(sampled_movers) * len(analysis_windows) * 2} minutes")
 
         # Initialize memory stores
         agent_memories = {
@@ -417,35 +457,35 @@ class HistoricalMemoryBuilder:
             "bear": FinancialSituationMemory("bear_memory", self.config),
             "trader": FinancialSituationMemory("trader_memory", self.config),
             "invest_judge": FinancialSituationMemory("invest_judge_memory", self.config),
-            "risk_manager": FinancialSituationMemory("risk_manager_memory", self.config)
+            "risk_manager": FinancialSituationMemory("risk_manager_memory", self.config),
         }
 
         # Step 2: For each high mover, run retrospective analyses
-        print("\n📊 Running retrospective analyses...\n")
+        logger.info("📊 Running retrospective analyses...")
 
         for idx, mover in enumerate(sampled_movers, 1):
-            ticker = mover['ticker']
-            move_pct = mover['move_pct']
-            direction = mover['direction']
-            move_start_date = mover['move_start_date']
+            ticker = mover["ticker"]
+            move_pct = mover["move_pct"]
+            direction = mover["direction"]
+            move_start_date = mover["move_start_date"]
 
-            print(f"   [{idx}/{len(sampled_movers)}] {ticker}: {move_pct:+.1f}% {direction}")
+            logger.info(f"[{idx}/{len(sampled_movers)}] {ticker}: {move_pct:+.1f}% {direction}")
 
             # Run analyses at different time windows before the move
             for days_before in analysis_windows:
                 # Calculate analysis date
                 try:
                     analysis_date = (
-                        datetime.strptime(move_start_date, '%Y-%m-%d') - timedelta(days=days_before)
-                    ).strftime('%Y-%m-%d')
+                        datetime.strptime(move_start_date, "%Y-%m-%d") - timedelta(days=days_before)
+                    ).strftime("%Y-%m-%d")
 
-                    print(f"      Analyzing T-{days_before} days ({analysis_date})...")
+                    logger.info(f"Analyzing T-{days_before} days ({analysis_date})...")
 
                     # Run trading graph analysis
                     analysis = self.run_retrospective_analysis(ticker, analysis_date)
 
                     if not analysis:
-                        print(f"      ⚠️  Analysis failed, skipping...")
+                        logger.warning("⚠️  Analysis failed, skipping...")
                         continue
 
                     # Create combined situation text
@@ -469,8 +509,7 @@ class HistoricalMemoryBuilder:
 
                     # Extract agent recommendation from investment plan and final decision
                     agent_recommendation = self._extract_recommendation(
-                        analysis.get('investment_plan', ''),
-                        analysis.get('final_decision', '')
+                        analysis.get("investment_plan", ""), analysis.get("final_decision", "")
                     )
 
                     # Determine if agent was correct
@@ -478,18 +517,22 @@ class HistoricalMemoryBuilder:
 
                     # Create metadata
                     metadata = {
-                        'ticker': ticker,
-                        'analysis_date': analysis_date,
-                        'days_before_move': days_before,
-                        'move_pct': abs(move_pct),
-                        'move_direction': direction,
-                        'agent_recommendation': agent_recommendation,
-                        'was_correct': was_correct,
-                        'structured_signals': analysis['structured_signals']
+                        "ticker": ticker,
+                        "analysis_date": analysis_date,
+                        "days_before_move": days_before,
+                        "move_pct": abs(move_pct),
+                        "move_direction": direction,
+                        "agent_recommendation": agent_recommendation,
+                        "was_correct": was_correct,
+                        "structured_signals": analysis["structured_signals"],
                     }
 
                     # Create recommendation text
-                    lesson_text = f"This signal combination is reliable for predicting {direction} moves." if was_correct else "This signal combination can be misleading. Need to consider other factors."
+                    lesson_text = (
+                        f"This signal combination is reliable for predicting {direction} moves."
+                        if was_correct
+                        else "This signal combination can be misleading. Need to consider other factors."
+                    )
 
                     recommendation_text = f"""
 Agent Decision: {agent_recommendation}
@@ -507,38 +550,40 @@ Lesson: {lesson_text}
 
                     # Store in all agent memories
                     for agent_type, memory in agent_memories.items():
-                        memory.add_situations_with_metadata([
-                            (situation_text, recommendation_text, metadata)
-                        ])
+                        memory.add_situations_with_metadata(
+                            [(situation_text, recommendation_text, metadata)]
+                        )
 
                     self.memories_created[agent_type] = self.memories_created.get(agent_type, 0) + 1
 
-                    print(f"      ✅ Memory created: {agent_recommendation} -> {direction} ({was_correct})")
+                    logger.info(
+                        f"✅ Memory created: {agent_recommendation} -> {direction} ({was_correct})"
+                    )
 
                 except Exception as e:
-                    print(f"      ⚠️  Error: {e}")
+                    logger.warning(f"⚠️  Error: {e}")
                     continue
 
-        # Print summary
-        print("\n" + "=" * 70)
-        print("📊 MEMORY CREATION SUMMARY")
-        print("=" * 70)
-        print(f"   High movers analyzed: {len(sampled_movers)}")
-        print(f"   Analysis windows: {analysis_windows} days before move")
+        # Log summary
+        logger.info("=" * 70)
+        logger.info("📊 MEMORY CREATION SUMMARY")
+        logger.info("=" * 70)
+        logger.info(f"   High movers analyzed: {len(sampled_movers)}")
+        logger.info(f"   Analysis windows: {analysis_windows} days before move")
         for agent_type, count in self.memories_created.items():
-            print(f"   {agent_type.ljust(15)}: {count} memories")
+            logger.info(f"   {agent_type.ljust(15)}: {count} memories")
 
-        # Print statistics
-        print("\n📈 MEMORY BANK STATISTICS")
-        print("=" * 70)
+        # Log statistics
+        logger.info("\n📈 MEMORY BANK STATISTICS")
+        logger.info("=" * 70)
         for agent_type, memory in agent_memories.items():
             stats = memory.get_statistics()
-            print(f"\n   {agent_type.upper()}:")
-            print(f"      Total memories: {stats['total_memories']}")
-            print(f"      Accuracy rate: {stats['accuracy_rate']:.1f}%")
-            print(f"      Avg move: {stats['avg_move_pct']:.1f}%")
+            logger.info(f"\n   {agent_type.upper()}:")
+            logger.info(f"      Total memories: {stats['total_memories']}")
+            logger.info(f"      Accuracy rate: {stats['accuracy_rate']:.1f}%")
+            logger.info(f"      Avg move: {stats['avg_move_pct']:.1f}%")
 
-        print("=" * 70 + "\n")
+        logger.info("=" * 70)
 
         return agent_memories
 
@@ -551,11 +596,13 @@ Lesson: {lesson_text}
         combined_text = (investment_plan + " " + final_decision).lower()
 
         # Check for clear buy/sell/hold signals
-        if re.search(r'\b(strong buy|buy|long position|bullish|recommend buying)\b', combined_text):
+        if re.search(r"\b(strong buy|buy|long position|bullish|recommend buying)\b", combined_text):
             return "buy"
-        elif re.search(r'\b(strong sell|sell|short position|bearish|recommend selling)\b', combined_text):
+        elif re.search(
+            r"\b(strong sell|sell|short position|bearish|recommend selling)\b", combined_text
+        ):
             return "sell"
-        elif re.search(r'\b(hold|neutral|wait|avoid)\b', combined_text):
+        elif re.search(r"\b(hold|neutral|wait|avoid)\b", combined_text):
             return "hold"
         else:
             return "unclear"
@@ -589,10 +636,7 @@ Lesson: {lesson_text}
         return "\n".join(lines)
 
     def _sample_high_movers(
-        self,
-        high_movers: List[Dict[str, Any]],
-        max_samples: int,
-        strategy: str
+        self, high_movers: List[Dict[str, Any]], max_samples: int, strategy: str
     ) -> List[Dict[str, Any]]:
         """
         Sample high movers based on strategy to reduce analysis time.
@@ -612,12 +656,12 @@ Lesson: {lesson_text}
 
         if strategy == "diverse":
             # Get balanced mix of up/down moves across different magnitudes
-            up_moves = [m for m in high_movers if m['direction'] == 'up']
-            down_moves = [m for m in high_movers if m['direction'] == 'down']
+            up_moves = [m for m in high_movers if m["direction"] == "up"]
+            down_moves = [m for m in high_movers if m["direction"] == "down"]
 
             # Sort each by magnitude
-            up_moves.sort(key=lambda x: abs(x['move_pct']), reverse=True)
-            down_moves.sort(key=lambda x: abs(x['move_pct']), reverse=True)
+            up_moves.sort(key=lambda x: abs(x["move_pct"]), reverse=True)
+            down_moves.sort(key=lambda x: abs(x["move_pct"]), reverse=True)
 
             # Take half from each direction (or proportional if imbalanced)
             up_count = min(len(up_moves), max_samples // 2)
@@ -637,14 +681,14 @@ Lesson: {lesson_text}
                 # Divide into 3 buckets by magnitude
                 bucket_size = len(moves) // 3
                 large = moves[:bucket_size]
-                medium = moves[bucket_size:bucket_size*2]
-                small = moves[bucket_size*2:]
+                medium = moves[bucket_size : bucket_size * 2]
+                small = moves[bucket_size * 2 :]
 
                 # Sample proportionally from each bucket
                 samples = []
-                samples.extend(large[:count // 3])
-                samples.extend(medium[:count // 3])
-                samples.extend(small[:count - (2 * (count // 3))])
+                samples.extend(large[: count // 3])
+                samples.extend(medium[: count // 3])
+                samples.extend(small[: count - (2 * (count // 3))])
                 return samples
 
             sampled = []
@@ -655,12 +699,12 @@ Lesson: {lesson_text}
 
         elif strategy == "largest":
             # Take the largest absolute moves
-            sorted_movers = sorted(high_movers, key=lambda x: abs(x['move_pct']), reverse=True)
+            sorted_movers = sorted(high_movers, key=lambda x: abs(x["move_pct"]), reverse=True)
             return sorted_movers[:max_samples]
 
         elif strategy == "recent":
             # Take the most recent moves
-            sorted_movers = sorted(high_movers, key=lambda x: x['move_end_date'], reverse=True)
+            sorted_movers = sorted(high_movers, key=lambda x: x["move_end_date"], reverse=True)
             return sorted_movers[:max_samples]
 
         elif strategy == "random":
@@ -687,7 +731,9 @@ Lesson: {lesson_text}
             # Get technical/price data (what Market Analyst sees)
             stock_data = execute_tool("get_stock_data", symbol=ticker, start_date=date)
             indicators = execute_tool("get_indicators", symbol=ticker, curr_date=date)
-            data["market_report"] = f"Stock Data:\n{stock_data}\n\nTechnical Indicators:\n{indicators}"
+            data["market_report"] = (
+                f"Stock Data:\n{stock_data}\n\nTechnical Indicators:\n{indicators}"
+            )
         except Exception as e:
             data["market_report"] = f"Error fetching market data: {e}"
 
@@ -700,7 +746,9 @@ Lesson: {lesson_text}
 
         try:
             # Get sentiment (what Social Analyst sees)
-            sentiment = execute_tool("get_reddit_discussions", symbol=ticker, from_date=date, to_date=date)
+            sentiment = execute_tool(
+                "get_reddit_discussions", symbol=ticker, from_date=date, to_date=date
+            )
             data["sentiment_report"] = sentiment
         except Exception as e:
             data["sentiment_report"] = f"Error fetching sentiment: {e}"
@@ -727,14 +775,19 @@ Lesson: {lesson_text}
         """
         try:
             # Get stock prices for both dates
-            start_data = execute_tool("get_stock_data", symbol=ticker, start_date=start_date, end_date=start_date)
-            end_data = execute_tool("get_stock_data", symbol=ticker, start_date=end_date, end_date=end_date)
+            start_data = execute_tool(
+                "get_stock_data", symbol=ticker, start_date=start_date, end_date=start_date
+            )
+            end_data = execute_tool(
+                "get_stock_data", symbol=ticker, start_date=end_date, end_date=end_date
+            )
 
             # Parse prices (this is simplified - you'd need to parse the actual response)
             # Assuming response has close price - adjust based on actual API response
             import re
-            start_match = re.search(r'Close[:\s]+\$?([\d.]+)', str(start_data))
-            end_match = re.search(r'Close[:\s]+\$?([\d.]+)', str(end_data))
+
+            start_match = re.search(r"Close[:\s]+\$?([\d.]+)", str(start_data))
+            end_match = re.search(r"Close[:\s]+\$?([\d.]+)", str(end_data))
 
             if start_match and end_match:
                 start_price = float(start_match.group(1))
@@ -743,10 +796,12 @@ Lesson: {lesson_text}
 
             return None
         except Exception as e:
-            print(f"Error calculating returns: {e}")
+            logger.error(f"Error calculating returns: {e}")
             return None
 
-    def _create_bull_researcher_memory(self, situation: str, returns: float, ticker: str, date: str) -> str:
+    def _create_bull_researcher_memory(
+        self, situation: str, returns: float, ticker: str, date: str
+    ) -> str:
         """Create memory for bull researcher based on outcome.
 
         Returns lesson learned from bullish perspective.
@@ -780,7 +835,9 @@ Stock moved {returns:.2f}%, indicating mixed signals.
 Lesson: This pattern of indicators doesn't provide strong directional conviction. Look for clearer signals before making strong bullish arguments.
 """
 
-    def _create_bear_researcher_memory(self, situation: str, returns: float, ticker: str, date: str) -> str:
+    def _create_bear_researcher_memory(
+        self, situation: str, returns: float, ticker: str, date: str
+    ) -> str:
         """Create memory for bear researcher based on outcome."""
         if returns < -5:
             return f"""SUCCESSFUL BEARISH ANALYSIS for {ticker} on {date}:
@@ -842,7 +899,9 @@ Trading lesson:
 Recommendation: Pattern recognition suggests {action} in similar future scenarios.
 """
 
-    def _create_invest_judge_memory(self, situation: str, returns: float, ticker: str, date: str) -> str:
+    def _create_invest_judge_memory(
+        self, situation: str, returns: float, ticker: str, date: str
+    ) -> str:
         """Create memory for investment judge/research manager."""
         if returns > 5:
             verdict = "Strong BUY recommendation was warranted"
@@ -868,7 +927,9 @@ When synthesizing bull/bear arguments in similar conditions:
 Recommendation for similar situations: {verdict}
 """
 
-    def _create_risk_manager_memory(self, situation: str, returns: float, ticker: str, date: str) -> str:
+    def _create_risk_manager_memory(
+        self, situation: str, returns: float, ticker: str, date: str
+    ) -> str:
         """Create memory for risk manager."""
         volatility = "HIGH" if abs(returns) > 10 else "MEDIUM" if abs(returns) > 5 else "LOW"
 
@@ -901,7 +962,7 @@ Recommendation: {risk_assessment}
         start_date: str,
         end_date: str,
         lookforward_days: int = 7,
-        interval_days: int = 30
+        interval_days: int = 30,
     ) -> Dict[str, List[Tuple[str, str]]]:
         """Build historical memories for a stock across a date range.
 
@@ -915,28 +976,22 @@ Recommendation: {risk_assessment}
         Returns:
             Dictionary mapping agent type to list of (situation, lesson) tuples
         """
-        memories = {
-            "bull": [],
-            "bear": [],
-            "trader": [],
-            "invest_judge": [],
-            "risk_manager": []
-        }
+        memories = {"bull": [], "bear": [], "trader": [], "invest_judge": [], "risk_manager": []}
 
         current_date = datetime.strptime(start_date, "%Y-%m-%d")
         end_dt = datetime.strptime(end_date, "%Y-%m-%d")
 
-        print(f"\n🧠 Building historical memories for {ticker}")
-        print(f"   Period: {start_date} to {end_date}")
-        print(f"   Lookforward: {lookforward_days} days")
-        print(f"   Sampling interval: {interval_days} days\n")
+        logger.info(f"🧠 Building historical memories for {ticker}")
+        logger.info(f"Period: {start_date} to {end_date}")
+        logger.info(f"Lookforward: {lookforward_days} days")
+        logger.info(f"Sampling interval: {interval_days} days")
 
         sample_count = 0
         while current_date <= end_dt:
             date_str = current_date.strftime("%Y-%m-%d")
             future_date_str = (current_date + timedelta(days=lookforward_days)).strftime("%Y-%m-%d")
 
-            print(f"   📊 Sampling {date_str}...", end=" ")
+            logger.info(f"📊 Sampling {date_str}...")
 
             # Get historical data for this period
             data = self._get_stock_data_for_period(ticker, date_str)
@@ -946,42 +1001,49 @@ Recommendation: {risk_assessment}
             returns = self._calculate_returns(ticker, date_str, future_date_str)
 
             if returns is not None:
-                print(f"Return: {returns:+.2f}%")
+                logger.info(f"Return: {returns:+.2f}%")
 
                 # Create agent-specific memories
-                memories["bull"].append((
-                    situation,
-                    self._create_bull_researcher_memory(situation, returns, ticker, date_str)
-                ))
+                memories["bull"].append(
+                    (
+                        situation,
+                        self._create_bull_researcher_memory(situation, returns, ticker, date_str),
+                    )
+                )
 
-                memories["bear"].append((
-                    situation,
-                    self._create_bear_researcher_memory(situation, returns, ticker, date_str)
-                ))
+                memories["bear"].append(
+                    (
+                        situation,
+                        self._create_bear_researcher_memory(situation, returns, ticker, date_str),
+                    )
+                )
 
-                memories["trader"].append((
-                    situation,
-                    self._create_trader_memory(situation, returns, ticker, date_str)
-                ))
+                memories["trader"].append(
+                    (situation, self._create_trader_memory(situation, returns, ticker, date_str))
+                )
 
-                memories["invest_judge"].append((
-                    situation,
-                    self._create_invest_judge_memory(situation, returns, ticker, date_str)
-                ))
+                memories["invest_judge"].append(
+                    (
+                        situation,
+                        self._create_invest_judge_memory(situation, returns, ticker, date_str),
+                    )
+                )
 
-                memories["risk_manager"].append((
-                    situation,
-                    self._create_risk_manager_memory(situation, returns, ticker, date_str)
-                ))
+                memories["risk_manager"].append(
+                    (
+                        situation,
+                        self._create_risk_manager_memory(situation, returns, ticker, date_str),
+                    )
+                )
 
                 sample_count += 1
             else:
-                print("⚠️  No data")
+                logger.warning("⚠️  No data")
 
             # Move to next interval
             current_date += timedelta(days=interval_days)
 
-        print(f"\n✅ Created {sample_count} memory samples for {ticker}")
+        logger.info(f"✅ Created {sample_count} memory samples for {ticker}")
         for agent_type in memories:
             self.memories_created[agent_type] += len(memories[agent_type])
 
@@ -993,7 +1055,7 @@ Recommendation: {risk_assessment}
         start_date: str,
         end_date: str,
         lookforward_days: int = 7,
-        interval_days: int = 30
+        interval_days: int = 30,
     ) -> Dict[str, FinancialSituationMemory]:
         """Build and populate memories for all agent types across multiple stocks.
 
@@ -1013,12 +1075,12 @@ Recommendation: {risk_assessment}
             "bear": FinancialSituationMemory("bear_memory", self.config),
             "trader": FinancialSituationMemory("trader_memory", self.config),
             "invest_judge": FinancialSituationMemory("invest_judge_memory", self.config),
-            "risk_manager": FinancialSituationMemory("risk_manager_memory", self.config)
+            "risk_manager": FinancialSituationMemory("risk_manager_memory", self.config),
         }
 
-        print("=" * 70)
-        print("🏗️  HISTORICAL MEMORY BUILDER")
-        print("=" * 70)
+        logger.info("=" * 70)
+        logger.info("🏗️  HISTORICAL MEMORY BUILDER")
+        logger.info("=" * 70)
 
         # Build memories for each ticker
         for ticker in tickers:
@@ -1027,7 +1089,7 @@ Recommendation: {risk_assessment}
                 start_date=start_date,
                 end_date=end_date,
                 lookforward_days=lookforward_days,
-                interval_days=interval_days
+                interval_days=interval_days,
             )
 
             # Add memories to each agent's memory store
@@ -1036,12 +1098,12 @@ Recommendation: {risk_assessment}
                     agent_memories[agent_type].add_situations(memory_list)
 
         # Print summary
-        print("\n" + "=" * 70)
-        print("📊 MEMORY CREATION SUMMARY")
-        print("=" * 70)
+        logger.info("=" * 70)
+        logger.info("📊 MEMORY CREATION SUMMARY")
+        logger.info("=" * 70)
         for agent_type, count in self.memories_created.items():
-            print(f"   {agent_type.ljust(15)}: {count} memories")
-        print("=" * 70 + "\n")
+            logger.info(f"{agent_type.ljust(15)}: {count} memories")
+        logger.info("=" * 70)
 
         return agent_memories
 
@@ -1060,19 +1122,19 @@ if __name__ == "__main__":
         tickers=tickers,
         start_date="2024-01-01",
         end_date="2024-12-01",
-        lookforward_days=7,     # 1-week returns
-        interval_days=30        # Sample monthly
+        lookforward_days=7,  # 1-week returns
+        interval_days=30,  # Sample monthly
     )
 
     # Test retrieval
     test_situation = "Strong earnings beat with positive sentiment and bullish technical indicators in tech sector"
 
-    print("\n🔍 Testing memory retrieval...")
-    print(f"Query: {test_situation}\n")
+    logger.info("🔍 Testing memory retrieval...")
+    logger.info(f"Query: {test_situation}")
 
     for agent_type, memory in memories.items():
-        print(f"\n{agent_type.upper()} MEMORIES:")
+        logger.info(f"\n{agent_type.upper()} MEMORIES:")
         results = memory.get_memories(test_situation, n_matches=2)
         for i, result in enumerate(results, 1):
-            print(f"\n  Match {i} (similarity: {result['similarity_score']:.2f}):")
-            print(f"  {result['recommendation'][:200]}...")
+            logger.info(f"\n  Match {i} (similarity: {result['similarity_score']:.2f}):")
+            logger.info(f"  {result['recommendation'][:200]}...")

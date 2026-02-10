@@ -1,9 +1,13 @@
 """Reddit DD (Due Diligence) scanner."""
+
 from typing import Any, Dict, List
 
-from tradingagents.dataflows.discovery.scanner_registry import BaseScanner, SCANNER_REGISTRY
+from tradingagents.dataflows.discovery.scanner_registry import SCANNER_REGISTRY, BaseScanner
 from tradingagents.dataflows.discovery.utils import Priority
 from tradingagents.tools.executor import execute_tool
+from tradingagents.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 class RedditDDScanner(BaseScanner):
@@ -19,17 +23,14 @@ class RedditDDScanner(BaseScanner):
         if not self.is_enabled():
             return []
 
-        print(f"   📝 Scanning Reddit DD posts...")
+        logger.info("📝 Scanning Reddit DD posts...")
 
         try:
             # Use Reddit DD scanner tool
-            result = execute_tool(
-                "scan_reddit_dd",
-                limit=self.limit
-            )
+            result = execute_tool("scan_reddit_dd", limit=self.limit)
 
             if not result:
-                print(f"      Found 0 DD posts")
+                logger.info("Found 0 DD posts")
                 return []
 
             candidates = []
@@ -37,7 +38,7 @@ class RedditDDScanner(BaseScanner):
             # Handle different result formats
             if isinstance(result, list):
                 # Structured result with DD posts
-                for post in result[:self.limit]:
+                for post in result[: self.limit]:
                     ticker = post.get("ticker", "").upper()
                     if not ticker:
                         continue
@@ -48,39 +49,43 @@ class RedditDDScanner(BaseScanner):
                     # Higher score = higher priority
                     priority = Priority.HIGH.value if score > 1000 else Priority.MEDIUM.value
 
-                    candidates.append({
-                        "ticker": ticker,
-                        "source": self.name,
-                        "context": f"Reddit DD: {title[:80]}... (score: {score})",
-                        "priority": priority,
-                        "strategy": "undiscovered_dd",
-                        "dd_score": score,
-                    })
+                    candidates.append(
+                        {
+                            "ticker": ticker,
+                            "source": self.name,
+                            "context": f"Reddit DD: {title[:80]}... (score: {score})",
+                            "priority": priority,
+                            "strategy": "undiscovered_dd",
+                            "dd_score": score,
+                        }
+                    )
 
             elif isinstance(result, dict):
                 # Dict format
-                for ticker_data in result.get("posts", [])[:self.limit]:
+                for ticker_data in result.get("posts", [])[: self.limit]:
                     ticker = ticker_data.get("ticker", "").upper()
                     if not ticker:
                         continue
 
-                    candidates.append({
-                        "ticker": ticker,
-                        "source": self.name,
-                        "context": f"Reddit DD post",
-                        "priority": Priority.MEDIUM.value,
-                        "strategy": "undiscovered_dd",
-                    })
+                    candidates.append(
+                        {
+                            "ticker": ticker,
+                            "source": self.name,
+                            "context": "Reddit DD post",
+                            "priority": Priority.MEDIUM.value,
+                            "strategy": "undiscovered_dd",
+                        }
+                    )
 
             elif isinstance(result, str):
                 # Text result - extract tickers
                 candidates = self._parse_text_result(result)
 
-            print(f"      Found {len(candidates)} DD posts")
+            logger.info(f"Found {len(candidates)} DD posts")
             return candidates
 
         except Exception as e:
-            print(f"      ⚠️  Reddit DD scan failed, using fallback: {e}")
+            logger.warning(f"⚠️  Reddit DD scan failed, using fallback: {e}")
             return self._fallback_dd_scan()
 
     def _fallback_dd_scan(self) -> List[Dict[str, Any]]:
@@ -99,7 +104,8 @@ class RedditDDScanner(BaseScanner):
             for submission in subreddit.search("flair:DD", limit=self.limit * 2):
                 # Extract ticker from title
                 import re
-                ticker_pattern = r'\$([A-Z]{2,5})\b|^([A-Z]{2,5})\s'
+
+                ticker_pattern = r"\$([A-Z]{2,5})\b|^([A-Z]{2,5})\s"
                 matches = re.findall(ticker_pattern, submission.title)
 
                 if not matches:
@@ -111,19 +117,21 @@ class RedditDDScanner(BaseScanner):
 
                 seen_tickers.add(ticker)
 
-                candidates.append({
-                    "ticker": ticker,
-                    "source": self.name,
-                    "context": f"Reddit DD: {submission.title[:80]}...",
-                    "priority": Priority.MEDIUM.value,
-                    "strategy": "undiscovered_dd",
-                })
+                candidates.append(
+                    {
+                        "ticker": ticker,
+                        "source": self.name,
+                        "context": f"Reddit DD: {submission.title[:80]}...",
+                        "priority": Priority.MEDIUM.value,
+                        "strategy": "undiscovered_dd",
+                    }
+                )
 
                 if len(candidates) >= self.limit:
                     break
 
             return candidates
-        except:
+        except Exception:
             return []
 
     def _parse_text_result(self, text: str) -> List[Dict[str, Any]]:
@@ -131,19 +139,21 @@ class RedditDDScanner(BaseScanner):
         import re
 
         candidates = []
-        ticker_pattern = r'\$([A-Z]{2,5})\b|^([A-Z]{2,5})\s'
+        ticker_pattern = r"\$([A-Z]{2,5})\b|^([A-Z]{2,5})\s"
         matches = re.findall(ticker_pattern, text)
 
         tickers = list(set([t[0] or t[1] for t in matches if t[0] or t[1]]))
 
-        for ticker in tickers[:self.limit]:
-            candidates.append({
-                "ticker": ticker,
-                "source": self.name,
-                "context": "Reddit DD post",
-                "priority": Priority.MEDIUM.value,
-                "strategy": "undiscovered_dd",
-            })
+        for ticker in tickers[: self.limit]:
+            candidates.append(
+                {
+                    "ticker": ticker,
+                    "source": self.name,
+                    "context": "Reddit DD post",
+                    "priority": Priority.MEDIUM.value,
+                    "strategy": "undiscovered_dd",
+                }
+            )
 
         return candidates
 

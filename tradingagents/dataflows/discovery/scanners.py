@@ -12,6 +12,9 @@ from tradingagents.dataflows.discovery.utils import (
     resolve_trade_date_str,
 )
 from tradingagents.schemas import RedditTickerList
+from tradingagents.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 @dataclass
@@ -129,7 +132,7 @@ class TraditionalScanner:
         try:
             return spec.handler(state)
         except Exception as e:
-            print(f"   Error running scanner '{spec.name}': {e}")
+            logger.error(f"Error running scanner '{spec.name}': {e}")
             return []
 
     def _run_tool(
@@ -149,7 +152,7 @@ class TraditionalScanner:
                 **params,
             )
         except Exception as e:
-            print(f"   Error during {step}: {e}")
+            logger.error(f"Error during {step}: {e}")
             return default
 
     def _run_call(
@@ -162,7 +165,7 @@ class TraditionalScanner:
         try:
             return func(**kwargs)
         except Exception as e:
-            print(f"   Error {label}: {e}")
+            logger.error(f"Error {label}: {e}")
             return default
 
     def _scan_reddit(self, state: Dict[str, Any]) -> List[Dict[str, Any]]:
@@ -183,7 +186,7 @@ class TraditionalScanner:
         try:
             from tradingagents.dataflows.reddit_api import get_reddit_undiscovered_dd
 
-            print("   🔍 Scanning Reddit for undiscovered DD...")
+            logger.info("🔍 Scanning Reddit for undiscovered DD...")
             # Note: get_reddit_undiscovered_dd is not a tool in strict sense but a direct function call
             # that uses an LLM. We call it directly here as in original code.
             reddit_dd_report = self._run_call(
@@ -195,7 +198,7 @@ class TraditionalScanner:
                 llm_evaluator=self.llm,  # Use fast LLM for evaluation
             )
         except Exception as e:
-            print(f"   Error fetching undiscovered DD: {e}")
+            logger.error(f"Error fetching undiscovered DD: {e}")
 
         # BATCHED LLM CALL: Extract tickers from both Reddit sources in ONE call
         # Uses proper Pydantic structured output for clean, validated results
@@ -220,7 +223,9 @@ IMPORTANT RULES:
 {reddit_dd_report}
 
 """
-                combined_prompt += """Extract ALL mentioned stock tickers with their source and context."""
+                combined_prompt += (
+                    """Extract ALL mentioned stock tickers with their source and context."""
+                )
 
                 # Use proper Pydantic structured output (not raw JSON schema)
                 structured_llm = self.llm.with_structured_output(RedditTickerList)
@@ -276,8 +281,8 @@ IMPORTANT RULES:
                             )
                             trending_count += 1
 
-                print(
-                    f"   Found {trending_count} trending + {dd_count} DD tickers from Reddit "
+                logger.info(
+                    f"Found {trending_count} trending + {dd_count} DD tickers from Reddit "
                     f"(skipped {skipped_low_confidence} low-confidence)"
                 )
             except Exception as e:
@@ -292,7 +297,7 @@ IMPORTANT RULES:
                     error=str(e),
                 )
                 state["tool_logs"] = tool_logs
-                print(f"   Error extracting Reddit tickers: {e}")
+                logger.error(f"Error extracting Reddit tickers: {e}")
 
         return candidates
 
@@ -301,7 +306,7 @@ IMPORTANT RULES:
         candidates: List[Dict[str, Any]] = []
         from tradingagents.dataflows.alpha_vantage_stock import get_top_gainers_losers
 
-        print("   📊 Fetching market movers (direct parsing)...")
+        logger.info("📊 Fetching market movers (direct parsing)...")
         movers_data = self._run_call(
             "fetching market movers",
             get_top_gainers_losers,
@@ -343,9 +348,9 @@ IMPORTANT RULES:
                     )
                     movers_count += 1
 
-            print(f"   Found {movers_count} market movers (direct)")
+            logger.info(f"Found {movers_count} market movers (direct)")
         else:
-            print("   Market movers returned error or empty")
+            logger.warning("Market movers returned error or empty")
 
         return candidates
 
@@ -361,7 +366,7 @@ IMPORTANT RULES:
         from_date = today.strftime("%Y-%m-%d")
         to_date = (today + timedelta(days=self.max_days_until_earnings)).strftime("%Y-%m-%d")
 
-        print(f"   📅 Fetching earnings calendar (next {self.max_days_until_earnings} days)...")
+        logger.info(f"📅 Fetching earnings calendar (next {self.max_days_until_earnings} days)...")
         earnings_data = self._run_call(
             "fetching earnings calendar",
             get_earnings_calendar,
@@ -465,8 +470,8 @@ IMPORTANT RULES:
                         }
                     )
 
-            print(
-                f"   Found {len(earnings_candidates)} earnings candidates (filtered from {len(earnings_data)} total, cap: {self.max_earnings_candidates})"
+            logger.info(
+                f"Found {len(earnings_candidates)} earnings candidates (filtered from {len(earnings_data)} total, cap: {self.max_earnings_candidates})"
             )
 
         return candidates
@@ -474,7 +479,7 @@ IMPORTANT RULES:
     def _scan_ipo(self, state: Dict[str, Any]) -> List[Dict[str, Any]]:
         """Fetch IPO calendar."""
         candidates: List[Dict[str, Any]] = []
-        from datetime import datetime, timedelta
+        from datetime import timedelta
 
         from tradingagents.dataflows.finnhub_api import get_ipo_calendar
 
@@ -482,7 +487,7 @@ IMPORTANT RULES:
         from_date = (today - timedelta(days=7)).strftime("%Y-%m-%d")
         to_date = (today + timedelta(days=14)).strftime("%Y-%m-%d")
 
-        print("   🆕 Fetching IPO calendar (direct parsing)...")
+        logger.info("🆕 Fetching IPO calendar (direct parsing)...")
         ipo_data = self._run_call(
             "fetching IPO calendar",
             get_ipo_calendar,
@@ -515,7 +520,7 @@ IMPORTANT RULES:
                     )
                     ipo_count += 1
 
-            print(f"   Found {ipo_count} IPO candidates (direct)")
+            logger.info(f"Found {ipo_count} IPO candidates (direct)")
 
         return candidates
 
@@ -524,7 +529,7 @@ IMPORTANT RULES:
         candidates: List[Dict[str, Any]] = []
         from tradingagents.dataflows.finviz_scraper import get_short_interest
 
-        print("   🩳 Fetching short interest (direct parsing)...")
+        logger.info("🩳 Fetching short interest (direct parsing)...")
         short_data = self._run_call(
             "fetching short interest",
             get_short_interest,
@@ -554,7 +559,7 @@ IMPORTANT RULES:
                     )
                     short_count += 1
 
-            print(f"   Found {short_count} short squeeze candidates (direct)")
+            logger.info(f"Found {short_count} short squeeze candidates (direct)")
 
         return candidates
 
@@ -565,7 +570,7 @@ IMPORTANT RULES:
 
         today = resolve_trade_date_str(state)
 
-        print("   📈 Fetching unusual volume (direct parsing)...")
+        logger.info("📈 Fetching unusual volume (direct parsing)...")
         volume_data = self._run_call(
             "fetching unusual volume",
             get_unusual_volume,
@@ -593,7 +598,9 @@ IMPORTANT RULES:
                     # Build context with direction info
                     direction_emoji = "🟢" if direction == "bullish" else "⚪"
                     context = f"Volume: {vol_ratio}x avg, Price: {price_change:+.1f}%, "
-                    context += f"Intraday: {intraday_change:+.1f}% {direction_emoji}, Signal: {signal}"
+                    context += (
+                        f"Intraday: {intraday_change:+.1f}% {direction_emoji}, Signal: {signal}"
+                    )
 
                     # Strong accumulation gets highest priority
                     priority = "critical" if signal == "strong_accumulation" else "high"
@@ -608,7 +615,9 @@ IMPORTANT RULES:
                     )
                     volume_count += 1
 
-            print(f"   Found {volume_count} unusual volume candidates (direct, distribution filtered)")
+            logger.info(
+                f"Found {volume_count} unusual volume candidates (direct, distribution filtered)"
+            )
 
         return candidates
 
@@ -618,7 +627,7 @@ IMPORTANT RULES:
         from tradingagents.dataflows.alpha_vantage_analysts import get_analyst_rating_changes
         from tradingagents.dataflows.y_finance import check_if_price_reacted
 
-        print("   📊 Fetching analyst rating changes (direct parsing)...")
+        logger.info("📊 Fetching analyst rating changes (direct parsing)...")
         analyst_data = self._run_call(
             "fetching analyst rating changes",
             get_analyst_rating_changes,
@@ -639,9 +648,7 @@ IMPORTANT RULES:
                     hours_old = entry.get("hours_old") or 0
 
                     freshness = (
-                        "🔥 FRESH"
-                        if hours_old < 24
-                        else "🟢 Recent" if hours_old < 72 else "Older"
+                        "🔥 FRESH" if hours_old < 24 else "🟢 Recent" if hours_old < 72 else "Older"
                     )
                     context = f"{action.upper()} from {source} ({freshness}, {hours_old}h ago)"
 
@@ -651,12 +658,12 @@ IMPORTANT RULES:
                             ticker, lookback_days=3, reaction_threshold=10.0
                         )
                         if reaction["status"] == "leading":
-                            context += (
-                                f" | 💎 EARLY: Price {reaction['price_change_pct']:+.1f}%"
-                            )
+                            context += f" | 💎 EARLY: Price {reaction['price_change_pct']:+.1f}%"
                             priority = "high"
                         elif reaction["status"] == "lagging":
-                            context += f" | ⚠️ LATE: Already moved {reaction['price_change_pct']:+.1f}%"
+                            context += (
+                                f" | ⚠️ LATE: Already moved {reaction['price_change_pct']:+.1f}%"
+                            )
                             priority = "low"
                         else:
                             priority = "medium"
@@ -673,7 +680,7 @@ IMPORTANT RULES:
                     )
                     analyst_count += 1
 
-            print(f"   Found {analyst_count} analyst upgrade candidates (direct)")
+            logger.info(f"Found {analyst_count} analyst upgrade candidates (direct)")
 
         return candidates
 
@@ -682,7 +689,7 @@ IMPORTANT RULES:
         candidates: List[Dict[str, Any]] = []
         from tradingagents.dataflows.finviz_scraper import get_insider_buying_screener
 
-        print("   💰 Fetching insider buying (direct parsing)...")
+        logger.info("💰 Fetching insider buying (direct parsing)...")
         insider_data = self._run_call(
             "fetching insider buying",
             get_insider_buying_screener,
@@ -718,7 +725,7 @@ IMPORTANT RULES:
                     )
                     insider_count += 1
 
-            print(f"   Found {insider_count} insider buying candidates (direct)")
+            logger.info(f"Found {insider_count} insider buying candidates (direct)")
 
         return candidates
 
@@ -749,10 +756,10 @@ IMPORTANT RULES:
                     ]
                     removed = before_count - len(candidates)
                     if removed:
-                        print(f"   Removed {removed} invalid tickers after batch validation.")
+                        logger.info(f"Removed {removed} invalid tickers after batch validation.")
                 else:
-                    print("   Batch validation returned no valid tickers; skipping filter.")
+                    logger.warning("Batch validation returned no valid tickers; skipping filter.")
         except Exception as e:
-            print(f"   Error during batch validation: {e}")
+            logger.error(f"Error during batch validation: {e}")
 
         return candidates

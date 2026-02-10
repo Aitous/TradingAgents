@@ -1,9 +1,11 @@
 """Common utilities for discovery scanners."""
-import re
-import logging
-from typing import List, Set, Optional
 
-logger = logging.getLogger(__name__)
+import re
+from typing import List, Optional, Set
+
+from tradingagents.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 def get_common_stopwords() -> Set[str]:
@@ -14,23 +16,84 @@ def get_common_stopwords() -> Set[str]:
     """
     return {
         # Common words
-        'THE', 'AND', 'FOR', 'ARE', 'BUT', 'NOT', 'YOU', 'ALL', 'CAN',
-        'HER', 'WAS', 'ONE', 'OUR', 'OUT', 'DAY', 'WHO', 'HAS', 'HAD',
-        'NEW', 'NOW', 'GET', 'GOT', 'PUT', 'SET', 'RUN', 'TOP', 'BIG',
+        "THE",
+        "AND",
+        "FOR",
+        "ARE",
+        "BUT",
+        "NOT",
+        "YOU",
+        "ALL",
+        "CAN",
+        "HER",
+        "WAS",
+        "ONE",
+        "OUR",
+        "OUT",
+        "DAY",
+        "WHO",
+        "HAS",
+        "HAD",
+        "NEW",
+        "NOW",
+        "GET",
+        "GOT",
+        "PUT",
+        "SET",
+        "RUN",
+        "TOP",
+        "BIG",
         # Financial terms
-        'CEO', 'CFO', 'CTO', 'COO', 'USD', 'USA', 'SEC', 'IPO', 'ETF',
-        'NYSE', 'NASDAQ', 'WSB', 'DD', 'YOLO', 'FD', 'ATH', 'ATL', 'GDP',
-        'STOCK', 'STOCKS', 'MARKET', 'NEWS', 'PRICE', 'TRADE', 'SALES',
+        "CEO",
+        "CFO",
+        "CTO",
+        "COO",
+        "USD",
+        "USA",
+        "SEC",
+        "IPO",
+        "ETF",
+        "NYSE",
+        "NASDAQ",
+        "WSB",
+        "DD",
+        "YOLO",
+        "FD",
+        "ATH",
+        "ATL",
+        "GDP",
+        "STOCK",
+        "STOCKS",
+        "MARKET",
+        "NEWS",
+        "PRICE",
+        "TRADE",
+        "SALES",
         # Time
-        'JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP',
-        'OCT', 'NOV', 'DEC', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN',
+        "JAN",
+        "FEB",
+        "MAR",
+        "APR",
+        "MAY",
+        "JUN",
+        "JUL",
+        "AUG",
+        "SEP",
+        "OCT",
+        "NOV",
+        "DEC",
+        "MON",
+        "TUE",
+        "WED",
+        "THU",
+        "FRI",
+        "SAT",
+        "SUN",
     }
 
 
 def extract_tickers_from_text(
-    text: str,
-    stop_words: Optional[Set[str]] = None,
-    max_text_length: int = 100_000
+    text: str, stop_words: Optional[Set[str]] = None, max_text_length: int = 100_000
 ) -> List[str]:
     """Extract valid ticker symbols from text.
 
@@ -51,13 +114,11 @@ def extract_tickers_from_text(
     """
     # Truncate oversized text to prevent ReDoS
     if len(text) > max_text_length:
-        logger.warning(
-            f"Truncating oversized text from {len(text)} to {max_text_length} chars"
-        )
+        logger.warning(f"Truncating oversized text from {len(text)} to {max_text_length} chars")
         text = text[:max_text_length]
 
     # Match: $TICKER or standalone TICKER (2-5 uppercase letters)
-    ticker_pattern = r'\b([A-Z]{2,5})\b|\$([A-Z]{2,5})'
+    ticker_pattern = r"\b([A-Z]{2,5})\b|\$([A-Z]{2,5})"
     matches = re.findall(ticker_pattern, text)
 
     # Flatten tuples and deduplicate
@@ -82,7 +143,7 @@ def validate_ticker_format(ticker: str) -> bool:
     if not ticker or not isinstance(ticker, str):
         return False
 
-    return bool(re.match(r'^[A-Z]{2,5}$', ticker.strip().upper()))
+    return bool(re.match(r"^[A-Z]{2,5}$", ticker.strip().upper()))
 
 
 def validate_candidate_structure(candidate: dict) -> bool:
@@ -94,7 +155,7 @@ def validate_candidate_structure(candidate: dict) -> bool:
     Returns:
         True if candidate has all required keys with valid types
     """
-    required_keys = {'ticker', 'source', 'context', 'priority'}
+    required_keys = {"ticker", "source", "context", "priority"}
 
     if not isinstance(candidate, dict):
         return False
@@ -105,12 +166,12 @@ def validate_candidate_structure(candidate: dict) -> bool:
         return False
 
     # Validate ticker format
-    if not validate_ticker_format(candidate.get('ticker', '')):
+    if not validate_ticker_format(candidate.get("ticker", "")):
         logger.warning(f"Invalid ticker format: {candidate.get('ticker')}")
         return False
 
     # Validate priority is string
-    if not isinstance(candidate.get('priority'), str):
+    if not isinstance(candidate.get("priority"), str):
         logger.warning(f"Invalid priority type: {type(candidate.get('priority'))}")
         return False
 

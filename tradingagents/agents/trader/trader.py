@@ -1,6 +1,7 @@
 import functools
-import time
-import json
+
+from tradingagents.agents.utils.agent_utils import format_memory_context
+from tradingagents.agents.utils.llm_utils import parse_llm_response
 
 
 def create_trader(llm, memory):
@@ -12,22 +13,7 @@ def create_trader(llm, memory):
         news_report = state["news_report"]
         fundamentals_report = state["fundamentals_report"]
 
-        curr_situation = f"{market_research_report}\n\n{sentiment_report}\n\n{news_report}\n\n{fundamentals_report}"
-        
-        if memory:
-            past_memories = memory.get_memories(curr_situation, n_matches=2)
-        else:
-            past_memories = []
-            
-        if past_memories:
-            past_memory_str = "### Past Lessons Applied\\n**Reflections from Similar Situations:**\\n"
-            for i, rec in enumerate(past_memories, 1):
-                past_memory_str += rec["recommendation"] + "\\n\\n"
-            past_memory_str += "\\n\\n**How I'm Using These Lessons:**\\n"
-            past_memory_str += "- [Specific adjustment based on past mistake/success]\\n"
-            past_memory_str += "- [Impact on current conviction level]\\n"
-        else:
-            past_memory_str = ""  # Don't include placeholder when no memories
+        past_memory_str = format_memory_context(memory, state)
 
         context = {
             "role": "user",
@@ -80,10 +66,11 @@ def create_trader(llm, memory):
         ]
 
         result = llm.invoke(messages)
+        trader_plan = parse_llm_response(result.content)
 
         return {
             "messages": [result],
-            "trader_investment_plan": result.content,
+            "trader_investment_plan": trader_plan,
             "sender": name,
         }
 

@@ -10,80 +10,110 @@ This registry defines ALL tools with their complete metadata:
 Adding a new tool: Just add one entry here, everything else is auto-generated.
 """
 
-from typing import Dict, List, Optional, Callable, Any
+from typing import Any, Dict, List, Optional
 
-# Import all vendor implementations
-from tradingagents.dataflows.y_finance import (
-    get_YFin_data_online,
-    get_stock_stats_indicators_window,
-    get_technical_analysis,
-    get_balance_sheet as get_yfinance_balance_sheet,
-    get_cashflow as get_yfinance_cashflow,
-    get_income_statement as get_yfinance_income_statement,
-    get_insider_transactions as get_yfinance_insider_transactions,
-    validate_ticker as validate_ticker_yfinance,
-    get_fundamentals as get_yfinance_fundamentals,
-    get_options_activity as get_yfinance_options_activity,
+from tradingagents.utils.logger import get_logger
+
+from tradingagents.dataflows.alpha_vantage import (
+    get_balance_sheet as get_alpha_vantage_balance_sheet,
+)
+from tradingagents.dataflows.alpha_vantage import (
+    get_cashflow as get_alpha_vantage_cashflow,
+)
+from tradingagents.dataflows.alpha_vantage import (
+    get_fundamentals as get_alpha_vantage_fundamentals,
+)
+from tradingagents.dataflows.alpha_vantage import (
+    get_income_statement as get_alpha_vantage_income_statement,
+)
+from tradingagents.dataflows.alpha_vantage import (
+    get_insider_sentiment as get_alpha_vantage_insider_sentiment,
 )
 from tradingagents.dataflows.alpha_vantage import (
     get_stock as get_alpha_vantage_stock,
-    get_indicator as get_alpha_vantage_indicator,
-    get_fundamentals as get_alpha_vantage_fundamentals,
-    get_balance_sheet as get_alpha_vantage_balance_sheet,
-    get_cashflow as get_alpha_vantage_cashflow,
-    get_income_statement as get_alpha_vantage_income_statement,
-    get_insider_transactions as get_alpha_vantage_insider_transactions,
-    get_news as get_alpha_vantage_news,
+)
+from tradingagents.dataflows.alpha_vantage import (
     get_top_gainers_losers as get_alpha_vantage_movers,
-)
-from tradingagents.dataflows.alpha_vantage_news import (
-    get_global_news as get_alpha_vantage_global_news,
-)
-from tradingagents.dataflows.openai import (
-    get_stock_news_openai,
-    get_global_news_openai,
-    get_fundamentals_openai,
-)
-from tradingagents.dataflows.google import (
-    get_google_news,
-    get_global_news_google,
-)
-from tradingagents.dataflows.reddit_api import (
-    get_reddit_news,
-    get_reddit_global_news as get_reddit_api_global_news,
-    get_reddit_trending_tickers,
-    get_reddit_discussions,
-)
-from tradingagents.dataflows.finnhub_api import (
-    get_recommendation_trends as get_finnhub_recommendation_trends,
-    get_earnings_calendar as get_finnhub_earnings_calendar,
-    get_ipo_calendar as get_finnhub_ipo_calendar,
-)
-from tradingagents.dataflows.twitter_data import (
-    get_tweets as get_twitter_tweets,
-)
-from tradingagents.dataflows.alpha_vantage_volume import (
-    get_alpha_vantage_unusual_volume,
 )
 from tradingagents.dataflows.alpha_vantage_analysts import (
     get_alpha_vantage_analyst_changes,
 )
+from tradingagents.dataflows.alpha_vantage_volume import (
+    get_alpha_vantage_unusual_volume,
+    get_cached_average_volume,
+    get_cached_average_volume_batch,
+)
+from tradingagents.dataflows.finnhub_api import (
+    get_earnings_calendar as get_finnhub_earnings_calendar,
+)
+from tradingagents.dataflows.finnhub_api import (
+    get_ipo_calendar as get_finnhub_ipo_calendar,
+)
+from tradingagents.dataflows.finnhub_api import (
+    get_recommendation_trends as get_finnhub_recommendation_trends,
+)
+from tradingagents.dataflows.finviz_scraper import (
+    get_finviz_insider_buying,
+    get_finviz_short_interest,
+)
+from tradingagents.dataflows.openai import (
+    get_fundamentals_openai,
+    get_global_news_openai,
+    get_stock_news_openai,
+)
+from tradingagents.dataflows.reddit_api import (
+    get_reddit_discussions,
+    get_reddit_news,
+    get_reddit_trending_tickers,
+)
+from tradingagents.dataflows.reddit_api import (
+    get_reddit_global_news as get_reddit_api_global_news,
+)
 from tradingagents.dataflows.tradier_api import (
     get_tradier_unusual_options,
 )
-from tradingagents.dataflows.finviz_scraper import (
-    get_finviz_short_interest,
+from tradingagents.dataflows.twitter_data import (
+    get_tweets as get_twitter_tweets,
+)
+from tradingagents.dataflows.y_finance import (
+    get_balance_sheet as get_yfinance_balance_sheet,
+)
+from tradingagents.dataflows.y_finance import (
+    get_cashflow as get_yfinance_cashflow,
+)
+from tradingagents.dataflows.y_finance import (
+    get_fundamentals as get_yfinance_fundamentals,
+)
+from tradingagents.dataflows.y_finance import (
+    get_income_statement as get_yfinance_income_statement,
+)
+from tradingagents.dataflows.y_finance import (
+    get_insider_transactions as get_yfinance_insider_transactions,
+)
+from tradingagents.dataflows.y_finance import (
+    get_options_activity as get_yfinance_options_activity,
 )
 
+# Import all vendor implementations
+from tradingagents.dataflows.y_finance import (
+    get_technical_analysis,
+    get_YFin_data_online,
+)
+from tradingagents.dataflows.y_finance import (
+    validate_ticker as validate_ticker_yfinance,
+)
+from tradingagents.dataflows.y_finance import (
+    validate_tickers_batch as validate_tickers_batch_yfinance,
+)
+
+logger = get_logger(__name__)
 
 # ============================================================================
 # TOOL REGISTRY - SINGLE SOURCE OF TRUTH
 # ============================================================================
 
 TOOL_REGISTRY: Dict[str, Dict[str, Any]] = {
-
     # ========== CORE STOCK APIs ==========
-
     "get_stock_data": {
         "description": "Retrieve stock price data (OHLCV) for a given ticker symbol",
         "category": "core_stock_apis",
@@ -100,7 +130,6 @@ TOOL_REGISTRY: Dict[str, Dict[str, Any]] = {
         },
         "returns": "str: Formatted dataframe containing stock price data",
     },
-
     "validate_ticker": {
         "description": "Validate if a ticker symbol exists and is tradeable",
         "category": "core_stock_apis",
@@ -114,9 +143,70 @@ TOOL_REGISTRY: Dict[str, Dict[str, Any]] = {
         },
         "returns": "bool: True if valid, False otherwise",
     },
-
+    "validate_tickers_batch": {
+        "description": "Validate multiple ticker symbols using Yahoo Finance quote endpoint",
+        "category": "core_stock_apis",
+        "agents": [],
+        "vendors": {
+            "yfinance": validate_tickers_batch_yfinance,
+        },
+        "vendor_priority": ["yfinance"],
+        "parameters": {
+            "symbols": {"type": "list[str]", "description": "Ticker symbols to validate"},
+        },
+        "returns": "dict: valid/invalid ticker lists",
+    },
+    "get_average_volume": {
+        "description": "Get average trading volume over a recent window (cached, with fallback download)",
+        "category": "core_stock_apis",
+        "agents": [],
+        "vendors": {
+            "volume_cache": get_cached_average_volume,
+        },
+        "vendor_priority": ["volume_cache"],
+        "parameters": {
+            "symbol": {"type": "str", "description": "Ticker symbol"},
+            "lookback_days": {"type": "int", "description": "Days to average", "default": 20},
+            "curr_date": {
+                "type": "str",
+                "description": "Current date, YYYY-mm-dd",
+                "default": None,
+            },
+            "cache_key": {"type": "str", "description": "Cache key/universe", "default": "default"},
+            "fallback_download": {
+                "type": "bool",
+                "description": "Download if cache missing",
+                "default": True,
+            },
+        },
+        "returns": "dict: average and latest volume metadata",
+    },
+    "get_average_volume_batch": {
+        "description": "Get average trading volumes for multiple tickers using cached data",
+        "category": "core_stock_apis",
+        "agents": [],
+        "vendors": {
+            "volume_cache": get_cached_average_volume_batch,
+        },
+        "vendor_priority": ["volume_cache"],
+        "parameters": {
+            "symbols": {"type": "list[str]", "description": "Ticker symbols"},
+            "lookback_days": {"type": "int", "description": "Days to average", "default": 20},
+            "curr_date": {
+                "type": "str",
+                "description": "Current date, YYYY-mm-dd",
+                "default": None,
+            },
+            "cache_key": {"type": "str", "description": "Cache key/universe", "default": "default"},
+            "fallback_download": {
+                "type": "bool",
+                "description": "Download if cache missing",
+                "default": True,
+            },
+        },
+        "returns": "dict: mapping of ticker to volume metadata",
+    },
     # ========== TECHNICAL INDICATORS ==========
-
     # "get_indicators": {
     #     "description": "Get concise technical analysis with signals, trends, and key indicator interpretations",
     #     "category": "technical_indicators",
@@ -131,7 +221,6 @@ TOOL_REGISTRY: Dict[str, Dict[str, Any]] = {
     #     },
     #     "returns": "str: Concise analysis with RSI signals, MACD crossovers, MA trends, Bollinger position, and ATR volatility",
     # },
-
     "get_indicators": {
         "description": "Get concise technical analysis with signals, trends, and key indicator interpretations",
         "category": "technical_indicators",
@@ -146,9 +235,7 @@ TOOL_REGISTRY: Dict[str, Dict[str, Any]] = {
         },
         "returns": "str: Concise analysis with RSI signals, MACD crossovers, MA trends, Bollinger position, and ATR volatility",
     },
-
     # ========== FUNDAMENTAL DATA ==========
-
     "get_fundamentals": {
         "description": "Retrieve comprehensive fundamental data for a ticker",
         "category": "fundamental_data",
@@ -165,7 +252,6 @@ TOOL_REGISTRY: Dict[str, Dict[str, Any]] = {
         },
         "returns": "str: Comprehensive fundamental data report",
     },
-
     "get_balance_sheet": {
         "description": "Retrieve balance sheet data for a ticker",
         "category": "fundamental_data",
@@ -180,7 +266,6 @@ TOOL_REGISTRY: Dict[str, Dict[str, Any]] = {
         },
         "returns": "str: Balance sheet data",
     },
-
     "get_cashflow": {
         "description": "Retrieve cash flow statement for a ticker",
         "category": "fundamental_data",
@@ -195,7 +280,6 @@ TOOL_REGISTRY: Dict[str, Dict[str, Any]] = {
         },
         "returns": "str: Cash flow statement data",
     },
-
     "get_income_statement": {
         "description": "Retrieve income statement for a ticker",
         "category": "fundamental_data",
@@ -210,7 +294,6 @@ TOOL_REGISTRY: Dict[str, Dict[str, Any]] = {
         },
         "returns": "str: Income statement data",
     },
-
     "get_recommendation_trends": {
         "description": "Retrieve analyst recommendation trends",
         "category": "fundamental_data",
@@ -224,9 +307,7 @@ TOOL_REGISTRY: Dict[str, Dict[str, Any]] = {
         },
         "returns": "str: Analyst recommendation trends",
     },
-
     # ========== NEWS & INSIDER DATA ==========
-
     "get_news": {
         "description": "Retrieve news articles for a specific ticker",
         "category": "news_data",
@@ -247,7 +328,6 @@ TOOL_REGISTRY: Dict[str, Dict[str, Any]] = {
         },
         "returns": "str: News articles and analysis",
     },
-
     "get_global_news": {
         "description": "Retrieve global market news and macroeconomic updates",
         "category": "news_data",
@@ -263,44 +343,42 @@ TOOL_REGISTRY: Dict[str, Dict[str, Any]] = {
         "parameters": {
             "date": {"type": "str", "description": "Date for news, yyyy-mm-dd"},
             "look_back_days": {"type": "int", "description": "Days to look back", "default": 7},
-            "limit": {"type": "int", "description": "Number of articles/topics to return", "default": 5},
+            "limit": {
+                "type": "int",
+                "description": "Number of articles/topics to return",
+                "default": 5,
+            },
         },
         "returns": "str: Global news and macro updates",
     },
-
     "get_insider_sentiment": {
         "description": "Retrieve insider trading sentiment analysis",
         "category": "news_data",
         "agents": ["news"],
         "vendors": {
-            "yfinance": get_yfinance_insider_transactions,
-            "alpha_vantage": get_alpha_vantage_insider_transactions,
+            "alpha_vantage": get_alpha_vantage_insider_sentiment,
         },
-        "vendor_priority": ["yfinance"],
+        "vendor_priority": ["alpha_vantage"],
         "parameters": {
             "ticker": {"type": "str", "description": "Ticker symbol"},
         },
         "returns": "str: Insider sentiment analysis",
     },
-
     "get_insider_transactions": {
         "description": "Retrieve insider transaction history",
         "category": "news_data",
         "agents": ["news"],
         "vendors": {
-            "alpha_vantage": get_alpha_vantage_insider_transactions,
             "yfinance": get_yfinance_insider_transactions,
         },
-        "vendor_priority": ["alpha_vantage", "yfinance"],
+        "vendor_priority": ["yfinance"],
         "parameters": {
             "ticker": {"type": "str", "description": "Ticker symbol"},
         },
         "returns": "str: Insider transaction history",
     },
-
     # ========== DISCOVERY TOOLS ==========
     # (Used by discovery mode, not bound to regular analysis agents)
-
     "get_trending_tickers": {
         "description": "Get trending stock tickers from social media",
         "category": "discovery",
@@ -314,7 +392,6 @@ TOOL_REGISTRY: Dict[str, Dict[str, Any]] = {
         },
         "returns": "str: List of trending tickers with sentiment",
     },
-
     "get_market_movers": {
         "description": "Get top market gainers and losers",
         "category": "discovery",
@@ -328,7 +405,6 @@ TOOL_REGISTRY: Dict[str, Dict[str, Any]] = {
         },
         "returns": "str: Top gainers and losers",
     },
-
     "get_tweets": {
         "description": "Get tweets related to stocks or market topics",
         "category": "discovery",
@@ -343,7 +419,6 @@ TOOL_REGISTRY: Dict[str, Dict[str, Any]] = {
         },
         "returns": "str: Tweets matching the query",
     },
-
     "get_earnings_calendar": {
         "description": "Get upcoming earnings announcements (catalysts for volatility)",
         "category": "discovery",
@@ -358,7 +433,6 @@ TOOL_REGISTRY: Dict[str, Dict[str, Any]] = {
         },
         "returns": "str: Formatted earnings calendar with EPS and revenue estimates",
     },
-
     "get_ipo_calendar": {
         "description": "Get upcoming and recent IPOs (new listing opportunities)",
         "category": "discovery",
@@ -373,7 +447,6 @@ TOOL_REGISTRY: Dict[str, Dict[str, Any]] = {
         },
         "returns": "str: Formatted IPO calendar with pricing and share details",
     },
-
     "get_unusual_volume": {
         "description": "Find stocks with unusual volume but minimal price movement (accumulation signal)",
         "category": "discovery",
@@ -383,14 +456,29 @@ TOOL_REGISTRY: Dict[str, Dict[str, Any]] = {
         },
         "vendor_priority": ["alpha_vantage"],
         "parameters": {
-            "date": {"type": "str", "description": "Analysis date in yyyy-mm-dd format", "default": None},
-            "min_volume_multiple": {"type": "float", "description": "Minimum volume multiple vs average", "default": 3.0},
-            "max_price_change": {"type": "float", "description": "Maximum price change percentage", "default": 5.0},
-            "top_n": {"type": "int", "description": "Number of top results to return", "default": 20},
+            "date": {
+                "type": "str",
+                "description": "Analysis date in yyyy-mm-dd format",
+                "default": None,
+            },
+            "min_volume_multiple": {
+                "type": "float",
+                "description": "Minimum volume multiple vs average",
+                "default": 3.0,
+            },
+            "max_price_change": {
+                "type": "float",
+                "description": "Maximum price change percentage",
+                "default": 5.0,
+            },
+            "top_n": {
+                "type": "int",
+                "description": "Number of top results to return",
+                "default": 20,
+            },
         },
         "returns": "str: Formatted report of stocks with unusual volume patterns",
     },
-
     "get_unusual_options_activity": {
         "description": "Analyze options activity for specific tickers as confirmation signal (not for primary discovery)",
         "category": "discovery",
@@ -402,12 +490,19 @@ TOOL_REGISTRY: Dict[str, Dict[str, Any]] = {
         "vendor_priority": ["yfinance"],
         "parameters": {
             "ticker": {"type": "str", "description": "Ticker symbol to analyze"},
-            "num_expirations": {"type": "int", "description": "Number of nearest expiration dates to analyze", "default": 3},
-            "curr_date": {"type": "str", "description": "Analysis date for reference", "default": None},
+            "num_expirations": {
+                "type": "int",
+                "description": "Number of nearest expiration dates to analyze",
+                "default": 3,
+            },
+            "curr_date": {
+                "type": "str",
+                "description": "Analysis date for reference",
+                "default": None,
+            },
         },
         "returns": "str: Formatted report of options activity with put/call ratios",
     },
-
     "get_analyst_rating_changes": {
         "description": "Track recent analyst upgrades/downgrades and price target changes",
         "category": "discovery",
@@ -417,13 +512,20 @@ TOOL_REGISTRY: Dict[str, Dict[str, Any]] = {
         },
         "vendor_priority": ["alpha_vantage"],
         "parameters": {
-            "lookback_days": {"type": "int", "description": "Number of days to look back", "default": 7},
-            "change_types": {"type": "list", "description": "Types of changes to track", "default": ["upgrade", "downgrade", "initiated"]},
+            "lookback_days": {
+                "type": "int",
+                "description": "Number of days to look back",
+                "default": 7,
+            },
+            "change_types": {
+                "type": "list",
+                "description": "Types of changes to track",
+                "default": ["upgrade", "downgrade", "initiated"],
+            },
             "top_n": {"type": "int", "description": "Number of top results", "default": 20},
         },
         "returns": "str: Formatted report of recent analyst rating changes with freshness indicators",
     },
-
     "get_short_interest": {
         "description": "Discover stocks with high short interest by scraping Finviz screener (squeeze candidates)",
         "category": "discovery",
@@ -433,13 +535,44 @@ TOOL_REGISTRY: Dict[str, Dict[str, Any]] = {
         },
         "vendor_priority": ["finviz"],
         "parameters": {
-            "min_short_interest_pct": {"type": "float", "description": "Minimum short interest % of float", "default": 10.0},
-            "min_days_to_cover": {"type": "float", "description": "Minimum days to cover ratio", "default": 2.0},
+            "min_short_interest_pct": {
+                "type": "float",
+                "description": "Minimum short interest % of float",
+                "default": 10.0,
+            },
+            "min_days_to_cover": {
+                "type": "float",
+                "description": "Minimum days to cover ratio",
+                "default": 2.0,
+            },
             "top_n": {"type": "int", "description": "Number of top results", "default": 20},
         },
         "returns": "str: Formatted report of discovered high short interest stocks with squeeze potential",
     },
-
+    "get_insider_buying": {
+        "description": "Discover stocks with significant insider buying activity (leading indicator)",
+        "category": "discovery",
+        "agents": [],
+        "vendors": {
+            "finviz": get_finviz_insider_buying,
+        },
+        "vendor_priority": ["finviz"],
+        "parameters": {
+            "transaction_type": {
+                "type": "str",
+                "description": "Transaction type: 'buy', 'sell', or 'any'",
+                "default": "buy",
+            },
+            "top_n": {"type": "int", "description": "Number of top results", "default": 20},
+            "lookback_days": {"type": "int", "description": "Days to look back", "default": 3},
+            "min_value": {
+                "type": "int",
+                "description": "Minimum transaction value",
+                "default": 25000,
+            },
+        },
+        "returns": "str: Formatted report of stocks with recent insider buying/selling activity",
+    },
     "get_reddit_discussions": {
         "description": "Get Reddit discussions about a specific ticker",
         "category": "news_data",
@@ -455,7 +588,6 @@ TOOL_REGISTRY: Dict[str, Dict[str, Any]] = {
         },
         "returns": "str: Reddit discussions and sentiment",
     },
-
     "get_options_activity": {
         "description": "Get options activity for a specific ticker (volume, open interest, put/call ratios, unusual activity)",
         "category": "discovery",
@@ -467,8 +599,16 @@ TOOL_REGISTRY: Dict[str, Dict[str, Any]] = {
         "vendor_priority": ["yfinance"],
         "parameters": {
             "ticker": {"type": "str", "description": "Ticker symbol"},
-            "num_expirations": {"type": "int", "description": "Number of nearest expiration dates to analyze", "default": 3},
-            "curr_date": {"type": "str", "description": "Current date for reference", "default": None},
+            "num_expirations": {
+                "type": "int",
+                "description": "Number of nearest expiration dates to analyze",
+                "default": 3,
+            },
+            "curr_date": {
+                "type": "str",
+                "description": "Current date for reference",
+                "default": None,
+            },
         },
         "returns": "str: Options activity report with volume, OI, P/C ratios, and unusual activity",
     },
@@ -478,6 +618,7 @@ TOOL_REGISTRY: Dict[str, Dict[str, Any]] = {
 # ============================================================================
 # HELPER FUNCTIONS
 # ============================================================================
+
 
 def get_tools_for_agent(agent_name: str) -> List[str]:
     """Get list of tool names available to a specific agent.
@@ -547,13 +688,14 @@ def get_vendor_config(tool_name: str) -> Dict[str, Any]:
 
     return {
         "vendors": metadata.get("vendors", {}),
-        "vendor_priority": metadata.get("vendor_priority", [])
+        "vendor_priority": metadata.get("vendor_priority", []),
     }
 
 
 # ============================================================================
 # AGENT-TOOL MAPPING
 # ============================================================================
+
 
 def get_agent_tool_mapping() -> Dict[str, List[str]]:
     """Get complete mapping of agents to their tools.
@@ -579,6 +721,7 @@ def get_agent_tool_mapping() -> Dict[str, List[str]]:
 # VALIDATION
 # ============================================================================
 
+
 def validate_registry() -> List[str]:
     """Validate the tool registry for common issues.
 
@@ -589,7 +732,15 @@ def validate_registry() -> List[str]:
 
     for tool_name, metadata in TOOL_REGISTRY.items():
         # Check required fields
-        required_fields = ["description", "category", "agents", "vendors", "vendor_priority", "parameters", "returns"]
+        required_fields = [
+            "description",
+            "category",
+            "agents",
+            "vendors",
+            "vendor_priority",
+            "parameters",
+            "returns",
+        ]
         for field in required_fields:
             if field not in metadata:
                 issues.append(f"{tool_name}: Missing required field '{field}'")
@@ -606,7 +757,9 @@ def validate_registry() -> List[str]:
         vendors = metadata.get("vendors", {})
         for vendor_name in vendor_priority:
             if vendor_name not in vendors:
-                issues.append(f"{tool_name}: Vendor '{vendor_name}' in priority list but not in vendors dict")
+                issues.append(
+                    f"{tool_name}: Vendor '{vendor_name}' in priority list but not in vendors dict"
+                )
 
         # Check parameters
         if not isinstance(metadata.get("parameters"), dict):
@@ -616,7 +769,9 @@ def validate_registry() -> List[str]:
         if "execution_mode" in metadata:
             execution_mode = metadata["execution_mode"]
             if execution_mode not in ["fallback", "aggregate"]:
-                issues.append(f"{tool_name}: Invalid execution_mode '{execution_mode}', must be 'fallback' or 'aggregate'")
+                issues.append(
+                    f"{tool_name}: Invalid execution_mode '{execution_mode}', must be 'fallback' or 'aggregate'"
+                )
 
         # Validate aggregate_vendors if present
         if "aggregate_vendors" in metadata:
@@ -626,43 +781,47 @@ def validate_registry() -> List[str]:
             else:
                 for vendor_name in aggregate_vendors:
                     if vendor_name not in vendors:
-                        issues.append(f"{tool_name}: aggregate_vendor '{vendor_name}' not in vendors dict")
+                        issues.append(
+                            f"{tool_name}: aggregate_vendor '{vendor_name}' not in vendors dict"
+                        )
 
             # Warn if aggregate_vendors specified but execution_mode is not aggregate
             if metadata.get("execution_mode") != "aggregate":
-                issues.append(f"{tool_name}: aggregate_vendors specified but execution_mode is not 'aggregate'")
+                issues.append(
+                    f"{tool_name}: aggregate_vendors specified but execution_mode is not 'aggregate'"
+                )
 
     return issues
 
 
 if __name__ == "__main__":
     # Example usage and validation
-    print("=" * 70)
-    print("TOOL REGISTRY OVERVIEW")
-    print("=" * 70)
+    logger.info("=" * 70)
+    logger.info("TOOL REGISTRY OVERVIEW")
+    logger.info("=" * 70)
 
-    print(f"\nTotal tools: {len(TOOL_REGISTRY)}")
+    logger.info(f"Total tools: {len(TOOL_REGISTRY)}")
 
-    print("\nTools by category:")
+    logger.info("Tools by category:")
     categories = set(m["category"] for m in TOOL_REGISTRY.values())
     for category in sorted(categories):
         tools = get_tools_by_category(category)
-        print(f"  {category}: {len(tools)} tools")
+        logger.info(f"  {category}: {len(tools)} tools")
         for tool in tools:
-            print(f"    - {tool}")
+            logger.debug(f"    - {tool}")
 
-    print("\nAgent-Tool Mapping:")
+    logger.info("Agent-Tool Mapping:")
     mapping = get_agent_tool_mapping()
     for agent, tools in sorted(mapping.items()):
-        print(f"  {agent}: {len(tools)} tools")
+        logger.info(f"  {agent}: {len(tools)} tools")
         for tool in tools:
-            print(f"    - {tool}")
+            logger.debug(f"    - {tool}")
 
-    print("\nValidation:")
+    logger.info("Validation:")
     issues = validate_registry()
     if issues:
-        print("  ⚠️  Issues found:")
+        logger.warning("⚠️  Issues found:")
         for issue in issues:
-            print(f"    - {issue}")
+            logger.warning(f"  - {issue}")
     else:
-        print("  ✅ Registry is valid!")
+        logger.info("✅ Registry is valid!")

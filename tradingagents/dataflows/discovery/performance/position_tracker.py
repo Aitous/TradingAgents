@@ -6,9 +6,12 @@ Maintains complete price time-series and calculates real-time metrics.
 """
 
 import json
-import os
 from datetime import datetime
 from pathlib import Path
+
+from tradingagents.utils.logger import get_logger
+
+logger = get_logger(__name__)
 from typing import Any, Dict, List, Optional
 
 
@@ -189,6 +192,6 @@ class PositionTracker:
                         open_positions.append(position)
             except (json.JSONDecodeError, IOError) as e:
                 # Log error but continue loading other positions
-                print(f"Error loading position from {filepath}: {e}")
+                logger.error(f"Error loading position from {filepath}: {e}")
 
         return open_positions

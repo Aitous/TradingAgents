@@ -1,8 +1,12 @@
 """Unusual options activity scanner."""
-from typing import Any, Dict, List
-import yfinance as yf
 
-from tradingagents.dataflows.discovery.scanner_registry import BaseScanner, SCANNER_REGISTRY
+from typing import Any, Dict, List
+
+from tradingagents.dataflows.discovery.scanner_registry import SCANNER_REGISTRY, BaseScanner
+from tradingagents.dataflows.y_finance import get_option_chain, get_ticker_options
+from tradingagents.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 class OptionsFlowScanner(BaseScanner):
@@ -16,15 +20,15 @@ class OptionsFlowScanner(BaseScanner):
         self.min_volume_oi_ratio = self.scanner_config.get("unusual_volume_multiple", 2.0)
         self.min_volume = self.scanner_config.get("min_volume", 1000)
         self.min_premium = self.scanner_config.get("min_premium", 25000)
-        self.ticker_universe = self.scanner_config.get("ticker_universe", [
-            "AAPL", "MSFT", "GOOGL", "AMZN", "META", "NVDA", "AMD", "TSLA"
-        ])
+        self.ticker_universe = self.scanner_config.get(
+            "ticker_universe", ["AAPL", "MSFT", "GOOGL", "AMZN", "META", "NVDA", "AMD", "TSLA"]
+        )
 
     def scan(self, state: Dict[str, Any]) -> List[Dict[str, Any]]:
         if not self.is_enabled():
             return []
 
-        print(f"   Scanning unusual options activity...")
+        logger.info("Scanning unusual options activity...")
 
         candidates = []
 
@@ -38,17 +42,16 @@ class OptionsFlowScanner(BaseScanner):
             except Exception:
                 continue
 
-        print(f"      Found {len(candidates)} unusual options flows")
+        logger.info(f"Found {len(candidates)} unusual options flows")
         return candidates
 
     def _analyze_ticker_options(self, ticker: str) -> Dict[str, Any]:
         try:
-            stock = yf.Ticker(ticker)
-            expirations = stock.options
+            expirations = get_ticker_options(ticker)
             if not expirations:
                 return None
 
-            options = stock.option_chain(expirations[0])
+            options = get_option_chain(ticker, expirations[0])
             calls = options.calls
             puts = options.puts
 
@@ -58,12 +61,9 @@ class OptionsFlowScanner(BaseScanner):
                 vol = opt.get("volume", 0)
                 oi = opt.get("openInterest", 0)
                 if oi > 0 and vol > self.min_volume and (vol / oi) >= self.min_volume_oi_ratio:
-                    unusual_strikes.append({
-                        "type": "call",
-                        "strike": opt["strike"],
-                        "volume": vol,
-                        "oi": oi
-                    })
+                    unusual_strikes.append(
+                        {"type": "call", "strike": opt["strike"], "volume": vol, "oi": oi}
+                    )
 
             if not unusual_strikes:
                 return None
@@ -81,7 +81,7 @@ class OptionsFlowScanner(BaseScanner):
                 "context": f"Unusual options: {len(unusual_strikes)} strikes, P/C={pc_ratio:.2f} ({sentiment})",
                 "priority": "high" if sentiment == "bullish" else "medium",
                 "strategy": "options_flow",
-                "put_call_ratio": round(pc_ratio, 2)
+                "put_call_ratio": round(pc_ratio, 2),
             }
 
         except Exception:

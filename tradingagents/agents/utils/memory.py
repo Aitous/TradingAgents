@@ -1,8 +1,12 @@
 import os
+from typing import Any, Dict, List, Optional, Tuple
+
 import chromadb
-from chromadb.config import Settings
 from openai import OpenAI
-from typing import List, Dict, Any, Optional, Tuple
+
+from tradingagents.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 class FinancialSituationMemory:
@@ -17,7 +21,7 @@ class FinancialSituationMemory:
             self.embedding_backend = "https://api.openai.com/v1"
             self.embedding = "text-embedding-3-small"
 
-        self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+        self.client = OpenAI(api_key=config.validate_key("openai_api_key", "OpenAI"))
 
         # Use persistent storage in project directory
         persist_directory = os.path.join(config.get("project_dir", "."), "memory_db")
@@ -28,43 +32,52 @@ class FinancialSituationMemory:
         # Get or create collection
         try:
             self.situation_collection = self.chroma_client.get_collection(name=name)
-        except:
+        except Exception:
             self.situation_collection = self.chroma_client.create_collection(name=name)
 
     def get_embedding(self, text):
         """Get OpenAI embedding for a text"""
-        
-        response = self.client.embeddings.create(
-            model=self.embedding, input=text
-        )
+
+        response = self.client.embeddings.create(model=self.embedding, input=text)
         return response.data[0].embedding
 
-    def add_situations(self, situations_and_advice):
-        """Add financial situations and their corresponding advice. Parameter is a list of tuples (situation, rec)"""
+    def _batch_add(
+        self,
+        documents: List[str],
+        metadatas: List[Dict[str, Any]],
+        embeddings: List[List[float]],
+        ids: List[str] = None,
+    ):
+        """Internal helper to batch add documents to ChromaDB."""
+        if not documents:
+            return
 
-        situations = []
-        advice = []
-        ids = []
-        embeddings = []
-
-        offset = self.situation_collection.count()
-
-        for i, (situation, recommendation) in enumerate(situations_and_advice):
-            situations.append(situation)
-            advice.append(recommendation)
-            ids.append(str(offset + i))
-            embeddings.append(self.get_embedding(situation))
+        if ids is None:
+            offset = self.situation_collection.count()
+            ids = [str(offset + i) for i in range(len(documents))]
 
         self.situation_collection.add(
-            documents=situations,
-            metadatas=[{"recommendation": rec} for rec in advice],
+            documents=documents,
+            metadatas=metadatas,
             embeddings=embeddings,
             ids=ids,
         )
 
+    def add_situations(self, situations_and_advice):
+        """Add financial situations and their corresponding advice. Parameter is a list of tuples (situation, rec)"""
+        situations = []
+        metadatas = []
+        embeddings = []
+
+        for situation, recommendation in situations_and_advice:
+            situations.append(situation)
+            metadatas.append({"recommendation": recommendation})
+            embeddings.append(self.get_embedding(situation))
+
+        self._batch_add(situations, metadatas, embeddings)
+
     def add_situations_with_metadata(
-        self,
-        situations_and_outcomes: List[Tuple[str, str, Dict[str, Any]]]
+        self, situations_and_outcomes: List[Tuple[str, str, Dict[str, Any]]]
     ):
         """
         Add financial situations with enhanced metadata for learning system.
@@ -88,15 +101,11 @@ class FinancialSituationMemory:
                   - etc.
         """
         situations = []
-        ids = []
-        embeddings = []
         metadatas = []
+        embeddings = []
 
-        offset = self.situation_collection.count()
-
-        for i, (situation, recommendation, metadata) in enumerate(situations_and_outcomes):
+        for situation, recommendation, metadata in situations_and_outcomes:
             situations.append(situation)
-            ids.append(str(offset + i))
             embeddings.append(self.get_embedding(situation))
 
             # Merge recommendation with metadata
@@ -107,12 +116,7 @@ class FinancialSituationMemory:
             full_metadata = self._sanitize_metadata(full_metadata)
             metadatas.append(full_metadata)
 
-        self.situation_collection.add(
-            documents=situations,
-            metadatas=metadatas,
-            embeddings=embeddings,
-            ids=ids,
-        )
+        self._batch_add(situations, metadatas, embeddings)
 
     def _sanitize_metadata(self, metadata: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -164,7 +168,7 @@ class FinancialSituationMemory:
         current_situation: str,
         signal_filters: Optional[Dict[str, Any]] = None,
         n_matches: int = 3,
-        min_similarity: float = 0.5
+        min_similarity: float = 0.5,
     ) -> List[Dict[str, Any]]:
         """
         Hybrid search: Filter by structured signals, then rank by embedding similarity.
@@ -216,18 +220,20 @@ class FinancialSituationMemory:
 
             metadata = results["metadatas"][0][i]
 
-            matched_results.append({
-                "matched_situation": results["documents"][0][i],
-                "recommendation": metadata.get("recommendation", ""),
-                "similarity_score": similarity_score,
-                "metadata": metadata,
-                # Extract key fields for convenience
-                "ticker": metadata.get("ticker", ""),
-                "move_pct": metadata.get("move_pct", 0),
-                "move_direction": metadata.get("move_direction", ""),
-                "was_correct": metadata.get("was_correct", False),
-                "days_before_move": metadata.get("days_before_move", 0),
-            })
+            matched_results.append(
+                {
+                    "matched_situation": results["documents"][0][i],
+                    "recommendation": metadata.get("recommendation", ""),
+                    "similarity_score": similarity_score,
+                    "metadata": metadata,
+                    # Extract key fields for convenience
+                    "ticker": metadata.get("ticker", ""),
+                    "move_pct": metadata.get("move_pct", 0),
+                    "move_direction": metadata.get("move_direction", ""),
+                    "was_correct": metadata.get("was_correct", False),
+                    "days_before_move": metadata.get("days_before_move", 0),
+                }
+            )
 
         # Return top n_matches
         return matched_results[:n_matches]
@@ -250,13 +256,11 @@ class FinancialSituationMemory:
                 "total_memories": 0,
                 "accuracy_rate": 0.0,
                 "avg_move_pct": 0.0,
-                "signal_distribution": {}
+                "signal_distribution": {},
             }
 
         # Get all memories
-        all_results = self.situation_collection.get(
-            include=["metadatas"]
-        )
+        all_results = self.situation_collection.get(include=["metadatas"])
 
         metadatas = all_results["metadatas"]
 
@@ -283,7 +287,7 @@ class FinancialSituationMemory:
             "total_memories": total_count,
             "accuracy_rate": accuracy_rate,
             "avg_move_pct": avg_move_pct,
-            "signal_distribution": signal_distribution
+            "signal_distribution": signal_distribution,
         }
 
 
@@ -324,10 +328,10 @@ if __name__ == "__main__":
         recommendations = matcher.get_memories(current_situation, n_matches=2)
 
         for i, rec in enumerate(recommendations, 1):
-            print(f"\nMatch {i}:")
-            print(f"Similarity Score: {rec['similarity_score']:.2f}")
-            print(f"Matched Situation: {rec['matched_situation']}")
-            print(f"Recommendation: {rec['recommendation']}")
+            logger.info(f"Match {i}:")
+            logger.info(f"Similarity Score: {rec['similarity_score']:.2f}")
+            logger.info(f"Matched Situation: {rec['matched_situation']}")
+            logger.info(f"Recommendation: {rec['recommendation']}")
 
     except Exception as e:
-        print(f"Error during recommendation: {str(e)}")
+        logger.error(f"Error during recommendation: {str(e)}")

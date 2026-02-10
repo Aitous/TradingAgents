@@ -1,8 +1,9 @@
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Type
-import logging
 
-logger = logging.getLogger(__name__)
+from tradingagents.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 class BaseScanner(ABC):
@@ -43,9 +44,7 @@ class BaseScanner(ABC):
             candidates = self.scan(state)
 
             if not isinstance(candidates, list):
-                logger.error(
-                    f"{self.name}: scan() returned {type(candidates)}, expected list"
-                )
+                logger.error(f"{self.name}: scan() returned {type(candidates)}, expected list")
                 return []
 
             # Validate each candidate
@@ -58,7 +57,7 @@ class BaseScanner(ABC):
                 else:
                     logger.warning(
                         f"{self.name}: Invalid candidate #{i}: {candidate}",
-                        extra={"scanner": self.name, "pipeline": self.pipeline}
+                        extra={"scanner": self.name, "pipeline": self.pipeline},
                     )
 
             if len(valid_candidates) < len(candidates):
@@ -76,8 +75,8 @@ class BaseScanner(ABC):
                 extra={
                     "scanner": self.name,
                     "pipeline": self.pipeline,
-                    "error_type": type(e).__name__
-                }
+                    "error_type": type(e).__name__,
+                },
             )
             return []
 
@@ -101,12 +100,12 @@ class ScannerRegistry:
 
         # Check for duplicate registration
         if scanner_class.name in self.scanners:
-            logger.warning(
-                f"Scanner '{scanner_class.name}' already registered, overwriting"
-            )
+            logger.warning(f"Scanner '{scanner_class.name}' already registered, overwriting")
 
         self.scanners[scanner_class.name] = scanner_class
-        logger.info(f"Registered scanner: {scanner_class.name} (pipeline: {scanner_class.pipeline})")
+        logger.info(
+            f"Registered scanner: {scanner_class.name} (pipeline: {scanner_class.pipeline})"
+        )
 
     def get_scanners_by_pipeline(self, pipeline: str) -> List[Type[BaseScanner]]:
         return [sc for sc in self.scanners.values() if sc.pipeline == pipeline]
