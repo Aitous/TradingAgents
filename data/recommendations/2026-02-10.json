@@ -1,0 +1,171 @@
+{
+  "date": "2026-02-10",
+  "llm_provider": "google",
+  "recommendations": [
+    {
+      "ticker": "GME",
+      "rank": 1,
+      "strategy_match": "momentum",
+      "final_score": 45,
+      "confidence": 10,
+      "reason": "GameStop leads the list with a high Quantitative Score of 45 and a robust ML Win Probability of 52.6%. The setup is primed for a squeeze with 16.1% short interest and significant recent insider buying, notably a $21 million purchase by CEO Ryan Cohen. Options sentiment is strongly bullish with a Put/Call ratio of 0.248, suggesting traders are positioning for upside. Technically, the stock is in an uptrend above its 200 SMA, and the convergence of retail momentum and insider conviction offers an asymmetric risk/reward profile.",
+      "entry_price": 24.889999389648438,
+      "discovery_date": "2026-02-10",
+      "status": "open"
+    },
+    {
+      "ticker": "AVR",
+      "rank": 2,
+      "strategy_match": "momentum",
+      "final_score": 40,
+      "confidence": 8,
+      "reason": "Anteris Technologies aligns with the high-win-rate 'Insider Buying' strategy, featuring $28.75 million in recent insider purchases. The stock carries a high Quantitative Score of 40 and shows highly unusual bullish options activity with a Put/Call ratio of just 0.007. Trading above its 50 SMA, the stock displays technical resilience despite recent volatility. The combination of heavy institutional accumulation and aggressive options betting supports a strong short-term bounce thesis.",
+      "entry_price": 5.829999923706055,
+      "discovery_date": "2026-02-10",
+      "status": "open"
+    },
+    {
+      "ticker": "PEGA",
+      "rank": 3,
+      "strategy_match": "momentum",
+      "final_score": 30,
+      "confidence": 9,
+      "reason": "Pegasystems is a compelling earnings play with an ML Win Probability of 48.4% and an exceptionally strong ADX trend reading of 67.1. With earnings scheduled for today, the stock's oversold Stochastic reading suggests potential for a sharp mean-reversion rally if results exceed depressed expectations. While the longer-term trend is down, the immediate catalyst and high win probability make this a viable tactical trade. Volatility is elevated, allowing for the targeted >5% return within the 7-day window.",
+      "entry_price": 42.525001525878906,
+      "discovery_date": "2026-02-10",
+      "status": "open"
+    },
+    {
+      "ticker": "BLKB",
+      "rank": 4,
+      "strategy_match": "momentum",
+      "final_score": 30,
+      "confidence": 9,
+      "reason": "Blackbaud presents a deep value/reversion opportunity heading into earnings today, backed by an ML Win Probability of 48.4%. The stock is significantly oversold with an RSI of 29.5, yet shows bullish divergence in On-Balance Volume, indicating underlying accumulation. Options volume heavily favors calls (P/C 0.446), suggesting market participants anticipate a post-earnings recovery. The trade targets a snapback from extreme oversold conditions triggered by the earnings event.",
+      "entry_price": 49.790000915527344,
+      "discovery_date": "2026-02-10",
+      "status": "open"
+    },
+    {
+      "ticker": "INMD",
+      "rank": 5,
+      "strategy_match": "momentum",
+      "final_score": 15,
+      "confidence": 8,
+      "reason": "InMode enters its earnings release today with a supportive technical structure, including a Golden Cross (50 SMA above 200 SMA) and a price holding above the 20 EMA. The ML model predicts a win with 47.2% probability, and the company maintains a healthy financial position with a Current Ratio of 9.75. Despite a recent pullback, the alignment of earnings volatility and a confirmed uptrend creates a favorable setup for a momentum breakout. Risk is managed by the stock's strong balance sheet.",
+      "entry_price": 15.300000190734863,
+      "discovery_date": "2026-02-10",
+      "status": "open"
+    },
+    {
+      "ticker": "TMC",
+      "rank": 6,
+      "strategy_match": "momentum",
+      "final_score": 35,
+      "confidence": 8,
+      "reason": "TMC is a high-volatility momentum play driven by retail sentiment and Reddit due diligence, supported by a 45.5% ML Win Probability. The stock has a high short interest of 10.7% and bullish options flow (P/C ratio 0.208), creating the conditions for a potential squeeze. Technicals show a bullish Stochastic crossover, and the high ATR of 12.3% ensures sufficient volatility to hit profit targets quickly. The catalyst is continued speculative interest and short covering.",
+      "entry_price": 6.460000038146973,
+      "discovery_date": "2026-02-10",
+      "status": "open"
+    },
+    {
+      "ticker": "DDOG",
+      "rank": 7,
+      "strategy_match": "volume_accumulation",
+      "final_score": 30,
+      "confidence": 8,
+      "reason": "Datadog is flagged for Volume Accumulation, a strategy with a historical 100% win rate, coinciding with its earnings release today. The ML Win Probability is solid at 43.6%, and the stock exhibits a bullish divergence in On-Balance Volume despite recent price weakness. Options sentiment is constructive with more call volume than puts. This setup suggests 'smart money' positioning ahead of the binary earnings event, offering a strong risk/reward for a reversal.",
+      "entry_price": 131.63499450683594,
+      "discovery_date": "2026-02-10",
+      "status": "open"
+    },
+    {
+      "ticker": "PATH",
+      "rank": 8,
+      "strategy_match": "momentum",
+      "final_score": 35,
+      "confidence": 7,
+      "reason": "UiPath is a prime short squeeze candidate with 15.6% short interest and highly unusual bullish options activity (Put/Call ratio of 0.111). The ML model predicts a 43.9% win probability, and Reddit due diligence is fueling retail interest. While the stock is in a downtrend, the rising On-Balance Volume indicates accumulation. The trade thesis relies on a rapid repricing event driven by options gamma exposure and short covering.",
+      "entry_price": 13.074999809265137,
+      "discovery_date": "2026-02-10",
+      "status": "open"
+    },
+    {
+      "ticker": "PMN",
+      "rank": 9,
+      "strategy_match": "momentum",
+      "final_score": 20,
+      "confidence": 7,
+      "reason": "ProMIS Neurosciences benefits from significant recent insider buying totaling over $11 million, a strong signal of internal confidence. The ML model assigns a 43.8% probability of a win, and the stock is trading above its 20 EMA, indicating short-term strength. With extremely high volatility (ATR >11%), the stock is capable of making the required >5% move rapidly. The investment case is built on following insider conviction in a high-beta biotech asset.",
+      "entry_price": 13.550000190734863,
+      "discovery_date": "2026-02-10",
+      "status": "open"
+    },
+    {
+      "ticker": "IGV",
+      "rank": 10,
+      "strategy_match": "momentum",
+      "final_score": 25,
+      "confidence": 7,
+      "reason": "IGV offers a diversified way to play the potential rebound in the software sector, backed by a 42.3% ML Win Probability. The ETF is currently oversold with a Stochastic reading below 20, often a precursor to a technical bounce. Options flows are bullish, and the strong trend strength (ADX 63.9) suggests the sector remains active. This trade captures the broader momentum recovery thesis with lower single-stock risk.",
+      "entry_price": 86.29499816894531,
+      "discovery_date": "2026-02-10",
+      "status": "open"
+    },
+    {
+      "ticker": "POET",
+      "rank": 11,
+      "strategy_match": "momentum",
+      "final_score": 35,
+      "confidence": 7,
+      "reason": "POET Technologies is a high-volatility momentum play (ATR >10%) with a 41.1% ML Win Probability. The stock is the subject of Reddit due diligence and shows a bullish options Put/Call ratio of 0.224. Despite a downtrend, a recent bullish stochastic crossover signals potential for a relief rally. The thesis rests on speculative retail interest and high volatility driving a short-term price spike.",
+      "entry_price": 6.114999771118164,
+      "discovery_date": "2026-02-10",
+      "status": "open"
+    },
+    {
+      "ticker": "ASTS",
+      "rank": 12,
+      "strategy_match": "momentum",
+      "final_score": 35,
+      "confidence": 7,
+      "reason": "AST SpaceMobile remains a favorite among momentum traders with 18.5% short interest and a strong long-term uptrend. The stock is trading well above major moving averages, and the ML model gives it a 40.5% chance of success. Options volume is call-heavy, supporting a bullish outlook. The trade targets a continuation of the volatility-driven uptrend, aided by potential short covering.",
+      "entry_price": 99.80999755859375,
+      "discovery_date": "2026-02-10",
+      "status": "open"
+    },
+    {
+      "ticker": "APH",
+      "rank": 13,
+      "strategy_match": "momentum",
+      "final_score": 20,
+      "confidence": 7,
+      "reason": "Amphenol represents a high-quality momentum play, confirmed by insider buying and a strong technical uptrend. The stock is trading above both its 50 and 200 SMAs and recently flashed a Golden Cross signal. With an ML Win Probability of 41.1%, it offers a favorable balance of probability and trend stability. The catalyst is the continued institutional support indicated by price action relative to VWAP.",
+      "entry_price": 145.18910217285156,
+      "discovery_date": "2026-02-10",
+      "status": "open"
+    },
+    {
+      "ticker": "META",
+      "rank": 14,
+      "strategy_match": "momentum",
+      "final_score": 10,
+      "confidence": 6,
+      "reason": "Meta Platforms is predicted to WIN by the ML model (39.6%) and maintains a solid technical uptrend, holding above its 20 EMA and VWAP. Despite some insider selling, the fundamental backdrop of revenue growth and profitability remains a tailwind. Options positioning is constructive, and the stock is not overbought. This trade is a bet on large-cap tech resilience and continued momentum.",
+      "entry_price": 671.3660278320312,
+      "discovery_date": "2026-02-10",
+      "status": "open"
+    },
+    {
+      "ticker": "WRB",
+      "rank": 15,
+      "strategy_match": "momentum",
+      "final_score": 25,
+      "confidence": 6,
+      "reason": "W. R. Berkley makes the list primarily due to massive insider buying totaling over $308 million, aligning with a historically high-win-rate strategy. The stock is in a technical uptrend and trading above its 20 EMA. While the ML prediction is neutral, the sheer scale of insider conviction provides a strong floor and potential upside catalyst. The trade follows the 'smart money' signal in a stable insurance play.",
+      "entry_price": 69.02999877929688,
+      "discovery_date": "2026-02-10",
+      "status": "open"
+    }
+  ]
+}
