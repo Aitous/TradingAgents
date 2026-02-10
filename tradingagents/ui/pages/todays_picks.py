@@ -66,8 +66,7 @@ def render():
     with col1:
         pipelines = list(
             set(
-                (r.get("pipeline") or r.get("strategy_match") or "unknown")
-                for r in recommendations
+                (r.get("pipeline") or r.get("strategy_match") or "unknown") for r in recommendations
             )
         )
         pipeline_filter = st.multiselect("Pipeline", pipelines, default=pipelines)

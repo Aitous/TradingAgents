@@ -12,8 +12,6 @@ Adding a new tool: Just add one entry here, everything else is auto-generated.
 
 from typing import Any, Dict, List, Optional
 
-from tradingagents.utils.logger import get_logger
-
 from tradingagents.dataflows.alpha_vantage import (
     get_balance_sheet as get_alpha_vantage_balance_sheet,
 )
@@ -105,6 +103,7 @@ from tradingagents.dataflows.y_finance import (
 from tradingagents.dataflows.y_finance import (
     validate_tickers_batch as validate_tickers_batch_yfinance,
 )
+from tradingagents.utils.logger import get_logger
 
 logger = get_logger(__name__)
 

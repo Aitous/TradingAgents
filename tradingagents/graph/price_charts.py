@@ -324,11 +324,7 @@ def _extract_close_series(data: Any) -> Any:
     if isinstance(data.columns, pd.MultiIndex):
         if "Close" in data.columns.get_level_values(0):
             close_data = data["Close"]
-            series = (
-                close_data.iloc[:, 0]
-                if isinstance(close_data, pd.DataFrame)
-                else close_data
-            )
+            series = close_data.iloc[:, 0] if isinstance(close_data, pd.DataFrame) else close_data
     elif "Close" in data.columns:
         series = data["Close"]
 

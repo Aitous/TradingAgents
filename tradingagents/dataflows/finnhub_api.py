@@ -4,9 +4,8 @@ from typing import Annotated, Any, Dict
 import finnhub
 from dotenv import load_dotenv
 
-from tradingagents.utils.logger import get_logger
-
 from tradingagents.config import config
+from tradingagents.utils.logger import get_logger
 
 load_dotenv()
 

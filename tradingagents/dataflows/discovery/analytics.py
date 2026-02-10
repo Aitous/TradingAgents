@@ -349,7 +349,9 @@ class DiscoveryAnalytics:
                 indent=2,
             )
 
-        logger.info(f"   📊 Saved {len(enriched_rankings)} recommendations for tracking: {output_file}")
+        logger.info(
+            f"   📊 Saved {len(enriched_rankings)} recommendations for tracking: {output_file}"
+        )
 
     def save_discovery_results(self, state: dict, trade_date: str, config: Dict[str, Any]):
         """Save full discovery results and tool logs."""

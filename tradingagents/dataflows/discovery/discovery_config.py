@@ -158,9 +158,7 @@ class DiscoveryConfig:
             max_candidates_to_analyze=disc.get(
                 "max_candidates_to_analyze", _rd.max_candidates_to_analyze
             ),
-            analyze_all_candidates=disc.get(
-                "analyze_all_candidates", _rd.analyze_all_candidates
-            ),
+            analyze_all_candidates=disc.get("analyze_all_candidates", _rd.analyze_all_candidates),
             final_recommendations=disc.get("final_recommendations", _rd.final_recommendations),
             truncate_ranking_context=disc.get(
                 "truncate_ranking_context", _rd.truncate_ranking_context
@@ -189,12 +187,8 @@ class DiscoveryConfig:
         # Logging
         logging_cfg = LoggingConfig(
             log_tool_calls=disc.get("log_tool_calls", _ld.log_tool_calls),
-            log_tool_calls_console=disc.get(
-                "log_tool_calls_console", _ld.log_tool_calls_console
-            ),
-            log_prompts_console=disc.get(
-                "log_prompts_console", _ld.log_prompts_console
-            ),
+            log_tool_calls_console=disc.get("log_tool_calls_console", _ld.log_tool_calls_console),
+            log_prompts_console=disc.get("log_prompts_console", _ld.log_prompts_console),
             tool_log_max_chars=disc.get("tool_log_max_chars", _ld.tool_log_max_chars),
             tool_log_exclude=disc.get("tool_log_exclude", _ld.tool_log_exclude),
         )

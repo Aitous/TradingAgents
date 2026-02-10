@@ -80,13 +80,16 @@ def time_split(
     if max_train_samples is not None and len(train) > max_train_samples:
         train = train.sort_values("date").tail(max_train_samples)
         logger.info(
-            f"Limiting training samples to most recent {max_train_samples} "
-            f"before {val_start}"
+            f"Limiting training samples to most recent {max_train_samples} " f"before {val_start}"
         )
 
     logger.info(f"Time-based split at {val_start}:")
-    logger.info(f"  Train: {len(train)} samples ({train['date'].min().date()} to {train['date'].max().date()})")
-    logger.info(f"  Val:   {len(val)} samples ({val['date'].min().date()} to {val['date'].max().date()})")
+    logger.info(
+        f"  Train: {len(train)} samples ({train['date'].min().date()} to {train['date'].max().date()})"
+    )
+    logger.info(
+        f"  Val:   {len(val)} samples ({val['date'].min().date()} to {val['date'].max().date()})"
+    )
 
     X_train = train[FEATURE_COLUMNS].values
     y_train = train["label"].values.astype(int)
@@ -152,8 +155,12 @@ def train_lightgbm(X_train, y_train, X_val, y_val):
     class_weight = {c: total / (n_classes * count) for c, count in class_counts.items()}
     sample_weights = np.array([class_weight[y] for y in y_train_mapped])
 
-    train_data = lgb.Dataset(X_train, label=y_train_mapped, weight=sample_weights, feature_name=FEATURE_COLUMNS)
-    val_data = lgb.Dataset(X_val, label=y_val_mapped, feature_name=FEATURE_COLUMNS, reference=train_data)
+    train_data = lgb.Dataset(
+        X_train, label=y_train_mapped, weight=sample_weights, feature_name=FEATURE_COLUMNS
+    )
+    val_data = lgb.Dataset(
+        X_val, label=y_val_mapped, feature_name=FEATURE_COLUMNS, reference=train_data
+    )
 
     params = {
         "objective": "multiclass",
@@ -209,7 +216,8 @@ def evaluate(model, X_val, y_val, model_type: str) -> dict:
 
     accuracy = accuracy_score(y_val, y_pred)
     report = classification_report(
-        y_val, y_pred,
+        y_val,
+        y_pred,
         target_names=["LOSS (-1)", "TIMEOUT (0)", "WIN (+1)"],
         output_dict=True,
     )
@@ -253,13 +261,21 @@ def evaluate(model, X_val, y_val, model_type: str) -> dict:
     # Top decile (top 10% by P(WIN)) — most actionable metric
     top_decile_threshold = np.percentile(win_probs_all, 90)
     top_decile_mask = win_probs_all >= top_decile_threshold
-    top_decile_win_rate = float((y_val[top_decile_mask] == 1).mean()) if top_decile_mask.sum() > 0 else 0.0
-    top_decile_loss_rate = float((y_val[top_decile_mask] == -1).mean()) if top_decile_mask.sum() > 0 else 0.0
+    top_decile_win_rate = (
+        float((y_val[top_decile_mask] == 1).mean()) if top_decile_mask.sum() > 0 else 0.0
+    )
+    top_decile_loss_rate = (
+        float((y_val[top_decile_mask] == -1).mean()) if top_decile_mask.sum() > 0 else 0.0
+    )
 
     metrics = {
         "model_type": model_type,
         "accuracy": round(accuracy, 4),
-        "per_class": {k: {kk: round(vv, 4) for kk, vv in v.items()} for k, v in report.items() if isinstance(v, dict)},
+        "per_class": {
+            k: {kk: round(vv, 4) for kk, vv in v.items()}
+            for k, v in report.items()
+            if isinstance(v, dict)
+        },
         "confusion_matrix": cm.tolist(),
         "avg_win_prob_for_actual_wins": round(avg_win_prob_for_actual_wins, 4),
         "high_confidence_win_precision": round(high_conf_precision, 4),
@@ -276,25 +292,31 @@ def evaluate(model, X_val, y_val, model_type: str) -> dict:
     logger.info(f"\n{'='*60}")
     logger.info(f"Model: {model_type}")
     logger.info(f"Overall Accuracy: {accuracy:.1%}")
-    logger.info(f"\nPer-class metrics:")
+    logger.info("\nPer-class metrics:")
     logger.info(f"{'':>15} {'Precision':>10} {'Recall':>10} {'F1':>10} {'Support':>10}")
     for label, name in [(-1, "LOSS"), (0, "TIMEOUT"), (1, "WIN")]:
         key = f"{name} ({label:+d})"
         if key in report:
             r = report[key]
-            logger.info(f"{name:>15} {r['precision']:>10.3f} {r['recall']:>10.3f} {r['f1-score']:>10.3f} {r['support']:>10.0f}")
+            logger.info(
+                f"{name:>15} {r['precision']:>10.3f} {r['recall']:>10.3f} {r['f1-score']:>10.3f} {r['support']:>10.0f}"
+            )
 
-    logger.info(f"\nConfusion Matrix (rows=actual, cols=predicted):")
+    logger.info("\nConfusion Matrix (rows=actual, cols=predicted):")
     logger.info(f"{'':>10} {'LOSS':>8} {'TIMEOUT':>8} {'WIN':>8}")
     for i, name in enumerate(["LOSS", "TIMEOUT", "WIN"]):
         logger.info(f"{name:>10} {cm[i][0]:>8} {cm[i][1]:>8} {cm[i][2]:>8}")
 
-    logger.info(f"\nWin-class insights:")
+    logger.info("\nWin-class insights:")
     logger.info(f"  Avg P(WIN) for actual winners: {avg_win_prob_for_actual_wins:.1%}")
-    logger.info(f"  High-confidence (>60%) precision: {high_conf_precision:.1%} ({high_conf_count} samples)")
+    logger.info(
+        f"  High-confidence (>60%) precision: {high_conf_precision:.1%} ({high_conf_count} samples)"
+    )
 
     logger.info("\nCalibration (does higher P(WIN) = more actual wins?):")
-    logger.info(f"{'Quintile':>10} {'Avg P(WIN)':>12} {'Actual WIN%':>12} {'Actual LOSS%':>13} {'Count':>8}")
+    logger.info(
+        f"{'Quintile':>10} {'Avg P(WIN)':>12} {'Actual WIN%':>12} {'Actual LOSS%':>13} {'Count':>8}"
+    )
     for q_name, q_data in calibration.items():
         logger.info(
             f"{q_name:>10} {q_data['mean_predicted_win_prob']:>12.1%} "
@@ -304,7 +326,9 @@ def evaluate(model, X_val, y_val, model_type: str) -> dict:
 
     logger.info("\nTop decile (top 10% by P(WIN)):")
     logger.info(f"  Threshold: P(WIN) >= {top_decile_threshold:.1%}")
-    logger.info(f"  Actual win rate: {top_decile_win_rate:.1%} ({int(top_decile_mask.sum())} samples)")
+    logger.info(
+        f"  Actual win rate: {top_decile_win_rate:.1%} ({int(top_decile_mask.sum())} samples)"
+    )
     logger.info(f"  Actual loss rate: {top_decile_loss_rate:.1%}")
     baseline_win = float((y_val == 1).mean())
     logger.info(f"  Baseline win rate: {baseline_win:.1%}")
@@ -318,12 +342,25 @@ def evaluate(model, X_val, y_val, model_type: str) -> dict:
 def main():
     parser = argparse.ArgumentParser(description="Train ML model for win probability")
     parser.add_argument("--dataset", type=str, default="data/ml/training_dataset.parquet")
-    parser.add_argument("--model", type=str, choices=["tabpfn", "lightgbm", "auto"], default="auto",
-                        help="Model type (auto tries TabPFN first, falls back to LightGBM)")
-    parser.add_argument("--val-start", type=str, default="2024-07-01",
-                        help="Validation split date (default: 2024-07-01)")
-    parser.add_argument("--max-train-samples", type=int, default=None,
-                        help="Limit training samples to the most recent N before val-start")
+    parser.add_argument(
+        "--model",
+        type=str,
+        choices=["tabpfn", "lightgbm", "auto"],
+        default="auto",
+        help="Model type (auto tries TabPFN first, falls back to LightGBM)",
+    )
+    parser.add_argument(
+        "--val-start",
+        type=str,
+        default="2024-07-01",
+        help="Validation split date (default: 2024-07-01)",
+    )
+    parser.add_argument(
+        "--max-train-samples",
+        type=int,
+        default=None,
+        help="Limit training samples to the most recent N before val-start",
+    )
     parser.add_argument("--output-dir", type=str, default="data/ml")
     args = parser.parse_args()
 

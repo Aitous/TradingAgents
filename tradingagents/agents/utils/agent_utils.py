@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict, List
+from typing import Any, Callable, Dict
 
 from langchain_core.messages import HumanMessage, RemoveMessage
 
@@ -95,9 +95,7 @@ def update_risk_debate_state(
         "count": debate_state["count"] + 1,
     }
     # Append to the speaker's own history and set their current response
-    new_state[f"{role_key}_history"] = (
-        debate_state.get(f"{role_key}_history", "") + "\n" + argument
-    )
+    new_state[f"{role_key}_history"] = debate_state.get(f"{role_key}_history", "") + "\n" + argument
     new_state[f"current_{role_key}_response"] = argument
     return new_state
 

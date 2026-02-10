@@ -286,9 +286,7 @@ class DiscoveryGraph:
                 else:
                     self._add_context(incoming_context, existing, prepend=False)
 
-    def _add_context(
-        self, new_context: str, candidate: Dict[str, Any], *, prepend: bool
-    ) -> None:
+    def _add_context(self, new_context: str, candidate: Dict[str, Any], *, prepend: bool) -> None:
         """
         Add context string to a candidate's context fields.
 
@@ -492,7 +490,9 @@ class DiscoveryGraph:
 
                 try:
                     # Get result with per-scanner timeout
-                    name, pipeline, candidates, error, scanner_logs = future.result(timeout=timeout_seconds)
+                    name, pipeline, candidates, error, scanner_logs = future.result(
+                        timeout=timeout_seconds
+                    )
 
                     # Initialize pipeline list if needed
                     if pipeline not in pipeline_candidates:

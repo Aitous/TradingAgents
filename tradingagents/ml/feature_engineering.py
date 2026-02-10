@@ -132,9 +132,7 @@ def compute_features_bulk(ohlcv: pd.DataFrame, market_cap: Optional[float] = Non
 
     # 7. Position within Bollinger Bands (0 = lower band, 1 = upper band)
     bb_range = bb_upper - bb_lower
-    features["bb_position"] = np.where(
-        bb_range > 0, (close - bb_lower) / bb_range, 0.5
-    )
+    features["bb_position"] = np.where(bb_range > 0, (close - bb_lower) / bb_range, 0.5)
 
     # 8. ADX (trend strength)
     features["adx"] = ss["dx_14"]
@@ -181,7 +179,9 @@ def compute_features_bulk(ohlcv: pd.DataFrame, market_cap: Optional[float] = Non
 
     # 21. Momentum × Compression: strong trend direction + tight Bollinger = breakout setup
     #     High absolute MACD + low BB width = coiled spring
-    features["momentum_x_compression"] = features["macd_hist"].abs() / features["bb_width_pct"].replace(0, np.nan)
+    features["momentum_x_compression"] = features["macd_hist"].abs() / features[
+        "bb_width_pct"
+    ].replace(0, np.nan)
 
     # 22. RSI momentum: 5-day rate of change of RSI (acceleration of momentum)
     features["rsi_momentum"] = features["rsi_14"] - features["rsi_14"].shift(5)
@@ -190,7 +190,9 @@ def compute_features_bulk(ohlcv: pd.DataFrame, market_cap: Optional[float] = Non
     features["volume_price_confirm"] = features["volume_ratio_5d"] * features["return_1d"]
 
     # 24. Trend alignment: both SMAs agree (1 = aligned bullish, -1 = aligned bearish)
-    features["trend_alignment"] = np.sign(features["sma50_distance"]) * np.sign(features["sma200_distance"])
+    features["trend_alignment"] = np.sign(features["sma50_distance"]) * np.sign(
+        features["sma200_distance"]
+    )
 
     # 25. Volatility regime: ATR percentile within rolling 60-day window (0-1)
     atr_pct_series = features["atr_pct"]
@@ -202,18 +204,20 @@ def compute_features_bulk(ohlcv: pd.DataFrame, market_cap: Optional[float] = Non
     # 26. Mean reversion signal: oversold RSI + price below lower Bollinger
     features["mean_reversion_signal"] = (
         (100 - features["rsi_14"]) / 100  # inversed RSI (higher = more oversold)
-    ) * (1 - features["bb_position"].clip(0, 1))  # below lower band amplifies signal
+    ) * (
+        1 - features["bb_position"].clip(0, 1)
+    )  # below lower band amplifies signal
 
     # 27. Breakout signal: above upper BB + high volume ratio
-    features["breakout_signal"] = (
-        features["bb_position"].clip(0, 2) * features["volume_ratio_20d"]
-    )
+    features["breakout_signal"] = features["bb_position"].clip(0, 2) * features["volume_ratio_20d"]
 
     # 28. MACD strength: histogram normalized by volatility
     features["macd_strength"] = features["macd_hist"] / features["atr_pct"].replace(0, np.nan)
 
     # 29. Return/Volatility ratio: Sharpe-like metric
-    features["return_volatility_ratio"] = features["return_5d"] / features["atr_pct"].replace(0, np.nan)
+    features["return_volatility_ratio"] = features["return_5d"] / features["atr_pct"].replace(
+        0, np.nan
+    )
 
     # 30. Trend-momentum composite score
     features["trend_momentum_score"] = (

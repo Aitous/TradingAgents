@@ -7,10 +7,10 @@ import pandas as pd
 from dateutil.relativedelta import relativedelta
 from tqdm import tqdm
 
+from tradingagents.utils.logger import get_logger
+
 from .config import DATA_DIR
 from .reddit_utils import fetch_top_from_category
-
-from tradingagents.utils.logger import get_logger
 
 logger = get_logger(__name__)
 

@@ -68,6 +68,8 @@ Choose BUY or SELL (no HOLD). If the edge is unclear, pick the less-bad side and
         response_text = parse_llm_response(response.content)
         argument = f"Neutral Analyst: {response_text}"
 
-        return {"risk_debate_state": update_risk_debate_state(risk_debate_state, argument, "Neutral")}
+        return {
+            "risk_debate_state": update_risk_debate_state(risk_debate_state, argument, "Neutral")
+        }
 
     return neutral_node

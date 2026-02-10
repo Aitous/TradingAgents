@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Annotated, Dict, List, Optional, Union
 
 import pandas as pd
+
 from tradingagents.dataflows.y_finance import _get_ticker_universe, get_ticker_history
 from tradingagents.utils.logger import get_logger
 
@@ -460,7 +461,9 @@ def download_volume_data(
         logger.info("Skipping cache (use_cache=False), forcing fresh download...")
 
     # Download fresh data
-    logger.info(f"Downloading {history_period_days} days of volume data for {len(tickers)} tickers...")
+    logger.info(
+        f"Downloading {history_period_days} days of volume data for {len(tickers)} tickers..."
+    )
     raw_data = {}
 
     with ThreadPoolExecutor(max_workers=15) as executor:

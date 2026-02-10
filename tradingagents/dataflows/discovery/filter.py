@@ -185,7 +185,9 @@ class CandidateFilter:
 
         # Print consolidated list of failed tickers
         if failed_tickers:
-            logger.warning(f"⚠️  {len(failed_tickers)} tickers failed data fetch (possibly delisted)")
+            logger.warning(
+                f"⚠️  {len(failed_tickers)} tickers failed data fetch (possibly delisted)"
+            )
             if len(failed_tickers) <= 10:
                 logger.warning(f"{', '.join(failed_tickers)}")
             else:
@@ -501,7 +503,9 @@ class CandidateFilter:
                                 )
 
                         # Extract short interest from fundamentals (no extra API call)
-                        short_pct_raw = fund.get("ShortPercentOfFloat", fund.get("ShortPercentFloat"))
+                        short_pct_raw = fund.get(
+                            "ShortPercentOfFloat", fund.get("ShortPercentFloat")
+                        )
                         short_interest_pct = None
                         if short_pct_raw and short_pct_raw != "N/A":
                             try:
@@ -747,9 +751,7 @@ class CandidateFilter:
             logger.info(f"      ❌ No data available: {filtered_reasons['no_data']}")
         logger.info(f"      ✅ Passed filters: {len(filtered_candidates)}")
 
-    def _predict_ml(
-        self, cand: Dict[str, Any], ticker: str, end_date: str
-    ) -> Any:
+    def _predict_ml(self, cand: Dict[str, Any], ticker: str, end_date: str) -> Any:
         """Run ML win probability prediction for a candidate."""
         # Lazy-load predictor on first call
         if not self._ml_predictor_loaded:
@@ -767,10 +769,10 @@ class CandidateFilter:
             return None
 
         try:
+            from tradingagents.dataflows.y_finance import download_history
             from tradingagents.ml.feature_engineering import (
                 compute_features_single,
             )
-            from tradingagents.dataflows.y_finance import download_history
 
             # Fetch OHLCV for feature computation (needs ~210 rows of history)
             ohlcv = download_history(

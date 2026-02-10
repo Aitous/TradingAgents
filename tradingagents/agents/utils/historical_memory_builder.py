@@ -203,7 +203,9 @@ class HistoricalMemoryBuilder:
                         except (IndexError, KeyError):
                             continue
 
-                    logger.info(f"Found {len([m for m in high_movers if m['ticker'] == ticker])} moves for {ticker}")
+                    logger.info(
+                        f"Found {len([m for m in high_movers if m['ticker'] == ticker])} moves for {ticker}"
+                    )
                 else:
                     logger.debug(f"{ticker}: No significant moves")
 
@@ -440,7 +442,9 @@ class HistoricalMemoryBuilder:
         high_movers = self.find_high_movers(tickers, start_date, end_date, min_move_pct)
 
         if not high_movers:
-            logger.warning("⚠️  No high movers found. Try a different date range or lower threshold.")
+            logger.warning(
+                "⚠️  No high movers found. Try a different date range or lower threshold."
+            )
             return {}
 
         # Step 1.5: Sample/filter high movers based on strategy
@@ -449,7 +453,9 @@ class HistoricalMemoryBuilder:
         logger.info(f"📊 Sampling Strategy: {sample_strategy}")
         logger.info(f"Total high movers found: {len(high_movers)}")
         logger.info(f"Samples to analyze: {len(sampled_movers)}")
-        logger.info(f"Estimated runtime: ~{len(sampled_movers) * len(analysis_windows) * 2} minutes")
+        logger.info(
+            f"Estimated runtime: ~{len(sampled_movers) * len(analysis_windows) * 2} minutes"
+        )
 
         # Initialize memory stores
         agent_memories = {

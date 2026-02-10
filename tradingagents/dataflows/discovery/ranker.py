@@ -52,7 +52,9 @@ class StockRanking(BaseModel):
     strategy_match: str = Field(description="Strategy that matched")
     final_score: int = Field(description="Score 0-100")
     confidence: int = Field(description="Confidence 1-10")
-    reason: str = Field(description="Detailed investment thesis (4-6 sentences) defending the trade with specific catalysts, risk/reward, and timing")
+    reason: str = Field(
+        description="Detailed investment thesis (4-6 sentences) defending the trade with specific catalysts, risk/reward, and timing"
+    )
     description: str = Field(description="Company description")
 
 

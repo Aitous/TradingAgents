@@ -18,7 +18,6 @@ import sys
 import time
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
 
 # Add project root to path
@@ -40,35 +39,210 @@ logger = get_logger(__name__)
 # Can be overridden via --ticker-file
 DEFAULT_TICKERS = [
     # Mega-cap tech
-    "AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "META", "TSLA", "AVGO", "ORCL", "CRM",
-    "AMD", "INTC", "CSCO", "ADBE", "NFLX", "QCOM", "TXN", "AMAT", "MU", "LRCX",
-    "KLAC", "MRVL", "SNPS", "CDNS", "PANW", "CRWD", "FTNT", "NOW", "UBER", "ABNB",
+    "AAPL",
+    "MSFT",
+    "GOOGL",
+    "AMZN",
+    "NVDA",
+    "META",
+    "TSLA",
+    "AVGO",
+    "ORCL",
+    "CRM",
+    "AMD",
+    "INTC",
+    "CSCO",
+    "ADBE",
+    "NFLX",
+    "QCOM",
+    "TXN",
+    "AMAT",
+    "MU",
+    "LRCX",
+    "KLAC",
+    "MRVL",
+    "SNPS",
+    "CDNS",
+    "PANW",
+    "CRWD",
+    "FTNT",
+    "NOW",
+    "UBER",
+    "ABNB",
     # Financials
-    "JPM", "BAC", "WFC", "GS", "MS", "C", "SCHW", "BLK", "AXP", "USB",
-    "PNC", "TFC", "COF", "BK", "STT", "FITB", "HBAN", "RF", "CFG", "KEY",
+    "JPM",
+    "BAC",
+    "WFC",
+    "GS",
+    "MS",
+    "C",
+    "SCHW",
+    "BLK",
+    "AXP",
+    "USB",
+    "PNC",
+    "TFC",
+    "COF",
+    "BK",
+    "STT",
+    "FITB",
+    "HBAN",
+    "RF",
+    "CFG",
+    "KEY",
     # Healthcare
-    "UNH", "JNJ", "LLY", "PFE", "ABBV", "MRK", "TMO", "ABT", "DHR", "BMY",
-    "AMGN", "GILD", "ISRG", "VRTX", "REGN", "MDT", "SYK", "BSX", "EW", "ZTS",
+    "UNH",
+    "JNJ",
+    "LLY",
+    "PFE",
+    "ABBV",
+    "MRK",
+    "TMO",
+    "ABT",
+    "DHR",
+    "BMY",
+    "AMGN",
+    "GILD",
+    "ISRG",
+    "VRTX",
+    "REGN",
+    "MDT",
+    "SYK",
+    "BSX",
+    "EW",
+    "ZTS",
     # Consumer
-    "WMT", "PG", "KO", "PEP", "COST", "MCD", "NKE", "SBUX", "TGT", "LOW",
-    "HD", "TJX", "ROST", "DG", "DLTR", "EL", "CL", "KMB", "GIS", "K",
+    "WMT",
+    "PG",
+    "KO",
+    "PEP",
+    "COST",
+    "MCD",
+    "NKE",
+    "SBUX",
+    "TGT",
+    "LOW",
+    "HD",
+    "TJX",
+    "ROST",
+    "DG",
+    "DLTR",
+    "EL",
+    "CL",
+    "KMB",
+    "GIS",
+    "K",
     # Energy
-    "XOM", "CVX", "COP", "EOG", "SLB", "MPC", "PSX", "VLO", "OXY", "DVN",
-    "HAL", "FANG", "HES", "BKR", "KMI", "WMB", "OKE", "ET", "TRGP", "LNG",
+    "XOM",
+    "CVX",
+    "COP",
+    "EOG",
+    "SLB",
+    "MPC",
+    "PSX",
+    "VLO",
+    "OXY",
+    "DVN",
+    "HAL",
+    "FANG",
+    "HES",
+    "BKR",
+    "KMI",
+    "WMB",
+    "OKE",
+    "ET",
+    "TRGP",
+    "LNG",
     # Industrials
-    "CAT", "DE", "UNP", "UPS", "HON", "RTX", "BA", "LMT", "GD", "NOC",
-    "GE", "MMM", "EMR", "ITW", "PH", "ROK", "ETN", "SWK", "CMI", "PCAR",
+    "CAT",
+    "DE",
+    "UNP",
+    "UPS",
+    "HON",
+    "RTX",
+    "BA",
+    "LMT",
+    "GD",
+    "NOC",
+    "GE",
+    "MMM",
+    "EMR",
+    "ITW",
+    "PH",
+    "ROK",
+    "ETN",
+    "SWK",
+    "CMI",
+    "PCAR",
     # Materials & Utilities
-    "LIN", "APD", "ECL", "SHW", "DD", "NEM", "FCX", "VMC", "MLM", "NUE",
-    "NEE", "DUK", "SO", "D", "AEP", "EXC", "SRE", "XEL", "WEC", "ES",
+    "LIN",
+    "APD",
+    "ECL",
+    "SHW",
+    "DD",
+    "NEM",
+    "FCX",
+    "VMC",
+    "MLM",
+    "NUE",
+    "NEE",
+    "DUK",
+    "SO",
+    "D",
+    "AEP",
+    "EXC",
+    "SRE",
+    "XEL",
+    "WEC",
+    "ES",
     # REITs & Telecom
-    "AMT", "PLD", "CCI", "EQIX", "SPG", "O", "PSA", "DLR", "WELL", "AVB",
-    "T", "VZ", "TMUS", "CHTR", "CMCSA",
+    "AMT",
+    "PLD",
+    "CCI",
+    "EQIX",
+    "SPG",
+    "O",
+    "PSA",
+    "DLR",
+    "WELL",
+    "AVB",
+    "T",
+    "VZ",
+    "TMUS",
+    "CHTR",
+    "CMCSA",
     # High-volatility / popular retail
-    "COIN", "MARA", "RIOT", "PLTR", "SOFI", "HOOD", "RBLX", "SNAP", "PINS", "SQ",
-    "SHOP", "SE", "ROKU", "DKNG", "PENN", "WYNN", "MGM", "LVS", "DASH", "TTD",
+    "COIN",
+    "MARA",
+    "RIOT",
+    "PLTR",
+    "SOFI",
+    "HOOD",
+    "RBLX",
+    "SNAP",
+    "PINS",
+    "SQ",
+    "SHOP",
+    "SE",
+    "ROKU",
+    "DKNG",
+    "PENN",
+    "WYNN",
+    "MGM",
+    "LVS",
+    "DASH",
+    "TTD",
     # Biotech
-    "MRNA", "BNTX", "BIIB", "SGEN", "ALNY", "BMRN", "EXAS", "DXCM", "HZNP", "INCY",
+    "MRNA",
+    "BNTX",
+    "BIIB",
+    "SGEN",
+    "ALNY",
+    "BMRN",
+    "EXAS",
+    "DXCM",
+    "HZNP",
+    "INCY",
 ]
 
 OUTPUT_DIR = Path("data/ml")
@@ -221,10 +395,16 @@ def build_dataset(
 
     logger.info(f"\n{'='*60}")
     logger.info(f"Dataset built: {len(dataset)} total samples from {len(all_data)} tickers")
-    logger.info(f"Label distribution:")
-    logger.info(f"  WIN  (+1): {int((dataset['label'] == 1).sum()):>7} ({(dataset['label'] == 1).mean()*100:.1f}%)")
-    logger.info(f"  LOSS (-1): {int((dataset['label'] == -1).sum()):>7} ({(dataset['label'] == -1).mean()*100:.1f}%)")
-    logger.info(f"  TIMEOUT:   {int((dataset['label'] == 0).sum()):>7} ({(dataset['label'] == 0).mean()*100:.1f}%)")
+    logger.info("Label distribution:")
+    logger.info(
+        f"  WIN  (+1): {int((dataset['label'] == 1).sum()):>7} ({(dataset['label'] == 1).mean()*100:.1f}%)"
+    )
+    logger.info(
+        f"  LOSS (-1): {int((dataset['label'] == -1).sum()):>7} ({(dataset['label'] == -1).mean()*100:.1f}%)"
+    )
+    logger.info(
+        f"  TIMEOUT:   {int((dataset['label'] == 0).sum()):>7} ({(dataset['label'] == 0).mean()*100:.1f}%)"
+    )
     logger.info(f"Features: {len(FEATURE_COLUMNS)}")
     logger.info(f"{'='*60}")
 
@@ -233,12 +413,20 @@ def build_dataset(
 
 def main():
     parser = argparse.ArgumentParser(description="Build ML training dataset")
-    parser.add_argument("--stocks", type=int, default=None, help="Limit to N stocks from default universe")
-    parser.add_argument("--ticker-file", type=str, default=None, help="File with tickers (one per line)")
+    parser.add_argument(
+        "--stocks", type=int, default=None, help="Limit to N stocks from default universe"
+    )
+    parser.add_argument(
+        "--ticker-file", type=str, default=None, help="File with tickers (one per line)"
+    )
     parser.add_argument("--start", type=str, default="2022-01-01", help="Start date (YYYY-MM-DD)")
     parser.add_argument("--end", type=str, default="2025-12-31", help="End date (YYYY-MM-DD)")
-    parser.add_argument("--profit-target", type=float, default=0.05, help="Profit target fraction (default: 0.05)")
-    parser.add_argument("--stop-loss", type=float, default=0.03, help="Stop loss fraction (default: 0.03)")
+    parser.add_argument(
+        "--profit-target", type=float, default=0.05, help="Profit target fraction (default: 0.05)"
+    )
+    parser.add_argument(
+        "--stop-loss", type=float, default=0.03, help="Stop loss fraction (default: 0.03)"
+    )
     parser.add_argument("--holding-days", type=int, default=7, help="Max holding days (default: 7)")
     parser.add_argument("--output", type=str, default=None, help="Output parquet path")
     args = parser.parse_args()
@@ -246,7 +434,9 @@ def main():
     # Determine ticker list
     if args.ticker_file:
         with open(args.ticker_file) as f:
-            tickers = [line.strip().upper() for line in f if line.strip() and not line.startswith("#")]
+            tickers = [
+                line.strip().upper() for line in f if line.strip() and not line.startswith("#")
+            ]
         logger.info(f"Loaded {len(tickers)} tickers from {args.ticker_file}")
     else:
         tickers = DEFAULT_TICKERS

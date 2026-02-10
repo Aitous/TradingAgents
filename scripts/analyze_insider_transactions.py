@@ -166,7 +166,9 @@ def analyze_insider_transactions(ticker: str, save_csv: bool = False, output_dir
                     if pd.notna(row["Value"]) and row["Value"] > 0
                     else f"{'N/A':>16}"
                 )
-                logger.info(f"  {row['Transaction']:15} | {row['Shares']:>12,.0f} shares | {value_str}")
+                logger.info(
+                    f"  {row['Transaction']:15} | {row['Shares']:>12,.0f} shares | {value_str}"
+                )
 
         # ============================================================
         # OVERALL SENTIMENT
@@ -206,12 +208,16 @@ def analyze_insider_transactions(ticker: str, save_csv: bool = False, output_dir
         )
 
         logger.info(f"Total Sales:      {sales_count:>5} transactions | ${total_sales:>15,.0f}")
-        logger.info(f"Total Purchases:  {purchases_count:>5} transactions | ${total_purchases:>15,.0f}")
+        logger.info(
+            f"Total Purchases:  {purchases_count:>5} transactions | ${total_purchases:>15,.0f}"
+        )
 
         if sentiment == "BULLISH":
             logger.info(f"\n⚡ BULLISH: Insiders are net BUYERS (${net_value:,.0f} net buying)")
         elif sentiment == "BEARISH":
-            logger.info(f"\n⚠️  BEARISH: Significant insider SELLING (${-net_value:,.0f} net selling)")
+            logger.info(
+                f"\n⚠️  BEARISH: Significant insider SELLING (${-net_value:,.0f} net selling)"
+            )
         elif sentiment == "SLIGHTLY_BEARISH":
             logger.info(
                 f"\n⚠️  SLIGHTLY BEARISH: More selling than buying (${-net_value:,.0f} net selling)"
@@ -269,7 +275,9 @@ if __name__ == "__main__":
         )
         logger.info("Example: python analyze_insider_transactions.py AAPL TSLA NVDA")
         logger.info("         python analyze_insider_transactions.py AAPL --csv")
-        logger.info("         python analyze_insider_transactions.py AAPL --csv --output-dir ./output")
+        logger.info(
+            "         python analyze_insider_transactions.py AAPL --csv --output-dir ./output"
+        )
         sys.exit(1)
 
     # Parse arguments

@@ -7,7 +7,6 @@ Default: data/tickers.txt. Override via config: discovery.scanners.ml_signal.tic
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any, Dict, List, Optional
 
-import numpy as np
 import pandas as pd
 
 from tradingagents.dataflows.discovery.scanner_registry import SCANNER_REGISTRY, BaseScanner
@@ -109,7 +108,9 @@ class MLSignalScanner(BaseScanner):
 
         # Log individual candidate results
         if candidates:
-            header = f"{'Ticker':<8} {'P(WIN)':>8} {'P(LOSS)':>9} {'Prediction':>12} {'Priority':>10}"
+            header = (
+                f"{'Ticker':<8} {'P(WIN)':>8} {'P(LOSS)':>9} {'Prediction':>12} {'Priority':>10}"
+            )
             separator = "-" * len(header)
             lines = ["\n  ML Signal Scanner Results:", f"  {header}", f"  {separator}"]
             for c in candidates:
@@ -143,7 +144,9 @@ class MLSignalScanner(BaseScanner):
         try:
             from tradingagents.dataflows.y_finance import download_history
 
-            logger.info(f"Batch-downloading {len(self.universe)} tickers ({self.lookback_period})...")
+            logger.info(
+                f"Batch-downloading {len(self.universe)} tickers ({self.lookback_period})..."
+            )
 
             # yfinance batch download — single HTTP request for all tickers
             raw = download_history(

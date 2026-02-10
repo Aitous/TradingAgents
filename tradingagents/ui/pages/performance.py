@@ -33,7 +33,9 @@ def render() -> None:
 
     # Check if data is available
     if not strategy_metrics:
-        st.warning("No strategy performance data available. Run performance tracking to generate data.")
+        st.warning(
+            "No strategy performance data available. Run performance tracking to generate data."
+        )
         return
 
     # Strategy Performance section

@@ -14,7 +14,6 @@ from tradingagents.default_config import DEFAULT_CONFIG
 
 # Import tools from new registry-based system
 from tradingagents.tools.generator import get_agent_tools
-
 from tradingagents.utils.logger import get_logger
 
 from .conditional_logic import ConditionalLogic

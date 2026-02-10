@@ -1,3 +1,4 @@
+-e .
 typing-extensions
 langchain-openai
 langchain-experimental

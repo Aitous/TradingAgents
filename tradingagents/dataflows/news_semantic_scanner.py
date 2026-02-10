@@ -807,11 +807,15 @@ Return as JSON with "news" array."""
             logger.info(f"Found {len(google_news)} items from Google News")
             min_date, max_date = self._publish_date_range(google_news)
             if min_date:
-                logger.debug(f"Min publish date (Google News): {min_date.strftime('%Y-%m-%d %H:%M')}")
+                logger.debug(
+                    f"Min publish date (Google News): {min_date.strftime('%Y-%m-%d %H:%M')}"
+                )
             else:
                 logger.debug("Min publish date (Google News): N/A")
             if max_date:
-                logger.debug(f"Max publish date (Google News): {max_date.strftime('%Y-%m-%d %H:%M')}")
+                logger.debug(
+                    f"Max publish date (Google News): {max_date.strftime('%Y-%m-%d %H:%M')}"
+                )
             else:
                 logger.debug("Max publish date (Google News): N/A")
 
@@ -837,11 +841,15 @@ Return as JSON with "news" array."""
             logger.info(f"Found {len(av_news)} items from Alpha Vantage")
             min_date, max_date = self._publish_date_range(av_news)
             if min_date:
-                logger.debug(f"Min publish date (Alpha Vantage): {min_date.strftime('%Y-%m-%d %H:%M')}")
+                logger.debug(
+                    f"Min publish date (Alpha Vantage): {min_date.strftime('%Y-%m-%d %H:%M')}"
+                )
             else:
                 logger.debug("Min publish date (Alpha Vantage): N/A")
             if max_date:
-                logger.debug(f"Max publish date (Alpha Vantage): {max_date.strftime('%Y-%m-%d %H:%M')}")
+                logger.debug(
+                    f"Max publish date (Alpha Vantage): {max_date.strftime('%Y-%m-%d %H:%M')}"
+                )
             else:
                 logger.debug("Max publish date (Alpha Vantage): N/A")
 

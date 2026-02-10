@@ -493,7 +493,9 @@ Extract all stock ticker symbols mentioned in the post or comments."""
 
                     # Handle None result (Gemini blocked content despite safety settings)
                     if result is None:
-                        logger.warning(f"⚠️  Content blocked for '{post['title'][:50]}...' - Skipping")
+                        logger.warning(
+                            f"⚠️  Content blocked for '{post['title'][:50]}...' - Skipping"
+                        )
                         post["quality_score"] = 0
                         post["quality_reason"] = (
                             "Content blocked by LLM safety filter. "
