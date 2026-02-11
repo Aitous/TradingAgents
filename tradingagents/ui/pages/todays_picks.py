@@ -23,7 +23,11 @@ def _load_price_history(ticker: str, period: str) -> pd.DataFrame:
         return pd.DataFrame()
 
     data = download_history(
-        ticker, period=period, interval="1d", auto_adjust=True, progress=False,
+        ticker,
+        period=period,
+        interval="1d",
+        auto_adjust=True,
+        progress=False,
     )
     if data is None or data.empty:
         return pd.DataFrame()
@@ -62,9 +66,11 @@ def render():
     # ---- Controls row ----
     ctrl_cols = st.columns([1, 1, 1, 1])
     with ctrl_cols[0]:
-        pipelines = sorted(set(
-            (r.get("pipeline") or r.get("strategy_match") or "unknown") for r in recommendations
-        ))
+        pipelines = sorted(
+            set(
+                (r.get("pipeline") or r.get("strategy_match") or "unknown") for r in recommendations
+            )
+        )
         pipeline_filter = st.multiselect("Strategy", pipelines, default=pipelines)
     with ctrl_cols[1]:
         min_confidence = st.slider("Min Confidence", 1, 10, 1)
@@ -79,7 +85,8 @@ def render():
 
     # Apply filters
     filtered = [
-        r for r in recommendations
+        r
+        for r in recommendations
         if (r.get("pipeline") or r.get("strategy_match") or "unknown") in pipeline_filter
         and r.get("confidence", 0) >= min_confidence
         and r.get("final_score", 0) >= min_score
@@ -130,7 +137,9 @@ def render():
                     history = _load_price_history(ticker, chart_window)
                     if not history.empty:
                         template = get_plotly_template()
-                        fig = px.line(history, x="date", y="close", labels={"date": "", "close": "Price"})
+                        fig = px.line(
+                            history, x="date", y="close", labels={"date": "", "close": "Price"}
+                        )
 
                         # Color line green if trending up, red if down
                         first_close = history["close"].iloc[0]
@@ -145,7 +154,9 @@ def render():
                         )
                         fig.update_layout(margin=dict(l=0, r=0, t=0, b=0))
                         fig.update_xaxes(showticklabels=False, showgrid=False)
-                        fig.update_yaxes(showgrid=True, gridcolor="rgba(42,53,72,0.3)", tickprefix="$")
+                        fig.update_yaxes(
+                            showgrid=True, gridcolor="rgba(42,53,72,0.3)", tickprefix="$"
+                        )
                         st.plotly_chart(fig, width="stretch")
 
                 # Action buttons

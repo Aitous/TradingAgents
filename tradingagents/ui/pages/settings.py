@@ -12,7 +12,10 @@ from tradingagents.ui.theme import COLORS, page_header
 
 def render() -> None:
     """Render the configuration page."""
-    st.markdown(page_header("Config", "Pipeline & scanner configuration (read-only)"), unsafe_allow_html=True)
+    st.markdown(
+        page_header("Config", "Pipeline & scanner configuration (read-only)"),
+        unsafe_allow_html=True,
+    )
 
     config = DEFAULT_CONFIG
     discovery_config = config.get("discovery", {})

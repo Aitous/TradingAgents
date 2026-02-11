@@ -30,19 +30,23 @@ def render():
             st.write("")
             if st.button("Add Position"):
                 if ticker and entry_price > 0 and shares > 0:
-                    from tradingagents.dataflows.discovery.performance.position_tracker import PositionTracker
+                    from tradingagents.dataflows.discovery.performance.position_tracker import (
+                        PositionTracker,
+                    )
 
                     tracker = PositionTracker()
-                    pos = tracker.create_position({
-                        "ticker": ticker.upper(),
-                        "entry_price": entry_price,
-                        "shares": shares,
-                        "recommendation_date": datetime.now().isoformat(),
-                        "pipeline": "manual",
-                        "scanner": "manual",
-                        "strategy_match": "manual",
-                        "confidence": 5,
-                    })
+                    pos = tracker.create_position(
+                        {
+                            "ticker": ticker.upper(),
+                            "entry_price": entry_price,
+                            "shares": shares,
+                            "recommendation_date": datetime.now().isoformat(),
+                            "pipeline": "manual",
+                            "scanner": "manual",
+                            "strategy_match": "manual",
+                            "confidence": 5,
+                        }
+                    )
                     tracker.save_position(pos)
                     st.success(f"Added {ticker.upper()}")
                     st.rerun()
@@ -74,7 +78,12 @@ def render():
     summary_kpis = [
         ("Invested", f"${total_invested:,.0f}", "", "blue"),
         ("Current Value", f"${total_current:,.0f}", "", "blue"),
-        ("P/L", f"${total_pnl:+,.0f}", f"{total_pnl_pct:+.1f}%", "green" if total_pnl >= 0 else "red"),
+        (
+            "P/L",
+            f"${total_pnl:+,.0f}",
+            f"{total_pnl_pct:+.1f}%",
+            "green" if total_pnl >= 0 else "red",
+        ),
         ("Positions", str(len(positions)), "", "amber"),
     ]
     for col, (label, value, delta, color) in zip(cols, summary_kpis):
@@ -145,15 +154,17 @@ def render():
         data = []
         for p in positions:
             pnl = (p["metrics"]["current_price"] - p["entry_price"]) * p.get("shares", 0)
-            data.append({
-                "Ticker": p["ticker"],
-                "Entry": p["entry_price"],
-                "Current": p["metrics"]["current_price"],
-                "Shares": p.get("shares", 0),
-                "P/L": pnl,
-                "P/L %": p["metrics"]["current_return"],
-                "Days": p["metrics"]["days_held"],
-            })
+            data.append(
+                {
+                    "Ticker": p["ticker"],
+                    "Entry": p["entry_price"],
+                    "Current": p["metrics"]["current_price"],
+                    "Shares": p.get("shares", 0),
+                    "P/L": pnl,
+                    "P/L %": p["metrics"]["current_return"],
+                    "Days": p["metrics"]["days_held"],
+                }
+            )
         st.dataframe(
             pd.DataFrame(data),
             width="stretch",

@@ -11,18 +11,23 @@ import plotly.graph_objects as go
 import streamlit as st
 
 from tradingagents.ui.theme import COLORS, get_plotly_template, page_header
-from tradingagents.ui.utils import load_performance_database, load_statistics, load_strategy_metrics
+from tradingagents.ui.utils import load_statistics, load_strategy_metrics
 
 
 def render() -> None:
     """Render the performance analytics page."""
-    st.markdown(page_header("Performance", "Strategy analytics & win/loss breakdown"), unsafe_allow_html=True)
+    st.markdown(
+        page_header("Performance", "Strategy analytics & win/loss breakdown"),
+        unsafe_allow_html=True,
+    )
 
     strategy_metrics = load_strategy_metrics()
     stats = load_statistics()
 
     if not strategy_metrics:
-        st.warning("No performance data available yet. Run the discovery pipeline and track outcomes.")
+        st.warning(
+            "No performance data available yet. Run the discovery pipeline and track outcomes."
+        )
         return
 
     template = get_plotly_template()
@@ -105,15 +110,17 @@ def render() -> None:
         df_sorted = df.sort_values("Win Rate", ascending=True)
         colors = [COLORS["green"] if wr >= 50 else COLORS["red"] for wr in df_sorted["Win Rate"]]
 
-        fig_bar = go.Figure(go.Bar(
-            x=df_sorted["Win Rate"],
-            y=df_sorted["Strategy"],
-            orientation="h",
-            marker_color=colors,
-            text=[f"{wr:.0f}%" for wr in df_sorted["Win Rate"]],
-            textposition="auto",
-            textfont=dict(family="JetBrains Mono", size=11, color=COLORS["text_primary"]),
-        ))
+        fig_bar = go.Figure(
+            go.Bar(
+                x=df_sorted["Win Rate"],
+                y=df_sorted["Strategy"],
+                orientation="h",
+                marker_color=colors,
+                text=[f"{wr:.0f}%" for wr in df_sorted["Win Rate"]],
+                textposition="auto",
+                textfont=dict(family="JetBrains Mono", size=11, color=COLORS["text_primary"]),
+            )
+        )
 
         fig_bar.add_vline(x=50, line_dash="dot", line_color=COLORS["text_muted"], opacity=0.5)
 
@@ -158,16 +165,22 @@ def render() -> None:
         by_strat = stats["by_strategy"]
         rows = []
         for strat_name, data in by_strat.items():
-            rows.append({
-                "Strategy": strat_name,
-                "Count": data.get("count", 0),
-                "Win Rate 1d": f"{data.get('win_rate_1d', 0):.0f}%" if "win_rate_1d" in data else "N/A",
-                "Win Rate 7d": f"{data.get('win_rate_7d', 0):.0f}%" if "win_rate_7d" in data else "N/A",
-                "Wins 1d": data.get("wins_1d", 0),
-                "Losses 1d": data.get("losses_1d", 0),
-                "Wins 7d": data.get("wins_7d", 0),
-                "Losses 7d": data.get("losses_7d", 0),
-            })
+            rows.append(
+                {
+                    "Strategy": strat_name,
+                    "Count": data.get("count", 0),
+                    "Win Rate 1d": (
+                        f"{data.get('win_rate_1d', 0):.0f}%" if "win_rate_1d" in data else "N/A"
+                    ),
+                    "Win Rate 7d": (
+                        f"{data.get('win_rate_7d', 0):.0f}%" if "win_rate_7d" in data else "N/A"
+                    ),
+                    "Wins 1d": data.get("wins_1d", 0),
+                    "Losses 1d": data.get("losses_1d", 0),
+                    "Wins 7d": data.get("wins_7d", 0),
+                    "Losses 7d": data.get("losses_7d", 0),
+                }
+            )
 
         if rows:
             st.dataframe(pd.DataFrame(rows), width="stretch", hide_index=True)

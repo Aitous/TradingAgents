@@ -39,7 +39,7 @@ def render() -> None:
 
     best_strat_name = "N/A"
     best_strat_wr = 0.0
-    for item in (strategy_metrics or []):
+    for item in strategy_metrics or []:
         wr = item.get("Win Rate", 0) or 0
         if wr > best_strat_wr:
             best_strat_wr = wr
@@ -48,11 +48,25 @@ def render() -> None:
     # ---- KPI Row ----
     cols = st.columns(5)
     kpis = [
-        ("Win Rate 7d", f"{win_rate_7d:.0f}%", f"+{win_rate_7d - 50:.0f}pp vs 50%" if win_rate_7d >= 50 else f"{win_rate_7d - 50:.0f}pp vs 50%", "green" if win_rate_7d >= 50 else "red"),
+        (
+            "Win Rate 7d",
+            f"{win_rate_7d:.0f}%",
+            (
+                f"+{win_rate_7d - 50:.0f}pp vs 50%"
+                if win_rate_7d >= 50
+                else f"{win_rate_7d - 50:.0f}pp vs 50%"
+            ),
+            "green" if win_rate_7d >= 50 else "red",
+        ),
         ("Avg Return 7d", f"{avg_return_7d:+.2f}%", "", "green" if avg_return_7d > 0 else "red"),
         ("Open Positions", str(open_count), "", "blue"),
         ("Total Signals", str(total_recs), "", "amber"),
-        ("Top Strategy", best_strat_name.upper(), f"{best_strat_wr:.0f}% WR" if best_strat_wr else "", "green" if best_strat_wr >= 60 else "amber"),
+        (
+            "Top Strategy",
+            best_strat_name.upper(),
+            f"{best_strat_wr:.0f}% WR" if best_strat_wr else "",
+            "green" if best_strat_wr >= 60 else "amber",
+        ),
     ]
     for col, (label, value, delta, color) in zip(cols, kpis):
         with col:
@@ -80,21 +94,46 @@ def render() -> None:
                 size="Count",
                 color="Strategy",
                 hover_name="Strategy",
-                hover_data={"Win Rate": ":.1f", "Avg Return": ":.2f", "Count": True, "Strategy": False},
+                hover_data={
+                    "Win Rate": ":.1f",
+                    "Avg Return": ":.2f",
+                    "Count": True,
+                    "Strategy": False,
+                },
                 labels={"Win Rate": "Win Rate (%)", "Avg Return": "Avg Return (%)"},
                 size_max=40,
             )
 
             fig.add_hline(y=0, line_dash="dot", line_color=COLORS["text_muted"], opacity=0.4)
             fig.add_vline(x=50, line_dash="dot", line_color=COLORS["text_muted"], opacity=0.4)
-            fig.add_annotation(x=75, y=5, text="WINNERS", showarrow=False, font=dict(size=10, color=COLORS["green"], family="JetBrains Mono"), opacity=0.3)
-            fig.add_annotation(x=25, y=-5, text="LOSERS", showarrow=False, font=dict(size=10, color=COLORS["red"], family="JetBrains Mono"), opacity=0.3)
+            fig.add_annotation(
+                x=75,
+                y=5,
+                text="WINNERS",
+                showarrow=False,
+                font=dict(size=10, color=COLORS["green"], family="JetBrains Mono"),
+                opacity=0.3,
+            )
+            fig.add_annotation(
+                x=25,
+                y=-5,
+                text="LOSERS",
+                showarrow=False,
+                font=dict(size=10, color=COLORS["red"], family="JetBrains Mono"),
+                opacity=0.3,
+            )
 
             fig.update_layout(
                 **template,
                 height=380,
                 showlegend=True,
-                legend=dict(bgcolor="rgba(0,0,0,0)", font=dict(size=10), orientation="h", yanchor="bottom", y=-0.25),
+                legend=dict(
+                    bgcolor="rgba(0,0,0,0)",
+                    font=dict(size=10),
+                    orientation="h",
+                    yanchor="bottom",
+                    y=-0.25,
+                ),
             )
             st.plotly_chart(fig, width="stretch")
         else:
@@ -118,9 +157,17 @@ def render() -> None:
                 entry = rec.get("entry_price")
                 entry_str = f"${entry:.2f}" if entry else "N/A"
 
-                score_color = COLORS["green"] if score >= 35 else (COLORS["amber"] if score >= 20 else COLORS["text_muted"])
+                score_color = (
+                    COLORS["green"]
+                    if score >= 35
+                    else (COLORS["amber"] if score >= 20 else COLORS["text_muted"])
+                )
                 conf_bar_w = conf * 10
-                conf_color = COLORS["green"] if conf >= 8 else (COLORS["amber"] if conf >= 6 else COLORS["red"])
+                conf_color = (
+                    COLORS["green"]
+                    if conf >= 8
+                    else (COLORS["amber"] if conf >= 6 else COLORS["red"])
+                )
 
                 st.markdown(
                     f"""
@@ -156,7 +203,9 @@ def render() -> None:
                 )
 
             if len(recs) > 6:
-                st.caption(f"+{len(recs) - 6} more signals. Switch to Signals page for the full list.")
+                st.caption(
+                    f"+{len(recs) - 6} more signals. Switch to Signals page for the full list."
+                )
         else:
             st.info("No signals generated today.")
 
