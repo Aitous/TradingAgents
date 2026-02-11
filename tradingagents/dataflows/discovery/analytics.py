@@ -20,24 +20,40 @@ class DiscoveryAnalytics:
         self.recommendations_dir = self.data_dir / "recommendations"
         self.recommendations_dir.mkdir(parents=True, exist_ok=True)
 
-    def update_performance_tracking(self):
-        """Update performance metrics for all open recommendations."""
-        logger.info("📊 Updating recommendation performance tracking...")
+    def _load_existing_database(self) -> Dict[str, Dict]:
+        """Load existing performance database keyed by (ticker, discovery_date).
 
-        if not self.recommendations_dir.exists():
-            logger.info("No historical recommendations to track yet.")
-            return
+        Returns a dict mapping "TICKER|DATE" -> rec dict, preserving accumulated
+        return data (return_1d, return_7d, etc.) across runs.
+        """
+        db_path = self.recommendations_dir / "performance_database.json"
+        if not db_path.exists():
+            return {}
 
-        # Load all recommendations
+        try:
+            with open(db_path, "r") as f:
+                data = json.load(f)
+        except Exception as e:
+            logger.warning(f"Error loading performance database: {e}")
+            return {}
+
+        existing = {}
+        by_date = data.get("recommendations_by_date", {})
+        for recs in by_date.values():
+            if isinstance(recs, list):
+                for rec in recs:
+                    key = f"{rec.get('ticker')}|{rec.get('discovery_date')}"
+                    existing[key] = rec
+        return existing
+
+    def _load_raw_recommendations(self) -> List[Dict]:
+        """Load recommendations from raw date files."""
         all_recs = []
-        # Use glob directly on the path object if python 3.10+ otherwise str()
         pattern = str(self.recommendations_dir / "*.json")
 
         for filepath in glob.glob(pattern):
-            # Skip the database and stats files
             if "performance_database" in filepath or "statistics" in filepath:
                 continue
-
             try:
                 with open(filepath, "r") as f:
                     data = json.load(f)
@@ -49,16 +65,46 @@ class DiscoveryAnalytics:
                         all_recs.append(rec)
             except Exception as e:
                 logger.warning(f"Error loading {filepath}: {e}")
+        return all_recs
 
-        if not all_recs:
+    def update_performance_tracking(self):
+        """Update performance metrics for all recommendations.
+
+        Loads accumulated data from performance_database.json first, merges in
+        any new recs from raw date files, then updates prices for open positions.
+        This preserves return_1d/return_7d/return_30d across runs.
+        """
+        logger.info("📊 Updating recommendation performance tracking...")
+
+        if not self.recommendations_dir.exists():
+            logger.info("No historical recommendations to track yet.")
+            return
+
+        # Step 1: Load existing database (preserves accumulated return data)
+        existing = self._load_existing_database()
+        logger.info(f"Loaded {len(existing)} existing records from performance database")
+
+        # Step 2: Load raw recommendation files and merge new ones
+        raw_recs = self._load_raw_recommendations()
+        new_count = 0
+        for rec in raw_recs:
+            key = f"{rec.get('ticker')}|{rec.get('discovery_date')}"
+            if key not in existing:
+                existing[key] = rec
+                new_count += 1
+
+        if not existing:
             logger.info("No recommendations found to track.")
             return
 
-        # Filter to only track open positions
+        if new_count > 0:
+            logger.info(f"Added {new_count} new recommendations")
+
+        all_recs = list(existing.values())
         open_recs = [r for r in all_recs if r.get("status") != "closed"]
         logger.info(f"Tracking {len(open_recs)} open positions (out of {len(all_recs)} total)...")
 
-        # Update performance
+        # Step 3: Update prices for open positions
         today = datetime.now().strftime("%Y-%m-%d")
         updated_count = 0
 
@@ -67,13 +113,10 @@ class DiscoveryAnalytics:
             discovery_date = rec.get("discovery_date")
             entry_price = rec.get("entry_price")
 
-            # Skip if already closed or missing data
             if rec.get("status") == "closed" or not all([ticker, discovery_date, entry_price]):
                 continue
 
             try:
-                # Get current price
-                # We interpret this import here to avoid circular dependency if this class is imported early
                 from tradingagents.dataflows.y_finance import get_stock_price
 
                 current_price = get_stock_price(ticker, curr_date=today)
@@ -81,18 +124,16 @@ class DiscoveryAnalytics:
                 if current_price is None:
                     continue
 
-                # Calculate metrics
                 rec_date = datetime.strptime(discovery_date, "%Y-%m-%d")
                 days_held = (datetime.now() - rec_date).days
                 return_pct = ((current_price - entry_price) / entry_price) * 100
 
-                # Update
                 rec["current_price"] = current_price
                 rec["return_pct"] = round(return_pct, 2)
                 rec["days_held"] = days_held
                 rec["last_updated"] = today
 
-                # Capture specific time periods (1d, 7d, 30d)
+                # Capture milestone returns (only once, at the first eligible run)
                 if days_held >= 1 and "return_1d" not in rec:
                     rec["return_1d"] = round(return_pct, 2)
                     rec["win_1d"] = return_pct > 0
@@ -109,11 +150,11 @@ class DiscoveryAnalytics:
                 updated_count += 1
 
             except Exception:
-                # Silently skip errors to not interrupt discovery
                 pass
 
-        if updated_count > 0:
-            logger.info(f"Updated {updated_count} positions")
+        # Step 4: Always save — even if no price updates, the merge may have added new recs
+        if updated_count > 0 or new_count > 0:
+            logger.info(f"Updated {updated_count} positions, {new_count} new recs")
             self._save_performance_db(all_recs)
         else:
             logger.info("No updates needed")
@@ -148,6 +189,35 @@ class DiscoveryAnalytics:
 
         logger.info("💾 Updated performance database and statistics")
 
+    @staticmethod
+    def _normalize_strategy(name: str) -> str:
+        """Normalize strategy names to snake_case canonical form.
+
+        Merges duplicates like 'Momentum' / 'momentum', 'Insider Play' / 'insider_buying'.
+        """
+        import re
+
+        if not name:
+            return "unknown"
+
+        # Lowercase and replace separators with underscore
+        normalized = name.strip().lower()
+        normalized = re.sub(r"[\s/]+", "_", normalized)
+        # Collapse multiple underscores
+        normalized = re.sub(r"_+", "_", normalized).strip("_")
+
+        # Map known aliases to canonical names
+        aliases = {
+            "insider_play": "insider_buying",
+            "earnings_play": "earnings_calendar",
+            "contrarian_value": "contrarian_value",
+            "news_catalyst": "news_catalyst",
+            "volume_accumulation": "volume_accumulation",
+            "momentum_hype": "momentum",
+            "momentum_hype_short_squeeze": "short_squeeze",
+        }
+        return aliases.get(normalized, normalized)
+
     def calculate_statistics(self, recommendations: list) -> dict:
         """Calculate aggregate statistics from historical performance."""
         stats = {
@@ -158,12 +228,9 @@ class DiscoveryAnalytics:
             "overall_30d": {"count": 0, "wins": 0, "avg_return": 0},
         }
 
-        # Calculate by strategy
-        for rec in recommendations:
-            strategy = rec.get("strategy_match", "unknown")
-
-            if strategy not in stats["by_strategy"]:
-                stats["by_strategy"][strategy] = {
+        def _get_strategy_bucket(strategy_name):
+            if strategy_name not in stats["by_strategy"]:
+                stats["by_strategy"][strategy_name] = {
                     "count": 0,
                     "wins_1d": 0,
                     "losses_1d": 0,
@@ -175,45 +242,53 @@ class DiscoveryAnalytics:
                     "avg_return_7d": 0,
                     "avg_return_30d": 0,
                 }
+            return stats["by_strategy"][strategy_name]
 
-            stats["by_strategy"][strategy]["count"] += 1
+        # Calculate by strategy
+        for rec in recommendations:
+            strategy = self._normalize_strategy(rec.get("strategy_match", "unknown"))
+            bucket = _get_strategy_bucket(strategy)
+            bucket["count"] += 1
 
             # 1-day stats
             if "return_1d" in rec:
                 stats["overall_1d"]["count"] += 1
+                bucket["avg_return_1d"] += rec["return_1d"]
                 if rec.get("win_1d"):
                     stats["overall_1d"]["wins"] += 1
-                    stats["by_strategy"][strategy]["wins_1d"] += 1
+                    bucket["wins_1d"] += 1
                 else:
-                    stats["by_strategy"][strategy]["losses_1d"] += 1
+                    bucket["losses_1d"] += 1
                 stats["overall_1d"]["avg_return"] += rec["return_1d"]
 
             # 7-day stats
             if "return_7d" in rec:
                 stats["overall_7d"]["count"] += 1
+                bucket["avg_return_7d"] += rec["return_7d"]
                 if rec.get("win_7d"):
                     stats["overall_7d"]["wins"] += 1
-                    stats["by_strategy"][strategy]["wins_7d"] += 1
+                    bucket["wins_7d"] += 1
                 else:
-                    stats["by_strategy"][strategy]["losses_7d"] += 1
+                    bucket["losses_7d"] += 1
                 stats["overall_7d"]["avg_return"] += rec["return_7d"]
 
             # 30-day stats
             if "return_30d" in rec:
                 stats["overall_30d"]["count"] += 1
+                bucket["avg_return_30d"] += rec["return_30d"]
                 if rec.get("win_30d"):
                     stats["overall_30d"]["wins"] += 1
-                    stats["by_strategy"][strategy]["wins_30d"] += 1
+                    bucket["wins_30d"] += 1
                 else:
-                    stats["by_strategy"][strategy]["losses_30d"] += 1
+                    bucket["losses_30d"] += 1
                 stats["overall_30d"]["avg_return"] += rec["return_30d"]
 
-        # Calculate averages and win rates
+        # Calculate overall averages and win rates
         self._calculate_metric_averages(stats["overall_1d"])
         self._calculate_metric_averages(stats["overall_7d"])
         self._calculate_metric_averages(stats["overall_30d"])
 
-        # Calculate per-strategy stats
+        # Calculate per-strategy win rates and avg returns
         for strategy, data in stats["by_strategy"].items():
             total_1d = data["wins_1d"] + data["losses_1d"]
             total_7d = data["wins_7d"] + data["losses_7d"]
@@ -221,12 +296,15 @@ class DiscoveryAnalytics:
 
             if total_1d > 0:
                 data["win_rate_1d"] = round((data["wins_1d"] / total_1d) * 100, 1)
+                data["avg_return_1d"] = round(data["avg_return_1d"] / total_1d, 2)
 
             if total_7d > 0:
                 data["win_rate_7d"] = round((data["wins_7d"] / total_7d) * 100, 1)
+                data["avg_return_7d"] = round(data["avg_return_7d"] / total_7d, 2)
 
             if total_30d > 0:
                 data["win_rate_30d"] = round((data["wins_30d"] / total_30d) * 100, 1)
+                data["avg_return_30d"] = round(data["avg_return_30d"] / total_30d, 2)
 
         return stats
 

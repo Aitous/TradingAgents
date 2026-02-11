@@ -1,21 +1,23 @@
 """
 Main Streamlit app entry point for the Trading Agents Dashboard.
 
-This module sets up the dashboard page configuration, sidebar navigation,
-and routing to different pages based on user selection.
+Dark terminal-inspired trading interface with sidebar navigation.
 """
+
+from datetime import datetime
 
 import streamlit as st
 
 from tradingagents.ui import pages
+from tradingagents.ui.theme import COLORS, GLOBAL_CSS
 from tradingagents.ui.utils import load_quick_stats
 
 
 def setup_page_config():
     """Configure the Streamlit page settings."""
     st.set_page_config(
-        page_title="Trading Agents Dashboard",
-        page_icon="📊",
+        page_title="Trading Agents",
+        page_icon="",
         layout="wide",
         initial_sidebar_state="expanded",
     )
@@ -24,46 +26,101 @@ def setup_page_config():
 def render_sidebar():
     """Render the sidebar with navigation and quick stats."""
     with st.sidebar:
-        st.title("Trading Agents")
+        # Brand header
+        st.markdown(
+            f"""
+            <div style="padding:0.5rem 0 1.25rem 0;">
+                <div style="font-family:'JetBrains Mono',monospace;font-size:1.15rem;
+                    font-weight:700;color:{COLORS['text_primary']};letter-spacing:-0.03em;">
+                    TRADING<span style="color:{COLORS['green']};">AGENTS</span>
+                </div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:0.65rem;
+                    color:{COLORS['text_muted']};margin-top:0.15rem;">
+                    v2.0 &mdash; {datetime.now().strftime('%b %d, %Y')}
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        st.markdown(
+            f"""<div style="height:1px;background:{COLORS['border']};
+                margin-bottom:1rem;"></div>""",
+            unsafe_allow_html=True,
+        )
 
         # Navigation
-        st.markdown("### Navigation")
         page = st.radio(
-            "Select a page:",
-            options=["Home", "Today's Picks", "Portfolio", "Performance", "Settings"],
+            "Navigation",
+            options=["Overview", "Signals", "Portfolio", "Performance", "Config"],
             label_visibility="collapsed",
         )
 
-        st.markdown("---")
+        st.markdown(
+            f"""<div style="height:1px;background:{COLORS['border']};
+                margin:1rem 0;"></div>""",
+            unsafe_allow_html=True,
+        )
 
-        # Quick stats section
-        st.markdown("### Quick Stats")
+        # Quick stats
         try:
             open_positions, win_rate = load_quick_stats()
-
-            col1, col2 = st.columns(2)
-            with col1:
-                st.metric("Open Positions", open_positions)
-            with col2:
-                st.metric("Win Rate", f"{win_rate:.1f}%")
-        except Exception as e:
-            st.warning(f"Could not load quick stats: {str(e)}")
+            st.markdown(
+                f"""
+                <div style="padding:0.75rem;background:{COLORS['bg_card']};
+                    border:1px solid {COLORS['border']};border-radius:8px;">
+                    <div style="font-family:'DM Sans',sans-serif;font-size:0.65rem;
+                        font-weight:600;text-transform:uppercase;letter-spacing:0.06em;
+                        color:{COLORS['text_muted']};margin-bottom:0.75rem;">
+                        Quick Stats
+                    </div>
+                    <div style="display:flex;justify-content:space-between;
+                        align-items:flex-end;">
+                        <div>
+                            <div style="font-family:'JetBrains Mono',monospace;
+                                font-size:1.3rem;font-weight:700;
+                                color:{COLORS['text_primary']};">
+                                {open_positions}
+                            </div>
+                            <div style="font-family:'DM Sans',sans-serif;
+                                font-size:0.65rem;color:{COLORS['text_muted']};">
+                                Open
+                            </div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div style="font-family:'JetBrains Mono',monospace;
+                                font-size:1.3rem;font-weight:700;
+                                color:{COLORS['green'] if win_rate >= 50 else COLORS['red']};">
+                                {win_rate:.0f}%
+                            </div>
+                            <div style="font-family:'DM Sans',sans-serif;
+                                font-size:0.65rem;color:{COLORS['text_muted']};">
+                                Win Rate
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+        except Exception:
+            pass
 
         return page
 
 
 def route_page(page):
     """Route to the appropriate page based on selection."""
-    if page == "Home":
-        pages.home.render()
-    elif page == "Today's Picks":
-        pages.todays_picks.render()
-    elif page == "Portfolio":
-        pages.portfolio.render()
-    elif page == "Performance":
-        pages.performance.render()
-    elif page == "Settings":
-        pages.settings.render()
+    page_map = {
+        "Overview": pages.home,
+        "Signals": pages.todays_picks,
+        "Portfolio": pages.portfolio,
+        "Performance": pages.performance,
+        "Config": pages.settings,
+    }
+    module = page_map.get(page)
+    if module:
+        module.render()
     else:
         st.error(f"Unknown page: {page}")
 
@@ -72,17 +129,8 @@ def main():
     """Main entry point for the Streamlit app."""
     setup_page_config()
 
-    # Custom CSS for better styling
-    st.markdown(
-        """
-    <style>
-    .main {
-        padding: 2rem;
-    }
-    </style>
-    """,
-        unsafe_allow_html=True,
-    )
+    # Inject global theme CSS
+    st.markdown(GLOBAL_CSS, unsafe_allow_html=True)
 
     # Render sidebar and get selected page
     selected_page = render_sidebar()

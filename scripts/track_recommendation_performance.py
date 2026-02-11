@@ -29,30 +29,73 @@ logger = get_logger(__name__)
 
 
 def load_recommendations() -> List[Dict[str, Any]]:
-    """Load all historical recommendations from the recommendations directory."""
+    """Load all historical recommendations, preferring the performance database.
+
+    The performance database preserves accumulated return data (return_1d,
+    return_7d, win_1d, etc.) across runs.  Raw date files are only used to
+    pick up new recommendations not yet in the database.
+    """
     recommendations_dir = "data/recommendations"
     if not os.path.exists(recommendations_dir):
         logger.warning(f"No recommendations directory found at {recommendations_dir}")
         return []
 
-    all_recs = []
-    pattern = os.path.join(recommendations_dir, "*.json")
+    # Step 1: Load existing accumulated data from the performance database
+    existing: Dict[str, Dict[str, Any]] = {}
+    db_path = os.path.join(recommendations_dir, "performance_database.json")
+    if os.path.exists(db_path):
+        try:
+            with open(db_path, "r") as f:
+                db = json.load(f)
+            for recs in db.get("recommendations_by_date", {}).values():
+                if isinstance(recs, list):
+                    for rec in recs:
+                        key = f"{rec.get('ticker')}|{rec.get('discovery_date')}"
+                        existing[key] = rec
+            logger.info(f"Loaded {len(existing)} records from performance database")
+        except Exception as e:
+            logger.error(f"Error loading performance database: {e}")
 
-    for filepath in glob.glob(pattern):
+    # Step 2: Scan raw date files for any new recommendations
+    new_count = 0
+    for filepath in glob.glob(os.path.join(recommendations_dir, "*.json")):
+        basename = os.path.basename(filepath)
+        if basename in ("performance_database.json", "statistics.json"):
+            continue
         try:
             with open(filepath, "r") as f:
                 data = json.load(f)
-                # Each file contains recommendations from one discovery run
-                recs = data.get("recommendations", [])
-                run_date = data.get("date", os.path.basename(filepath).replace(".json", ""))
-
-                for rec in recs:
-                    rec["discovery_date"] = run_date
-                    all_recs.append(rec)
+            recs = data.get("recommendations", [])
+            run_date = data.get("date", basename.replace(".json", ""))
+            for rec in recs:
+                rec["discovery_date"] = run_date
+                key = f"{rec.get('ticker')}|{run_date}"
+                if key not in existing:
+                    existing[key] = rec
+                    new_count += 1
         except Exception as e:
             logger.error(f"Error loading {filepath}: {e}")
 
-    return all_recs
+    if new_count:
+        logger.info(f"Merged {new_count} new recommendations from raw files")
+
+    return list(existing.values())
+
+
+def _parse_price(raw) -> float | None:
+    """Extract a numeric price from get_stock_price output.
+
+    The function may return a float directly or a markdown string like
+    "**Current Price**: $123.45".  Handle both cases.
+    """
+    if raw is None:
+        return None
+    if isinstance(raw, (int, float)):
+        return float(raw)
+    import re
+
+    m = re.search(r"\$([0-9,.]+)", str(raw))
+    return float(m.group(1).replace(",", "")) if m else None
 
 
 def update_performance(recommendations: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
@@ -67,52 +110,37 @@ def update_performance(recommendations: List[Dict[str, Any]]) -> List[Dict[str, 
         if not all([ticker, discovery_date, entry_price]):
             continue
 
-        # Skip if already marked as closed
         if rec.get("status") == "closed":
             continue
 
         try:
-            # Get current price
-            current_price_data = get_stock_price(ticker, curr_date=today)
-
-            # Parse the price from the response (it returns a markdown report)
-            # Format is typically: "**Current Price**: $XXX.XX"
-            import re
-
-            price_match = re.search(r"\$([0-9,.]+)", current_price_data)
-            if price_match:
-                current_price = float(price_match.group(1).replace(",", ""))
-            else:
-                logger.warning(f"Could not parse price for {ticker}")
+            current_price = _parse_price(get_stock_price(ticker, curr_date=today))
+            if current_price is None:
+                logger.warning(f"Could not get price for {ticker}")
                 continue
 
-            # Calculate days since recommendation
             rec_date = datetime.strptime(discovery_date, "%Y-%m-%d")
             days_held = (datetime.now() - rec_date).days
-
-            # Calculate return
             return_pct = ((current_price - entry_price) / entry_price) * 100
 
-            # Update metrics
             rec["current_price"] = current_price
             rec["return_pct"] = round(return_pct, 2)
             rec["days_held"] = days_held
             rec["last_updated"] = today
 
-            # Check specific time periods
+            # Capture milestone returns (only once per milestone)
+            if days_held >= 1 and "return_1d" not in rec:
+                rec["return_1d"] = round(return_pct, 2)
+                rec["win_1d"] = return_pct > 0
+
             if days_held >= 7 and "return_7d" not in rec:
                 rec["return_7d"] = round(return_pct, 2)
+                rec["win_7d"] = return_pct > 0
 
             if days_held >= 30 and "return_30d" not in rec:
                 rec["return_30d"] = round(return_pct, 2)
-                rec["status"] = "closed"  # Mark as complete after 30 days
-
-            # Determine win/loss for completed periods
-            if "return_7d" in rec:
-                rec["win_7d"] = rec["return_7d"] > 0
-
-            if "return_30d" in rec:
-                rec["win_30d"] = rec["return_30d"] > 0
+                rec["win_30d"] = return_pct > 0
+                rec["status"] = "closed"
 
             logger.info(
                 f"✓ {ticker}: Entry ${entry_price:.2f} → Current ${current_price:.2f} ({return_pct:+.1f}%) [{days_held}d]"
@@ -149,80 +177,15 @@ def save_performance_database(recommendations: List[Dict[str, Any]]):
 
 
 def calculate_statistics(recommendations: List[Dict[str, Any]]) -> Dict[str, Any]:
-    """Calculate aggregate statistics from historical performance."""
-    stats = {
-        "total_recommendations": len(recommendations),
-        "by_strategy": {},
-        "overall_7d": {"count": 0, "wins": 0, "avg_return": 0},
-        "overall_30d": {"count": 0, "wins": 0, "avg_return": 0},
-    }
+    """Calculate aggregate statistics from historical performance.
 
-    # Calculate by strategy
-    for rec in recommendations:
-        strategy = rec.get("strategy_match", "unknown")
+    Delegates to DiscoveryAnalytics.calculate_statistics so there is a single
+    source of truth for strategy normalization and metric calculation.
+    """
+    from tradingagents.dataflows.discovery.analytics import DiscoveryAnalytics
 
-        if strategy not in stats["by_strategy"]:
-            stats["by_strategy"][strategy] = {
-                "count": 0,
-                "wins_7d": 0,
-                "losses_7d": 0,
-                "wins_30d": 0,
-                "losses_30d": 0,
-                "avg_return_7d": 0,
-                "avg_return_30d": 0,
-            }
-
-        stats["by_strategy"][strategy]["count"] += 1
-
-        # 7-day stats
-        if "return_7d" in rec:
-            stats["overall_7d"]["count"] += 1
-            if rec.get("win_7d"):
-                stats["overall_7d"]["wins"] += 1
-                stats["by_strategy"][strategy]["wins_7d"] += 1
-            else:
-                stats["by_strategy"][strategy]["losses_7d"] += 1
-            stats["overall_7d"]["avg_return"] += rec["return_7d"]
-
-        # 30-day stats
-        if "return_30d" in rec:
-            stats["overall_30d"]["count"] += 1
-            if rec.get("win_30d"):
-                stats["overall_30d"]["wins"] += 1
-                stats["by_strategy"][strategy]["wins_30d"] += 1
-            else:
-                stats["by_strategy"][strategy]["losses_30d"] += 1
-            stats["overall_30d"]["avg_return"] += rec["return_30d"]
-
-    # Calculate averages and win rates
-    if stats["overall_7d"]["count"] > 0:
-        stats["overall_7d"]["win_rate"] = round(
-            (stats["overall_7d"]["wins"] / stats["overall_7d"]["count"]) * 100, 1
-        )
-        stats["overall_7d"]["avg_return"] = round(
-            stats["overall_7d"]["avg_return"] / stats["overall_7d"]["count"], 2
-        )
-
-    if stats["overall_30d"]["count"] > 0:
-        stats["overall_30d"]["win_rate"] = round(
-            (stats["overall_30d"]["wins"] / stats["overall_30d"]["count"]) * 100, 1
-        )
-        stats["overall_30d"]["avg_return"] = round(
-            stats["overall_30d"]["avg_return"] / stats["overall_30d"]["count"], 2
-        )
-
-    # Calculate per-strategy stats
-    for strategy, data in stats["by_strategy"].items():
-        total_7d = data["wins_7d"] + data["losses_7d"]
-        total_30d = data["wins_30d"] + data["losses_30d"]
-
-        if total_7d > 0:
-            data["win_rate_7d"] = round((data["wins_7d"] / total_7d) * 100, 1)
-
-        if total_30d > 0:
-            data["win_rate_30d"] = round((data["wins_30d"] / total_30d) * 100, 1)
-
-    return stats
+    analytics = DiscoveryAnalytics()
+    return analytics.calculate_statistics(recommendations)
 
 
 def print_statistics(stats: Dict[str, Any]):

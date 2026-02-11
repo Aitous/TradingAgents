@@ -1,4 +1,9 @@
-"""Today's recommendations."""
+"""
+Signals page — today's recommendation cards with rich visual indicators.
+
+Each signal is displayed as a data-dense card with strategy badges,
+confidence bars, and expandable thesis sections.
+"""
 
 from datetime import datetime
 
@@ -6,6 +11,7 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
+from tradingagents.ui.theme import COLORS, get_plotly_template, page_header, signal_card
 from tradingagents.ui.utils import load_recommendations
 
 
@@ -17,13 +23,8 @@ def _load_price_history(ticker: str, period: str) -> pd.DataFrame:
         return pd.DataFrame()
 
     data = download_history(
-        ticker,
-        period=period,
-        interval="1d",
-        auto_adjust=True,
-        progress=False,
+        ticker, period=period, interval="1d", auto_adjust=True, progress=False,
     )
-
     if data is None or data.empty:
         return pd.DataFrame()
 
@@ -42,100 +43,116 @@ def _load_price_history(ticker: str, period: str) -> pd.DataFrame:
 
 
 def render():
-    st.title("📋 Today's Recommendations")
-
     today = datetime.now().strftime("%Y-%m-%d")
     recommendations, meta = load_recommendations(today, return_meta=True)
+    display_date = meta.get("date", today) if meta else today
+
+    st.markdown(
+        page_header("Signals", f"Recommendations for {display_date}"),
+        unsafe_allow_html=True,
+    )
 
     if not recommendations:
-        st.warning(f"No recommendations for {today}")
+        st.warning(f"No recommendations for {today}.")
         return
 
     if meta.get("is_fallback") and meta.get("date"):
-        st.info(f"No recommendations for {today}. Showing latest from {meta['date']}.")
+        st.info(f"Showing latest signals from **{meta['date']}** (none for today).")
 
-    show_charts = st.checkbox("Show price charts", value=True)
-    chart_window = st.selectbox(
-        "Price history window",
-        ["1mo", "3mo", "6mo", "1y"],
-        index=1,
-    )
-
-    # Filters
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        pipelines = list(
-            set(
-                (r.get("pipeline") or r.get("strategy_match") or "unknown") for r in recommendations
-            )
-        )
-        pipeline_filter = st.multiselect("Pipeline", pipelines, default=pipelines)
-    with col2:
-        min_confidence = st.slider("Min Confidence", 1, 10, 7)
-    with col3:
-        min_score = st.slider("Min Score", 0, 100, 70)
+    # ---- Controls row ----
+    ctrl_cols = st.columns([1, 1, 1, 1])
+    with ctrl_cols[0]:
+        pipelines = sorted(set(
+            (r.get("pipeline") or r.get("strategy_match") or "unknown") for r in recommendations
+        ))
+        pipeline_filter = st.multiselect("Strategy", pipelines, default=pipelines)
+    with ctrl_cols[1]:
+        min_confidence = st.slider("Min Confidence", 1, 10, 1)
+    with ctrl_cols[2]:
+        min_score = st.slider("Min Score", 0, 100, 0)
+    with ctrl_cols[3]:
+        show_charts = st.checkbox("Price Charts", value=False)
+        if show_charts:
+            chart_window = st.selectbox("Window", ["1mo", "3mo", "6mo", "1y"], index=1)
+        else:
+            chart_window = "3mo"
 
     # Apply filters
     filtered = [
-        r
-        for r in recommendations
+        r for r in recommendations
         if (r.get("pipeline") or r.get("strategy_match") or "unknown") in pipeline_filter
         and r.get("confidence", 0) >= min_confidence
         and r.get("final_score", 0) >= min_score
     ]
 
-    st.write(f"**{len(filtered)}** of **{len(recommendations)}** recommendations")
+    # ---- Summary bar ----
+    st.markdown(
+        f"""
+        <div style="display:flex;justify-content:space-between;align-items:center;
+            padding:0.5rem 0;margin-bottom:0.75rem;border-bottom:1px solid {COLORS['border']};">
+            <span style="font-family:'JetBrains Mono',monospace;font-size:0.8rem;
+                color:{COLORS['text_secondary']};">
+                Showing <span style="color:{COLORS['text_primary']};font-weight:700;">
+                {len(filtered)}</span> of {len(recommendations)} signals
+            </span>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:0.7rem;
+                color:{COLORS['text_muted']};">
+                {display_date}
+            </span>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
-    # Display recommendations
-    for i, rec in enumerate(filtered, 1):
-        ticker = rec.get("ticker", "UNKNOWN")
-        score = rec.get("final_score", 0)
-        confidence = rec.get("confidence", 0)
-        pipeline = (rec.get("pipeline") or rec.get("strategy_match") or "unknown").title()
-        scanner = rec.get("scanner") or rec.get("strategy_match") or "unknown"
-        entry_price = rec.get("entry_price")
-        current_price = rec.get("current_price")
+    # ---- Signal cards in 2-column grid ----
+    for i in range(0, len(filtered), 2):
+        cols = st.columns(2)
+        for j, col in enumerate(cols):
+            idx = i + j
+            if idx >= len(filtered):
+                break
+            rec = filtered[idx]
+            ticker = rec.get("ticker", "UNKNOWN")
+            rank = rec.get("rank", idx + 1)
+            score = rec.get("final_score", 0)
+            confidence = rec.get("confidence", 0)
+            strategy = (rec.get("pipeline") or rec.get("strategy_match") or "unknown").title()
+            entry_price = rec.get("entry_price", 0)
+            reason = rec.get("reason", "No thesis provided.")
 
-        with st.expander(
-            f"#{i} {ticker} - {rec.get('company_name', '')} (Score: {score}, Conf: {confidence}/10)"
-        ):
-            col1, col2 = st.columns([2, 1])
+            with col:
+                st.markdown(
+                    signal_card(rank, ticker, score, confidence, strategy, entry_price, reason),
+                    unsafe_allow_html=True,
+                )
 
-            with col1:
-                st.write(f"**Pipeline:** {pipeline}")
-                st.write(f"**Scanner/Strategy:** {scanner}")
-                if entry_price is not None:
-                    st.write(f"**Entry Price:** ${entry_price:.2f}")
-                if current_price is not None:
-                    st.write(f"**Current Price:** ${current_price:.2f}")
-                st.write(f"**Thesis:** {rec.get('reason', 'N/A')}")
                 if show_charts:
                     history = _load_price_history(ticker, chart_window)
-                    if history.empty:
-                        st.caption("Price history unavailable.")
-                    else:
-                        last_close = history["close"].iloc[-1]
-                        st.caption(f"Last close: ${last_close:.2f}")
-                        fig = px.line(
-                            history,
-                            x="date",
-                            y="close",
-                            title=None,
-                            labels={"date": "", "close": "Price"},
-                        )
-                        fig.update_traces(line=dict(color="#1f77b4", width=2))
-                        fig.update_layout(
-                            height=260,
-                            margin=dict(l=10, r=10, t=10, b=10),
-                            xaxis=dict(showgrid=False),
-                            yaxis=dict(showgrid=True, gridcolor="rgba(0,0,0,0.08)"),
-                            hovermode="x unified",
-                        )
-                        fig.update_yaxes(tickprefix="$")
-                        st.plotly_chart(fig, use_container_width=True)
+                    if not history.empty:
+                        template = get_plotly_template()
+                        fig = px.line(history, x="date", y="close", labels={"date": "", "close": "Price"})
 
-            with col2:
-                if st.button("✅ Enter Position", key=f"enter_{ticker}"):
-                    st.info("Position entry modal (TODO)")
-                if st.button("👀 Watch", key=f"watch_{ticker}"):
-                    st.success(f"Added {ticker} to watchlist")
+                        # Color line green if trending up, red if down
+                        first_close = history["close"].iloc[0]
+                        last_close = history["close"].iloc[-1]
+                        line_color = COLORS["green"] if last_close >= first_close else COLORS["red"]
+
+                        fig.update_traces(line=dict(color=line_color, width=1.5))
+                        fig.update_layout(
+                            **template,
+                            height=160,
+                            showlegend=False,
+                        )
+                        fig.update_layout(margin=dict(l=0, r=0, t=0, b=0))
+                        fig.update_xaxes(showticklabels=False, showgrid=False)
+                        fig.update_yaxes(showgrid=True, gridcolor="rgba(42,53,72,0.3)", tickprefix="$")
+                        st.plotly_chart(fig, width="stretch")
+
+                # Action buttons
+                btn_cols = st.columns(2)
+                with btn_cols[0]:
+                    if st.button("Enter Position", key=f"enter_{ticker}_{idx}"):
+                        st.info(f"Position entry for {ticker} (TODO)")
+                with btn_cols[1]:
+                    if st.button("Watchlist", key=f"watch_{ticker}_{idx}"):
+                        st.success(f"Added {ticker} to watchlist")
