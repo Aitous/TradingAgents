@@ -1,8 +1,8 @@
 {
-  "total_recommendations": 200,
+  "total_recommendations": 215,
   "by_strategy": {
     "momentum": {
-      "count": 92,
+      "count": 104,
       "wins_1d": 47,
       "losses_1d": 45,
       "wins_7d": 33,
@@ -16,7 +16,7 @@
       "win_rate_7d": 52.4
     },
     "volume_accumulation": {
-      "count": 2,
+      "count": 5,
       "wins_1d": 1,
       "losses_1d": 1,
       "wins_7d": 1,
