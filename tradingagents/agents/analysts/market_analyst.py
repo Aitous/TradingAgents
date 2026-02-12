@@ -1,32 +1,15 @@
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-import time
-import json
-from tradingagents.tools.generator import get_agent_tools
-from tradingagents.dataflows.config import get_config
+from tradingagents.agents.utils.agent_utils import create_analyst_node
+from tradingagents.agents.utils.prompt_templates import get_date_awareness_section
 
 
 def create_market_analyst(llm):
-
-    def market_analyst_node(state):
-        current_date = state["trade_date"]
-        ticker = state["company_of_interest"]
-        company_name = state["company_of_interest"]
-
-        tools = get_agent_tools("market")
-
-        system_message = """You are a Market Technical Analyst specializing in identifying actionable short-term trading signals through technical indicators.
+    def _build_prompt(ticker, current_date):
+        return f"""You are a Market Technical Analyst specializing in identifying actionable short-term trading signals through technical indicators.
 
 ## YOUR MISSION
 Analyze {ticker}'s technical setup and identify the 3-5 most relevant trading signals for short-term opportunities (days to weeks, not months).
 
-## CRITICAL: DATE AWARENESS
-**Current Analysis Date:** {current_date}
-**Instructions:**
-- Treat {current_date} as "TODAY" for all calculations.
-- "Last 6 months" means 6 months ending on {current_date}.
-- "Last week" means the 7 days ending on {current_date}.
-- Do NOT use 2024 or 2025 unless {current_date} is actually in that year.
-- When calling tools, ensure date parameters are relative to {current_date}.
+{get_date_awareness_section(current_date)}
 
 ## INDICATOR SELECTION FRAMEWORK
 
@@ -84,9 +67,13 @@ For each signal:
 | MACD | +2.1 | Bullish | Momentum strong | 1-2 weeks |
 | 50 SMA | $145 | Support | Trend intact if held | Ongoing |
 
+## CRITICAL: TOOL USAGE
+- ✅ DO call `get_indicators(symbol=ticker, curr_date=current_date)` ONCE
+  → This returns ALL indicators (RSI, MACD, Bollinger Bands, ATR, etc.) in one call
+- ❌ DO NOT try to pass `indicator="rsi"` parameter - the tool doesn't support that
+- ❌ DO NOT call get_indicators multiple times - one call gives you everything
+
 ## CRITICAL RULES
-- ❌ DO NOT try to pass specific indicators: `indicator="rsi"` (the tool gives you everything at once)
-- ✅ DO call `get_indicators(symbol=ticker, curr_date=current_date)` once to get all data
 - ❌ DO NOT say "trends are mixed" without specific examples
 - ✅ DO provide concrete signals with specific price levels and timeframes
 - ❌ DO NOT select redundant indicators (e.g., both close_50_sma and close_200_sma)
@@ -102,40 +89,4 @@ Available Indicators:
 
 Current date: {current_date} | Ticker: {ticker}"""
 
-        prompt = ChatPromptTemplate.from_messages(
-            [
-                (
-                    "system",
-                    "You are a helpful AI assistant, collaborating with other assistants."
-                    " Use the provided tools to progress towards answering the question."
-                    " If you are unable to fully answer, that's OK; another assistant with different tools"
-                    " will help where you left off. Execute what you can to make progress."
-                    " If you or any other assistant has the FINAL TRANSACTION PROPOSAL: **BUY/HOLD/SELL** or deliverable,"
-                    " prefix your response with FINAL TRANSACTION PROPOSAL: **BUY/HOLD/SELL** so the team knows to stop."
-                    " You have access to the following tools: {tool_names}.\n{system_message}"
-                    "For your reference, the current date is {current_date}. The company we want to look at is {ticker}",
-                ),
-                MessagesPlaceholder(variable_name="messages"),
-            ]
-        )
-
-        prompt = prompt.partial(system_message=system_message)
-        prompt = prompt.partial(tool_names=", ".join([tool.name for tool in tools]))
-        prompt = prompt.partial(current_date=current_date)
-        prompt = prompt.partial(ticker=ticker)
-
-        chain = prompt | llm.bind_tools(tools)
-
-        result = chain.invoke(state["messages"])
-
-        report = ""
-
-        if len(result.tool_calls) == 0:
-            report = result.content
-       
-        return {
-            "messages": [result],
-            "market_report": report,
-        }
-
-    return market_analyst_node
+    return create_analyst_node(llm, "market", "market_report", _build_prompt)

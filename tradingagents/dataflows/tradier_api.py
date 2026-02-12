@@ -4,9 +4,12 @@ Detects unusual options activity indicating smart money positioning
 """
 
 import os
-import requests
-from datetime import datetime
 from typing import Annotated, List
+
+import requests
+
+from tradingagents.config import config
+from tradingagents.dataflows.market_data_utils import format_markdown_table
 
 
 def get_unusual_options_activity(
@@ -33,9 +36,10 @@ def get_unusual_options_activity(
     Returns:
         Formatted markdown report of unusual options activity
     """
-    api_key = os.getenv("TRADIER_API_KEY")
-    if not api_key:
-        return "Error: TRADIER_API_KEY not set in environment variables. Get a free key at https://tradier.com"
+    try:
+        api_key = config.validate_key("tradier_api_key", "Tradier")
+    except ValueError as e:
+        return f"Error: {str(e)}"
 
     if not tickers or len(tickers) == 0:
         return "Error: No tickers provided. This function analyzes options activity for specific tickers found by other discovery methods."
@@ -45,10 +49,7 @@ def get_unusual_options_activity(
     # Use production: https://api.tradier.com
     base_url = os.getenv("TRADIER_BASE_URL", "https://sandbox.tradier.com")
 
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Accept": "application/json"
-    }
+    headers = {"Authorization": f"Bearer {api_key}", "Accept": "application/json"}
 
     try:
         # Strategy: Analyze options activity for provided tickers
@@ -63,7 +64,7 @@ def get_unusual_options_activity(
                 params = {
                     "symbol": ticker,
                     "expiration": "",  # Will get nearest expiration
-                    "greeks": "true"
+                    "greeks": "true",
                 }
 
                 response = requests.get(options_url, headers=headers, params=params, timeout=10)
@@ -96,7 +97,9 @@ def get_unusual_options_activity(
                         total_volume = total_call_volume + total_put_volume
 
                         if total_volume > 10000:  # Significant volume threshold
-                            put_call_ratio = total_put_volume / total_call_volume if total_call_volume > 0 else 0
+                            put_call_ratio = (
+                                total_put_volume / total_call_volume if total_call_volume > 0 else 0
+                            )
 
                             # Unusual signals:
                             # - Very low P/C ratio (<0.7) = Bullish (heavy call buying)
@@ -111,46 +114,52 @@ def get_unusual_options_activity(
                             elif total_volume > 50000:
                                 signal = "high_volume"
 
-                            unusual_activity.append({
-                                "ticker": ticker,
-                                "total_volume": total_volume,
-                                "call_volume": total_call_volume,
-                                "put_volume": total_put_volume,
-                                "put_call_ratio": put_call_ratio,
-                                "signal": signal,
-                                "call_oi": total_call_oi,
-                                "put_oi": total_put_oi,
-                            })
+                            unusual_activity.append(
+                                {
+                                    "ticker": ticker,
+                                    "total_volume": total_volume,
+                                    "call_volume": total_call_volume,
+                                    "put_volume": total_put_volume,
+                                    "put_call_ratio": put_call_ratio,
+                                    "signal": signal,
+                                    "call_oi": total_call_oi,
+                                    "put_oi": total_put_oi,
+                                }
+                            )
 
-            except Exception as e:
+            except Exception:
                 # Skip this ticker if there's an error
                 continue
 
         # Sort by total volume (highest first)
-        sorted_activity = sorted(
-            unusual_activity,
-            key=lambda x: x["total_volume"],
-            reverse=True
-        )[:top_n]
+        sorted_activity = sorted(unusual_activity, key=lambda x: x["total_volume"], reverse=True)[
+            :top_n
+        ]
 
         # Format output
         if not sorted_activity:
             return "No unusual options activity detected"
 
         report = f"# Unusual Options Activity - {date or 'Latest'}\n\n"
-        report += f"**Criteria**: P/C Ratio extremes (<0.7 bullish, >1.5 bearish), High volume (>50k)\n\n"
+        report += (
+            "**Criteria**: P/C Ratio extremes (<0.7 bullish, >1.5 bearish), High volume (>50k)\n\n"
+        )
         report += f"**Found**: {len(sorted_activity)} stocks with notable options activity\n\n"
         report += "## Top Options Activity\n\n"
-        report += "| Ticker | Total Volume | Call Vol | Put Vol | P/C Ratio | Signal |\n"
-        report += "|--------|--------------|----------|---------|-----------|--------|\n"
-
-        for activity in sorted_activity:
-            report += f"| {activity['ticker']} | "
-            report += f"{activity['total_volume']:,} | "
-            report += f"{activity['call_volume']:,} | "
-            report += f"{activity['put_volume']:,} | "
-            report += f"{activity['put_call_ratio']:.2f} | "
-            report += f"{activity['signal']} |\n"
+        report += format_markdown_table(
+            ["Ticker", "Total Volume", "Call Vol", "Put Vol", "P/C Ratio", "Signal"],
+            [
+                [
+                    a["ticker"],
+                    f"{a['total_volume']:,}",
+                    f"{a['call_volume']:,}",
+                    f"{a['put_volume']:,}",
+                    f"{a['put_call_ratio']:.2f}",
+                    a["signal"],
+                ]
+                for a in sorted_activity
+            ],
+        )
 
         report += "\n\n## Signal Definitions\n\n"
         report += "- **bullish_calls**: P/C ratio <0.7 - Heavy call buying, bullish positioning\n"

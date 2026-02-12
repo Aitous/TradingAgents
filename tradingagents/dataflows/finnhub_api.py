@@ -1,50 +1,54 @@
-import os
+from datetime import datetime
+from typing import Annotated, Any, Dict
+
 import finnhub
-from typing import Annotated
 from dotenv import load_dotenv
+
+from tradingagents.config import config
+from tradingagents.utils.logger import get_logger
 
 load_dotenv()
 
+logger = get_logger(__name__)
+
+
 def get_finnhub_client():
     """Get authenticated Finnhub client."""
-    api_key = os.getenv("FINNHUB_API_KEY")
-    if not api_key:
-        raise ValueError("FINNHUB_API_KEY not found in environment variables.")
+    api_key = config.validate_key("finnhub_api_key", "Finnhub")
     return finnhub.Client(api_key=api_key)
 
-def get_recommendation_trends(
-    ticker: Annotated[str, "Ticker symbol of the company"]
-) -> str:
+
+def get_recommendation_trends(ticker: Annotated[str, "Ticker symbol of the company"]) -> str:
     """
     Get analyst recommendation trends for a stock.
     Shows the distribution of buy/hold/sell recommendations over time.
-    
+
     Args:
         ticker: Stock ticker symbol (e.g., "AAPL", "TSLA")
-        
+
     Returns:
         str: Formatted report of recommendation trends
     """
     try:
         client = get_finnhub_client()
         data = client.recommendation_trends(ticker.upper())
-        
+
         if not data:
             return f"No recommendation trends data found for {ticker}"
-        
+
         # Format the response
         result = f"## Analyst Recommendation Trends for {ticker.upper()}\n\n"
-        
+
         for entry in data:
-            period = entry.get('period', 'N/A')
-            strong_buy = entry.get('strongBuy', 0)
-            buy = entry.get('buy', 0)
-            hold = entry.get('hold', 0)
-            sell = entry.get('sell', 0)
-            strong_sell = entry.get('strongSell', 0)
-            
+            period = entry.get("period", "N/A")
+            strong_buy = entry.get("strongBuy", 0)
+            buy = entry.get("buy", 0)
+            hold = entry.get("hold", 0)
+            sell = entry.get("sell", 0)
+            strong_sell = entry.get("strongSell", 0)
+
             total = strong_buy + buy + hold + sell + strong_sell
-            
+
             result += f"### {period}\n"
             result += f"- **Strong Buy**: {strong_buy}\n"
             result += f"- **Buy**: {buy}\n"
@@ -52,32 +56,37 @@ def get_recommendation_trends(
             result += f"- **Sell**: {sell}\n"
             result += f"- **Strong Sell**: {strong_sell}\n"
             result += f"- **Total Analysts**: {total}\n\n"
-            
+
             # Calculate sentiment
             if total > 0:
                 bullish_pct = ((strong_buy + buy) / total) * 100
                 bearish_pct = ((sell + strong_sell) / total) * 100
-                result += f"**Sentiment**: {bullish_pct:.1f}% Bullish, {bearish_pct:.1f}% Bearish\n\n"
-        
+                result += (
+                    f"**Sentiment**: {bullish_pct:.1f}% Bullish, {bearish_pct:.1f}% Bearish\n\n"
+                )
+
         return result
-        
+
     except Exception as e:
         return f"Error fetching recommendation trends for {ticker}: {str(e)}"
 
 
 def get_earnings_calendar(
     from_date: Annotated[str, "Start date in yyyy-mm-dd format"],
-    to_date: Annotated[str, "End date in yyyy-mm-dd format"]
-) -> str:
+    to_date: Annotated[str, "End date in yyyy-mm-dd format"],
+    return_structured: Annotated[bool, "Return list of dicts instead of markdown"] = False,
+):
     """
     Get earnings calendar for stocks with upcoming earnings announcements.
 
     Args:
         from_date: Start date in yyyy-mm-dd format
         to_date: End date in yyyy-mm-dd format
+        return_structured: If True, returns list of earnings dicts instead of markdown
 
     Returns:
-        str: Formatted report of upcoming earnings
+        If return_structured=True: list of earnings dicts with symbol, date, epsEstimate, etc.
+        If return_structured=False: Formatted markdown report
     """
     try:
         client = get_finnhub_client()
@@ -85,16 +94,24 @@ def get_earnings_calendar(
             _from=from_date,
             to=to_date,
             symbol="",  # Empty string returns all stocks
-            international=False
+            international=False,
         )
 
-        if not data or 'earningsCalendar' not in data:
+        if not data or "earningsCalendar" not in data:
+            if return_structured:
+                return []
             return f"No earnings data found for period {from_date} to {to_date}"
 
-        earnings = data['earningsCalendar']
+        earnings = data["earningsCalendar"]
 
         if not earnings:
+            if return_structured:
+                return []
             return f"No earnings scheduled between {from_date} and {to_date}"
+
+        # Return structured data if requested
+        if return_structured:
+            return earnings
 
         # Format the response
         result = f"## Earnings Calendar ({from_date} to {to_date})\n\n"
@@ -103,7 +120,7 @@ def get_earnings_calendar(
         # Group by date
         by_date = {}
         for entry in earnings:
-            date = entry.get('date', 'Unknown')
+            date = entry.get("date", "Unknown")
             if date not in by_date:
                 by_date[date] = []
             by_date[date].append(entry)
@@ -113,28 +130,44 @@ def get_earnings_calendar(
             result += f"### {date}\n\n"
 
             for entry in by_date[date]:
-                symbol = entry.get('symbol', 'N/A')
-                eps_estimate = entry.get('epsEstimate', 'N/A')
-                eps_actual = entry.get('epsActual', 'N/A')
-                revenue_estimate = entry.get('revenueEstimate', 'N/A')
-                revenue_actual = entry.get('revenueActual', 'N/A')
-                hour = entry.get('hour', 'N/A')
+                symbol = entry.get("symbol", "N/A")
+                eps_estimate = entry.get("epsEstimate", "N/A")
+                eps_actual = entry.get("epsActual", "N/A")
+                revenue_estimate = entry.get("revenueEstimate", "N/A")
+                revenue_actual = entry.get("revenueActual", "N/A")
+                hour = entry.get("hour", "N/A")
 
                 result += f"**{symbol}**"
-                if hour != 'N/A':
+                if hour != "N/A":
                     result += f" ({hour})"
                 result += "\n"
 
-                if eps_estimate != 'N/A':
-                    result += f"  - EPS Estimate: ${eps_estimate:.2f}" if isinstance(eps_estimate, (int, float)) else f"  - EPS Estimate: {eps_estimate}"
-                    if eps_actual != 'N/A':
-                        result += f" | Actual: ${eps_actual:.2f}" if isinstance(eps_actual, (int, float)) else f" | Actual: {eps_actual}"
+                if eps_estimate != "N/A":
+                    result += (
+                        f"  - EPS Estimate: ${eps_estimate:.2f}"
+                        if isinstance(eps_estimate, (int, float))
+                        else f"  - EPS Estimate: {eps_estimate}"
+                    )
+                    if eps_actual != "N/A":
+                        result += (
+                            f" | Actual: ${eps_actual:.2f}"
+                            if isinstance(eps_actual, (int, float))
+                            else f" | Actual: {eps_actual}"
+                        )
                     result += "\n"
 
-                if revenue_estimate != 'N/A':
-                    result += f"  - Revenue Estimate: ${revenue_estimate:,.0f}M" if isinstance(revenue_estimate, (int, float)) else f"  - Revenue Estimate: {revenue_estimate}"
-                    if revenue_actual != 'N/A':
-                        result += f" | Actual: ${revenue_actual:,.0f}M" if isinstance(revenue_actual, (int, float)) else f" | Actual: {revenue_actual}"
+                if revenue_estimate != "N/A":
+                    result += (
+                        f"  - Revenue Estimate: ${revenue_estimate:,.0f}M"
+                        if isinstance(revenue_estimate, (int, float))
+                        else f"  - Revenue Estimate: {revenue_estimate}"
+                    )
+                    if revenue_actual != "N/A":
+                        result += (
+                            f" | Actual: ${revenue_actual:,.0f}M"
+                            if isinstance(revenue_actual, (int, float))
+                            else f" | Actual: {revenue_actual}"
+                        )
                     result += "\n"
 
                 result += "\n"
@@ -142,37 +175,104 @@ def get_earnings_calendar(
         return result
 
     except Exception as e:
+        if return_structured:
+            return []
         return f"Error fetching earnings calendar: {str(e)}"
+
+
+def get_ticker_earnings_estimate(
+    ticker: str,
+    from_date: str,
+    to_date: str,
+) -> Dict[str, Any]:
+    """
+    Get upcoming earnings estimate for a single ticker.
+
+    Returns dict with: has_upcoming_earnings, days_to_earnings,
+    eps_estimate, revenue_estimate, earnings_date, hour.
+    """
+    result: Dict[str, Any] = {
+        "has_upcoming_earnings": False,
+        "days_to_earnings": None,
+        "eps_estimate": None,
+        "revenue_estimate": None,
+        "earnings_date": None,
+        "hour": None,
+    }
+    try:
+        client = get_finnhub_client()
+        data = client.earnings_calendar(
+            _from=from_date,
+            to=to_date,
+            symbol=ticker.upper(),
+            international=False,
+        )
+        if not data or "earningsCalendar" not in data:
+            return result
+
+        earnings = data["earningsCalendar"]
+        if not earnings:
+            return result
+
+        # Take the nearest upcoming entry
+        entry = earnings[0]
+        earnings_date = entry.get("date")
+        if earnings_date:
+            try:
+                ed = datetime.strptime(earnings_date, "%Y-%m-%d")
+                fd = datetime.strptime(from_date, "%Y-%m-%d")
+                result["days_to_earnings"] = (ed - fd).days
+            except ValueError:
+                pass
+
+        result["has_upcoming_earnings"] = True
+        result["earnings_date"] = earnings_date
+        result["eps_estimate"] = entry.get("epsEstimate")
+        result["revenue_estimate"] = entry.get("revenueEstimate")
+        result["hour"] = entry.get("hour")
+        return result
+
+    except Exception as e:
+        logger.warning(f"Could not fetch earnings estimate for {ticker}: {e}")
+        return result
 
 
 def get_ipo_calendar(
     from_date: Annotated[str, "Start date in yyyy-mm-dd format"],
-    to_date: Annotated[str, "End date in yyyy-mm-dd format"]
-) -> str:
+    to_date: Annotated[str, "End date in yyyy-mm-dd format"],
+    return_structured: Annotated[bool, "Return list of dicts instead of markdown"] = False,
+):
     """
     Get IPO calendar for upcoming and recent initial public offerings.
 
     Args:
         from_date: Start date in yyyy-mm-dd format
         to_date: End date in yyyy-mm-dd format
+        return_structured: If True, returns list of IPO dicts instead of markdown
 
     Returns:
-        str: Formatted report of IPOs
+        If return_structured=True: list of IPO dicts with symbol, name, date, etc.
+        If return_structured=False: Formatted markdown report
     """
     try:
         client = get_finnhub_client()
-        data = client.ipo_calendar(
-            _from=from_date,
-            to=to_date
-        )
+        data = client.ipo_calendar(_from=from_date, to=to_date)
 
-        if not data or 'ipoCalendar' not in data:
+        if not data or "ipoCalendar" not in data:
+            if return_structured:
+                return []
             return f"No IPO data found for period {from_date} to {to_date}"
 
-        ipos = data['ipoCalendar']
+        ipos = data["ipoCalendar"]
 
         if not ipos:
+            if return_structured:
+                return []
             return f"No IPOs scheduled between {from_date} and {to_date}"
+
+        # Return structured data if requested
+        if return_structured:
+            return ipos
 
         # Format the response
         result = f"## IPO Calendar ({from_date} to {to_date})\n\n"
@@ -181,7 +281,7 @@ def get_ipo_calendar(
         # Group by date
         by_date = {}
         for entry in ipos:
-            date = entry.get('date', 'Unknown')
+            date = entry.get("date", "Unknown")
             if date not in by_date:
                 by_date[date] = []
             by_date[date].append(entry)
@@ -191,29 +291,39 @@ def get_ipo_calendar(
             result += f"### {date}\n\n"
 
             for entry in by_date[date]:
-                symbol = entry.get('symbol', 'N/A')
-                name = entry.get('name', 'N/A')
-                exchange = entry.get('exchange', 'N/A')
-                price = entry.get('price', 'N/A')
-                shares = entry.get('numberOfShares', 'N/A')
-                total_shares = entry.get('totalSharesValue', 'N/A')
-                status = entry.get('status', 'N/A')
+                symbol = entry.get("symbol", "N/A")
+                name = entry.get("name", "N/A")
+                exchange = entry.get("exchange", "N/A")
+                price = entry.get("price", "N/A")
+                shares = entry.get("numberOfShares", "N/A")
+                total_shares = entry.get("totalSharesValue", "N/A")
+                status = entry.get("status", "N/A")
 
                 result += f"**{symbol}** - {name}\n"
                 result += f"  - Exchange: {exchange}\n"
 
-                if price != 'N/A':
+                if price != "N/A":
                     result += f"  - Price: ${price}\n"
 
-                if shares != 'N/A':
-                    result += f"  - Shares Offered: {shares:,}\n" if isinstance(shares, (int, float)) else f"  - Shares Offered: {shares}\n"
+                if shares != "N/A":
+                    result += (
+                        f"  - Shares Offered: {shares:,}\n"
+                        if isinstance(shares, (int, float))
+                        else f"  - Shares Offered: {shares}\n"
+                    )
 
-                if total_shares != 'N/A':
-                    result += f"  - Total Value: ${total_shares:,.0f}M\n" if isinstance(total_shares, (int, float)) else f"  - Total Value: {total_shares}\n"
+                if total_shares != "N/A":
+                    result += (
+                        f"  - Total Value: ${total_shares:,.0f}M\n"
+                        if isinstance(total_shares, (int, float))
+                        else f"  - Total Value: {total_shares}\n"
+                    )
 
                 result += f"  - Status: {status}\n\n"
 
         return result
 
     except Exception as e:
+        if return_structured:
+            return []
         return f"Error fetching IPO calendar: {str(e)}"

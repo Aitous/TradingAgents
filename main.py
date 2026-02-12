@@ -1,10 +1,13 @@
-from tradingagents.graph.trading_graph import TradingAgentsGraph
-from tradingagents.default_config import DEFAULT_CONFIG
-
 from dotenv import load_dotenv
+
+from tradingagents.default_config import DEFAULT_CONFIG
+from tradingagents.graph.trading_graph import TradingAgentsGraph
+from tradingagents.utils.logger import get_logger
 
 # Load environment variables from .env file
 load_dotenv()
+
+logger = get_logger(__name__)
 
 # Create a custom config
 config = DEFAULT_CONFIG.copy()
@@ -25,7 +28,7 @@ ta = TradingAgentsGraph(debug=True, config=config)
 
 # forward propagate
 _, decision = ta.propagate("NVDA", "2024-05-10")
-print(decision)
+logger.info(decision)
 
 # Memorize mistakes and reflect
 # ta.reflect_and_remember(1000) # parameter is the position returns

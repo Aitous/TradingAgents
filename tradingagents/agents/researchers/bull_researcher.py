@@ -1,6 +1,5 @@
-from langchain_core.messages import AIMessage
-import time
-import json
+from tradingagents.agents.utils.agent_utils import format_memory_context
+from tradingagents.agents.utils.llm_utils import create_and_invoke_chain, parse_llm_response
 
 
 def create_bull_researcher(llm, memory):
@@ -15,23 +14,7 @@ def create_bull_researcher(llm, memory):
         news_report = state["news_report"]
         fundamentals_report = state["fundamentals_report"]
 
-        curr_situation = f"{market_research_report}\n\n{sentiment_report}\n\n{news_report}\n\n{fundamentals_report}"
-        
-        if memory:
-            past_memories = memory.get_memories(curr_situation, n_matches=2)
-        else:
-            past_memories = []
-
-
-        if past_memories:
-            past_memory_str = "### Past Lessons Applied\\n**Reflections from Similar Situations:**\\n"
-            for i, rec in enumerate(past_memories, 1):
-                past_memory_str += rec["recommendation"] + "\\n\\n"
-            past_memory_str += "\\n\\n**How I'm Using These Lessons:**\\n"
-            past_memory_str += "- [Specific adjustment based on past mistake/success]\\n"
-            past_memory_str += "- [Impact on current conviction level]\\n"
-        else:
-            past_memory_str = ""  # Don't include placeholder when no memories
+        past_memory_str = format_memory_context(memory, state)
 
         prompt = f"""You are the Bull Analyst making the case for a SHORT-TERM BUY (1-2 weeks).
 
@@ -48,12 +31,15 @@ For each:
 - **Point:** [Bullish argument]
 - **Evidence:** [Specific data - numbers, dates]
 - **Short-Term Relevance:** [Impact in next 1-2 weeks]
+- **Strength Score:** [1-10] (10 = very strong, 5 = moderate, 1 = weak)
+- **Confidence:** [High/Med/Low] based on data quality
 
 ### Bear Rebuttals
 For EACH Bear concern:
 - **Bear Says:** "[Quote]"
 - **Counter:** [Data-driven refutation]
 - **Why Wrong:** [Flaw in their logic]
+- **Rebuttal Strength:** [Strong/Moderate/Weak] - does your counter fully address their concern?
 
 ### Risks I Acknowledge
 - [1-2 legitimate risks]
@@ -83,14 +69,27 @@ Fundamentals: {fundamentals_report}
 **DEBATE:**
 History: {history}
 Last Bear: {current_response}
-""" + (f"""
-**LESSONS:** {past_memory_str}
+""" + (
+            f"""
+## PAST LESSONS APPLICATION (Review BEFORE making arguments)
+{past_memory_str}
 
-Apply past lessons: How are you adjusting based on similar situations?""" if past_memory_str else "")
+**For each relevant past lesson:**
+1. **Similar Situation:** [What was similar?]
+2. **What Went Wrong/Right:** [Specific outcome]
+3. **How I'm Adjusting:** [Specific change to current argument based on lesson]
+4. **Impact on Conviction:** [Increases/Decreases/No change to conviction level]
 
-        response = llm.invoke(prompt)
+Apply past lessons: How are you adjusting based on similar situations?"""
+            if past_memory_str
+            else ""
+        )
 
-        argument = f"Bull Analyst: {response.content}"
+        response = create_and_invoke_chain(llm, [], prompt, [])
+
+        response_text = parse_llm_response(response.content)
+
+        argument = f"Bull Analyst: {response_text}"
 
         new_investment_debate_state = {
             "history": history + "\n" + argument,

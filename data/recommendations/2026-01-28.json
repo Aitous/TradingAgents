@@ -1,0 +1,116 @@
+{
+  "date": "2026-01-28",
+  "llm_provider": "google",
+  "recommendations": [
+    {
+      "ticker": "HYMC",
+      "rank": 1,
+      "strategy_match": "Insider Play",
+      "final_score": 10.5,
+      "confidence": 9,
+      "reason": "Exceptional insider strength with 10% owner Eric Sprott purchasing an aggregate of $84.9M over 3 months, including $5M on Jan 28. High-grade silver intercepts at the Nevada mine serve as a massive fundamental catalyst. Technicals show a very strong uptrend (ADX 67.9) with price 151% above the 50-SMA. Strategy: Momentum trade with entry at $51.50, targeting $60 resistance, with a tight stop at $47.50 (1.5x ATR).",
+      "entry_price": 51.689998626708984,
+      "discovery_date": "2026-01-28",
+      "status": "open"
+    },
+    {
+      "ticker": "META",
+      "rank": 2,
+      "strategy_match": "Momentum",
+      "final_score": 10.3,
+      "confidence": 10,
+      "reason": "Q4 earnings beat with $59.89B revenue and aggressive 2026 guidance. Social sentiment is highly positive following AI spend updates. MACD bullish crossover confirmed on Jan 28. Options flow is decisively bullish with a volume P/C ratio of 0.588 and unusual call activity at the $785 Jan 30 strikes (9.06x Vol/OI). Strategy: Buy on current strength targeting $710 (Fib high), stop at $645.",
+      "entry_price": 668.72998046875,
+      "discovery_date": "2026-01-28",
+      "status": "open"
+    },
+    {
+      "ticker": "MIRM",
+      "rank": 3,
+      "strategy_match": "Insider Play",
+      "final_score": 10.0,
+      "confidence": 9,
+      "reason": "Following the Bluejay Therapeutics acquisition, Director Heron Patrick bought $8.9M in stock. Analysts (HC Wainwright) raised the target to $130 (28% upside). Technicals are in a strong uptrend with price above 20 EMA and a RSI of 77.5 indicating high demand. Strategy: Entry at $100.85, targeting $130, with a stop at $93.40 (1.5x ATR).",
+      "entry_price": 100.8499984741211,
+      "discovery_date": "2026-01-28",
+      "status": "open"
+    },
+    {
+      "ticker": "LRCX",
+      "rank": 4,
+      "strategy_match": "Momentum",
+      "final_score": 9.6,
+      "confidence": 9,
+      "reason": "Fiscal Q2 revenue of $5.34B with record operating margins driven by AI data center demand. Bullish MACD crossover on Jan 28 and technical breakout above the 50-SMA (+33.4% position). Analyst sentiment is 73.7% bullish. Strategy: Ride semiconductor equipment tailwinds toward $265 target, stop loss at $223.",
+      "entry_price": 239.5800018310547,
+      "discovery_date": "2026-01-28",
+      "status": "open"
+    },
+    {
+      "ticker": "AMAT",
+      "rank": 5,
+      "strategy_match": "Momentum",
+      "final_score": 9.5,
+      "confidence": 8,
+      "reason": "Upgraded by Mizuho and Deutsche Bank on accelerating wafer equipment spending. Technicals show a strong uptrend with a Golden Cross (50-SMA crossing 200-SMA) and MACD bullish crossover. Options volume P/C ratio is 0.698, confirming call-side dominance. Strategy: Enter on pullbacks to $330, targeting $360 resistance, stop at $315.",
+      "entry_price": 336.75,
+      "discovery_date": "2026-01-28",
+      "status": "open"
+    },
+    {
+      "ticker": "WDC",
+      "rank": 6,
+      "strategy_match": "Momentum",
+      "final_score": 9.3,
+      "confidence": 8,
+      "reason": "AI-driven memory shortage is improving margins, pushing shares to all-time highs. RSI 73.1 indicates overbought conditions but strong ADX (57.8) suggests trend persistence. Options activity shows massive unusual call volume at $285 Feb 6 strikes (220x OI). Strategy: Momentum play targeting $300 ahead of earnings, stop loss at $231.",
+      "entry_price": 279.70001220703125,
+      "discovery_date": "2026-01-28",
+      "status": "open"
+    },
+    {
+      "ticker": "WRB",
+      "rank": 7,
+      "strategy_match": "Insider Play",
+      "final_score": 9.2,
+      "confidence": 9,
+      "reason": "Mitsui Sumitomo Insurance (10% owner) has purchased an aggregate of $413.5M in the last 3 months, including $69M recently. Q4 results beat revenue forecasts. While technicals are in a downtrend, the sheer scale of insider accumulation suggests a fundamental floor. Strategy: Value-entry at $67.67, targeting $78 (52-week high), stop at $64.50.",
+      "entry_price": 67.66999816894531,
+      "discovery_date": "2026-01-28",
+      "status": "open"
+    },
+    {
+      "ticker": "VIAV",
+      "rank": 8,
+      "strategy_match": "Momentum",
+      "final_score": 8.3,
+      "confidence": 8,
+      "reason": "Earnings reported at the high end of guidance with an upbeat Q3 outlook. Technicals show a strong uptrend and price 11.4% above VWAP. Options flow is highly bullish with a volume P/C ratio of 0.071 and heavy call volume at $24 Feb strikes (16.8x OI). Strategy: Entry at $21, target $24, stop at $19.47.",
+      "entry_price": 21.030000686645508,
+      "discovery_date": "2026-01-28",
+      "status": "open"
+    },
+    {
+      "ticker": "VSAT",
+      "rank": 9,
+      "strategy_match": "Momentum",
+      "final_score": 8.3,
+      "confidence": 8,
+      "reason": "Needham Buy rating and $45 target based on Viasat-3 satellite deployment which will triple global capacity. Strong technical uptrend (price +41% from 200-SMA). Unusual options activity at $42 Feb 20 calls (17.7x Vol/OI). Strategy: Ride breakout above 52-week high toward $55, stop at $41.",
+      "entry_price": 47.58000183105469,
+      "discovery_date": "2026-01-28",
+      "status": "open"
+    },
+    {
+      "ticker": "INTC",
+      "rank": 10,
+      "strategy_match": "Momentum",
+      "final_score": 8.2,
+      "confidence": 7,
+      "reason": "Shares jumped 11% on reports of Apple/Nvidia foundry interest for 2028. CFO David Zinsner purchased $250k in stock at $42.50 to signal a dip-buy opportunity. Bullish options positioning (OI P/C 0.688) confirms market confidence in the pivot. Strategy: Long position at $48.78, target $54.60, stop at $43.70.",
+      "entry_price": 48.779998779296875,
+      "discovery_date": "2026-01-28",
+      "status": "open"
+    }
+  ]
+}

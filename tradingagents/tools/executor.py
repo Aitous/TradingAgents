@@ -12,21 +12,24 @@ Key improvements over old system:
 - No dual registry systems
 """
 
-from typing import Any, Optional, List, Dict
-import logging
 import concurrent.futures
-from tradingagents.tools.registry import TOOL_REGISTRY, get_vendor_config, get_tool_metadata
+from typing import Any, Dict, List, Optional
 
-logger = logging.getLogger(__name__)
+from tradingagents.tools.registry import TOOL_REGISTRY, get_tool_metadata, get_vendor_config
+from tradingagents.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 class ToolExecutionError(Exception):
     """Raised when tool execution fails across all vendors."""
+
     pass
 
 
 class VendorNotFoundError(Exception):
     """Raised when no vendor implementation is found for a tool."""
+
     pass
 
 
@@ -72,7 +75,9 @@ def _execute_fallback(tool_name: str, vendor_config: Dict, *args, **kwargs) -> A
             continue
 
     # All vendors failed
-    error_summary = f"Tool '{tool_name}' failed with all vendors:\n" + "\n".join(f"  - {err}" for err in errors)
+    error_summary = f"Tool '{tool_name}' failed with all vendors:\n" + "\n".join(
+        f"  - {err}" for err in errors
+    )
     logger.error(error_summary)
     raise ToolExecutionError(error_summary)
 
@@ -101,7 +106,9 @@ def _execute_aggregate(tool_name: str, vendor_config: Dict, metadata: Dict, *arg
     # Get list of vendors to aggregate (default to all in priority list)
     vendors_to_aggregate = metadata.get("aggregate_vendors") or vendor_config["vendor_priority"]
 
-    logger.debug(f"Executing tool '{tool_name}' in aggregate mode with vendors: {vendors_to_aggregate}")
+    logger.debug(
+        f"Executing tool '{tool_name}' in aggregate mode with vendors: {vendors_to_aggregate}"
+    )
 
     results = []
     errors = []
@@ -116,17 +123,16 @@ def _execute_aggregate(tool_name: str, vendor_config: Dict, metadata: Dict, *arg
                 future = executor.submit(vendor_func, *args, **kwargs)
                 future_to_vendor[future] = vendor_name
             else:
-                logger.warning(f"Vendor '{vendor_name}' not found in vendors dict for tool '{tool_name}'")
+                logger.warning(
+                    f"Vendor '{vendor_name}' not found in vendors dict for tool '{tool_name}'"
+                )
 
         # Collect results as they complete
         for future in concurrent.futures.as_completed(future_to_vendor):
             vendor_name = future_to_vendor[future]
             try:
                 result = future.result()
-                results.append({
-                    "vendor": vendor_name,
-                    "data": result
-                })
+                results.append({"vendor": vendor_name, "data": result})
                 logger.debug(f"Tool '{tool_name}': vendor '{vendor_name}' succeeded")
             except Exception as e:
                 error_msg = f"Vendor '{vendor_name}' failed: {str(e)}"
@@ -135,7 +141,9 @@ def _execute_aggregate(tool_name: str, vendor_config: Dict, metadata: Dict, *arg
 
     # Check if we got any results
     if not results:
-        error_summary = f"Tool '{tool_name}' aggregate mode: all vendors failed:\n" + "\n".join(f"  - {err}" for err in errors)
+        error_summary = f"Tool '{tool_name}' aggregate mode: all vendors failed:\n" + "\n".join(
+            f"  - {err}" for err in errors
+        )
         logger.error(error_summary)
         raise ToolExecutionError(error_summary)
 
@@ -225,6 +233,7 @@ def list_available_vendors(tool_name: str) -> List[str]:
 # LEGACY COMPATIBILITY LAYER
 # ============================================================================
 
+
 def route_to_vendor(method: str, *args, **kwargs) -> Any:
     """Legacy compatibility function.
 
@@ -241,9 +250,7 @@ def route_to_vendor(method: str, *args, **kwargs) -> Any:
     Returns:
         Result from tool execution
     """
-    logger.warning(
-        f"route_to_vendor() is deprecated. Use execute_tool('{method}', ...) instead."
-    )
+    logger.warning(f"route_to_vendor() is deprecated. Use execute_tool('{method}', ...) instead.")
     return execute_tool(method, *args, **kwargs)
 
 
@@ -253,45 +260,47 @@ def route_to_vendor(method: str, *args, **kwargs) -> Any:
 
 if __name__ == "__main__":
     # Enable debug logging
+    import logging
+
     logging.basicConfig(level=logging.DEBUG)
 
-    print("=" * 70)
-    print("TOOL EXECUTOR - TESTING")
-    print("=" * 70)
+    logger.info("=" * 70)
+    logger.info("TOOL EXECUTOR - TESTING")
+    logger.info("=" * 70)
 
     # Test 1: List available vendors for each tool
-    print("\nAvailable vendors per tool:")
+    logger.info("Available vendors per tool:")
     from tradingagents.tools.registry import get_all_tools
 
     for tool_name in get_all_tools():
         vendors = list_available_vendors(tool_name)
-        print(f"  {tool_name}:")
-        print(f"    Primary: {vendors[0] if vendors else 'None'}")
+        logger.info(f"  {tool_name}:")
+        logger.info(f"    Primary: {vendors[0] if vendors else 'None'}")
         if len(vendors) > 1:
-            print(f"    Fallbacks: {', '.join(vendors[1:])}")
+            logger.info(f"    Fallbacks: {', '.join(vendors[1:])}")
 
     # Test 2: Show tool info
-    print("\nTool info examples:")
+    logger.info("Tool info examples:")
     for tool_name in ["get_stock_data", "get_news", "get_fundamentals"]:
         info = get_tool_info(tool_name)
         if info:
-            print(f"\n  {tool_name}:")
-            print(f"    Category: {info['category']}")
-            print(f"    Agents: {', '.join(info['agents']) if info['agents'] else 'None'}")
-            print(f"    Description: {info['description']}")
+            logger.info(f"  {tool_name}:")
+            logger.info(f"    Category: {info['category']}")
+            logger.info(f"    Agents: {', '.join(info['agents']) if info['agents'] else 'None'}")
+            logger.info(f"    Description: {info['description']}")
 
     # Test 3: Validate registry
-    print("\nValidating registry:")
+    logger.info("Validating registry:")
     from tradingagents.tools.registry import validate_registry
 
     issues = validate_registry()
     if issues:
-        print("  ⚠️  Registry validation issues found:")
+        logger.warning("⚠️ Registry validation issues found:")
         for issue in issues[:10]:  # Show first 10
-            print(f"    - {issue}")
+            logger.warning(f"  - {issue}")
         if len(issues) > 10:
-            print(f"    ... and {len(issues) - 10} more")
+            logger.warning(f"  ... and {len(issues) - 10} more")
     else:
-        print("  ✅ Registry is valid!")
+        logger.info("✅ Registry is valid!")
 
-    print("\n" + "=" * 70)
+    logger.info("=" * 70)

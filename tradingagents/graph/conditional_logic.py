@@ -11,37 +11,29 @@ class ConditionalLogic:
         self.max_debate_rounds = max_debate_rounds
         self.max_risk_discuss_rounds = max_risk_discuss_rounds
 
-    def should_continue_market(self, state: AgentState):
-        """Determine if market analysis should continue."""
+    def _should_continue_tools(self, state: AgentState, tool_call_indicator: str, clear_msg: str):
+        """Helper to determine if analysis should continue with tools."""
         messages = state["messages"]
         last_message = messages[-1]
         if last_message.tool_calls:
-            return "tools_market"
-        return "Msg Clear Market"
+            return tool_call_indicator
+        return clear_msg
+
+    def should_continue_market(self, state: AgentState):
+        """Determine if market analysis should continue."""
+        return self._should_continue_tools(state, "tools_market", "Msg Clear Market")
 
     def should_continue_social(self, state: AgentState):
         """Determine if social media analysis should continue."""
-        messages = state["messages"]
-        last_message = messages[-1]
-        if last_message.tool_calls:
-            return "tools_social"
-        return "Msg Clear Social"
+        return self._should_continue_tools(state, "tools_social", "Msg Clear Social")
 
     def should_continue_news(self, state: AgentState):
         """Determine if news analysis should continue."""
-        messages = state["messages"]
-        last_message = messages[-1]
-        if last_message.tool_calls:
-            return "tools_news"
-        return "Msg Clear News"
+        return self._should_continue_tools(state, "tools_news", "Msg Clear News")
 
     def should_continue_fundamentals(self, state: AgentState):
         """Determine if fundamentals analysis should continue."""
-        messages = state["messages"]
-        last_message = messages[-1]
-        if last_message.tool_calls:
-            return "tools_fundamentals"
-        return "Msg Clear Fundamentals"
+        return self._should_continue_tools(state, "tools_fundamentals", "Msg Clear Fundamentals")
 
     def should_continue_debate(self, state: AgentState) -> str:
         """Determine if debate should continue."""

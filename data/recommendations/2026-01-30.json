@@ -1,0 +1,116 @@
+{
+  "date": "2026-01-30",
+  "llm_provider": "google",
+  "recommendations": [
+    {
+      "ticker": "META",
+      "rank": 1,
+      "strategy_match": "Momentum",
+      "final_score": 11.0,
+      "confidence": 9,
+      "reason": "Explosive Q4 earnings beat ($8.88 EPS vs expected) paired with a massive $6B AI infrastructure deal with Corning. Technicals show a bullish MACD crossover and a strong break above the 200-SMA. Options flow is highly supportive with a Volume P/C ratio of 0.548 and unusual activity at the $717.50 strike. Target $790 with a stop at $705.",
+      "entry_price": 718.7100219726562,
+      "discovery_date": "2026-01-30",
+      "status": "open"
+    },
+    {
+      "ticker": "INOD",
+      "rank": 2,
+      "strategy_match": "Momentum",
+      "final_score": 10.3,
+      "confidence": 8,
+      "reason": "Strategic partnership with Palantir Technologies for AI training data is a transformational catalyst. Technical indicators show a bullish stochastic crossover and price action holding above the 20 EMA. Options volume is heavily skewed toward calls (P/C 0.305) with high IV suggesting a volatility squeeze. Target $75 near-term with a tight stop at $56.",
+      "entry_price": 56.5,
+      "discovery_date": "2026-01-30",
+      "status": "open"
+    },
+    {
+      "ticker": "USAR",
+      "rank": 3,
+      "strategy_match": "Insider Play",
+      "final_score": 9.8,
+      "confidence": 8,
+      "reason": "Chairman Michael Blitzer purchased $2.14M in shares directly following a $1.6B LOI for federal funding under the CHIPS Act. While volatile, the ADX of 49.2 indicates a very strong trend developing. Options volume P/C ratio of 0.342 confirms bullish sentiment. Entry near $22.50, targeting $35, stop at $17.50.",
+      "entry_price": 22.950000762939453,
+      "discovery_date": "2026-01-30",
+      "status": "open"
+    },
+    {
+      "ticker": "CSCO",
+      "rank": 4,
+      "strategy_match": "Momentum",
+      "final_score": 9.5,
+      "confidence": 9,
+      "reason": "Upgraded to a $100 price target by Evercore ISI on the back of a new AI-driven networking hardware refresh cycle. Bullish MACD crossover confirmed on January 30. Options positioning is significantly bullish with a P/C volume ratio of 0.431 and heavy interest in $79 calls. Target $85-90 with a stop at $75.",
+      "entry_price": 78.58000183105469,
+      "discovery_date": "2026-01-30",
+      "status": "open"
+    },
+    {
+      "ticker": "ALGM",
+      "rank": 5,
+      "strategy_match": "Momentum",
+      "final_score": 9.5,
+      "confidence": 8,
+      "reason": "Reported record data center sales and strong automotive growth. TD Cowen raised target to $45. Despite an overbought RSI of 76.6, the ADX of 47 suggests trend durability. Extremely bullish options flow with a 0.116 volume P/C ratio confirms institutional accumulation. Target $44, stop at $35.",
+      "entry_price": 37.064998626708984,
+      "discovery_date": "2026-01-30",
+      "status": "open"
+    },
+    {
+      "ticker": "NVDA",
+      "rank": 6,
+      "strategy_match": "Momentum",
+      "final_score": 9.5,
+      "confidence": 9,
+      "reason": "Strong sector sentiment following record earnings from peers and a fresh bullish MACD crossover. Price remains above the 50 and 200 SMA. Options volume P/C ratio of 0.617 remains bullish with high open interest supporting a move toward $210 resistance. Entry near $192, stop at $180.",
+      "entry_price": 192.41000366210938,
+      "discovery_date": "2026-01-30",
+      "status": "open"
+    },
+    {
+      "ticker": "UA",
+      "rank": 7,
+      "strategy_match": "Insider Play",
+      "final_score": 9.5,
+      "confidence": 8,
+      "reason": "Prem Watsa (Fairfax) significantly increased his position by $16.4M in January. The stock shows a very strong trend (ADX 56.2) and is trading above the 20, 50, and 200 EMA. This turnaround play is gaining momentum ahead of February results. Target $7.50, stop at $5.30.",
+      "entry_price": 5.989999771118164,
+      "discovery_date": "2026-01-30",
+      "status": "open"
+    },
+    {
+      "ticker": "WS",
+      "rank": 8,
+      "strategy_match": "Momentum",
+      "final_score": 9.0,
+      "confidence": 7,
+      "reason": "Director Scott Kelly bought $273k in shares as the company integrates its $2.4B Kl\u00f6ckner acquisition. Bullish MACD crossover and price above 20 EMA signal continued upside. Volume divergence suggests accumulation. Target $47 based on analyst targets, stop at $37.",
+      "entry_price": 39.91999816894531,
+      "discovery_date": "2026-01-30",
+      "status": "open"
+    },
+    {
+      "ticker": "WDC",
+      "rank": 9,
+      "strategy_match": "Momentum",
+      "final_score": 8.7,
+      "confidence": 8,
+      "reason": "Q2 earnings beat driven by booming AI storage demand. Despite a 9.8% pullback today, technicals remain in a strong uptrend above the 50 SMA. Bullish volume P/C ratio of 0.53 suggests the dip is being bought by institutional traders. Target recovery to $280, stop at $220.",
+      "entry_price": 248.30999755859375,
+      "discovery_date": "2026-01-30",
+      "status": "open"
+    },
+    {
+      "ticker": "AVGO",
+      "rank": 10,
+      "strategy_match": "Contrarian Value",
+      "final_score": 8.5,
+      "confidence": 8,
+      "reason": "Upgraded by Wells Fargo as a core AI infrastructure provider. While the technical trend is currently weak, the options volume P/C ratio of 0.572 shows heavy institutional call buying at near-term strikes ($335-$342). Target recovery to $370, stop at $310.",
+      "entry_price": 331.6199951171875,
+      "discovery_date": "2026-01-30",
+      "status": "open"
+    }
+  ]
+}

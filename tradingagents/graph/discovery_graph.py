@@ -1,663 +1,681 @@
-from typing import Dict, Any, List
-import re
-from langgraph.graph import StateGraph, END
-from langchain_core.messages import SystemMessage, HumanMessage
+from __future__ import annotations
+
+from threading import Lock
+from typing import TYPE_CHECKING, Any, Dict, List
+
+from langgraph.graph import END, StateGraph
 
 from tradingagents.agents.utils.agent_states import DiscoveryState
-from tradingagents.agents.utils.agent_utils import (
-    get_news,
-    get_insider_transactions,
-    get_fundamentals,
-    get_indicators
-)
+from tradingagents.dataflows.discovery.discovery_config import DiscoveryConfig
+from tradingagents.dataflows.discovery.scanner_registry import SCANNER_REGISTRY
+from tradingagents.dataflows.discovery.utils import PRIORITY_ORDER, Priority, serialize_for_log
 from tradingagents.tools.executor import execute_tool
-from tradingagents.schemas import TickerList, TickerContextList, MarketMovers, ThemeList
+from tradingagents.utils.logger import get_logger
+
+logger = get_logger(__name__)
+
+if TYPE_CHECKING:
+    from tradingagents.graph.price_charts import PriceChartBuilder
+
 
 class DiscoveryGraph:
-    def __init__(self, config=None):
+    """
+    Discovery Graph for finding investment opportunities.
+
+    Orchestrates the discovery workflow: scanning -> filtering -> ranking.
+    Uses the modular scanner registry to discover candidates.
+    """
+
+    # Node names
+    NODE_SCANNER = "scanner"
+    NODE_FILTER = "filter"
+    NODE_RANKER = "ranker"
+
+    # Source types
+    SOURCE_UNKNOWN = "unknown"
+
+    def __init__(self, config: Dict[str, Any] = None):
         """
         Initialize Discovery Graph.
-        
+
         Args:
-            config: Configuration dictionary
+            config: Configuration dictionary containing:
+                - llm_provider: LLM provider (e.g., 'openai', 'google')
+                - discovery: Discovery-specific settings
+                - results_dir: Directory for saving results
         """
-        from langchain_openai import ChatOpenAI
-        from langchain_anthropic import ChatAnthropic
-        from langchain_google_genai import ChatGoogleGenerativeAI
-        import os
-        
         self.config = config or {}
-        
-        # Initialize LLMs using the same pattern as TradingAgentsGraph
-        if self.config["llm_provider"] == "openai" or self.config["llm_provider"] == "ollama" or self.config["llm_provider"] == "openrouter":
-            self.deep_thinking_llm = ChatOpenAI(model=self.config["deep_think_llm"], base_url=self.config["backend_url"])
-            self.quick_thinking_llm = ChatOpenAI(model=self.config["quick_think_llm"], base_url=self.config["backend_url"])
-        elif self.config["llm_provider"] == "anthropic":
-            self.deep_thinking_llm = ChatAnthropic(model=self.config["deep_think_llm"], base_url=self.config["backend_url"])
-            self.quick_thinking_llm = ChatAnthropic(model=self.config["quick_think_llm"], base_url=self.config["backend_url"])
-        elif self.config["llm_provider"] == "google":
-            # Explicitly pass Google API key from environment
-            google_api_key = os.getenv("GOOGLE_API_KEY")
-            if not google_api_key:
-                raise ValueError("GOOGLE_API_KEY environment variable not set. Please add it to your .env file.")
-            self.deep_thinking_llm = ChatGoogleGenerativeAI(model=self.config["deep_think_llm"], google_api_key=google_api_key)
-            self.quick_thinking_llm = ChatGoogleGenerativeAI(model=self.config["quick_think_llm"], google_api_key=google_api_key)
-        else:
-            raise ValueError(f"Unsupported LLM provider: {self.config['llm_provider']}")
-        
-        # Extract discovery settings with defaults
-        discovery_config = self.config.get("discovery", {})
-        self.reddit_trending_limit = discovery_config.get("reddit_trending_limit", 15)
-        self.market_movers_limit = discovery_config.get("market_movers_limit", 10)
-        self.max_candidates_to_analyze = discovery_config.get("max_candidates_to_analyze", 10)
-        self.news_lookback_days = discovery_config.get("news_lookback_days", 7)
-        self.final_recommendations = discovery_config.get("final_recommendations", 3)
-        
+        self._tool_logs_lock = Lock()  # Thread-safe state mutation lock
+
+        # Load scanner modules to trigger registration
+        from tradingagents.dataflows.discovery import scanners
+
+        _ = scanners  # Ensure scanners module is loaded
+
+        # Initialize LLMs
+        from tradingagents.utils.llm_factory import create_llms
+
+        try:
+            self.deep_thinking_llm, self.quick_thinking_llm = create_llms(self.config)
+        except Exception as e:
+            logger.error(f"Failed to initialize LLMs: {e}")
+            raise ValueError(
+                f"LLM initialization failed. Check your config's llm_provider setting. Error: {e}"
+            ) from e
+
+        # Load typed discovery configuration
+        self.dc = DiscoveryConfig.from_config(self.config)
+
+        # Alias frequently-used config for downstream compatibility
+        self.log_tool_calls = self.dc.logging.log_tool_calls
+        self.log_tool_calls_console = self.dc.logging.log_tool_calls_console
+        self.tool_log_max_chars = self.dc.logging.tool_log_max_chars
+        self.tool_log_exclude = set(self.dc.logging.tool_log_exclude)
+
         # Store run directory for saving results
         self.run_dir = self.config.get("discovery_run_dir", None)
-        
+
+        # Initialize Analytics
+        from tradingagents.dataflows.discovery.analytics import DiscoveryAnalytics
+
+        self.analytics = DiscoveryAnalytics(data_dir="data")
+
         self.graph = self._create_graph()
 
-    def _log_tool_call(self, tool_logs: list, node: str, step_name: str, tool_name: str, params: dict, output: str, context: str = ""):
-        """Log a tool call with metadata for debugging and analysis."""
+    def _log_tool_call(
+        self,
+        tool_logs: List[Dict[str, Any]],
+        node: str,
+        step_name: str,
+        tool_name: str,
+        params: Dict[str, Any],
+        output: Any,
+        context: str = "",
+        error: str = "",
+    ) -> Dict[str, Any]:
+        """
+        Log a tool call with metadata for debugging and analysis.
+
+        Args:
+            tool_logs: List to append the log entry to
+            node: Name of the graph node executing the tool
+            step_name: Description of the current step
+            tool_name: Name of the tool being executed
+            params: Parameters passed to the tool
+            output: Output from the tool execution
+            context: Additional context for the log entry
+            error: Error message if tool execution failed
+
+        Returns:
+            The created log entry dictionary
+        """
         from datetime import datetime
-        
+
+        output_str = serialize_for_log(output)
+
         log_entry = {
             "timestamp": datetime.now().isoformat(),
+            "type": "tool",
             "node": node,
             "step": step_name,
             "tool": tool_name,
             "parameters": params,
             "context": context,
-            "output": output[:1000] + "..." if len(output) > 1000 else output,
-            "output_length": len(output)
+            "output": output_str,
+            "output_length": len(output_str),
+            "error": error,
         }
         tool_logs.append(log_entry)
+
+        if self.log_tool_calls_console:
+            output_preview = output_str
+            if self.tool_log_max_chars and len(output_preview) > self.tool_log_max_chars:
+                output_preview = output_preview[: self.tool_log_max_chars] + "..."
+            logger.info(
+                "TOOL %s node=%s step=%s params=%s error=%s output=%s",
+                tool_name,
+                node,
+                step_name,
+                params,
+                bool(error),
+                output_preview,
+            )
+
         return log_entry
 
-    def _save_results(self, state: dict, trade_date: str):
-        """Save discovery results and tool logs to files."""
-        from pathlib import Path
-        from datetime import datetime
-        import json
-        
-        # Get or create results directory
-        if self.run_dir:
-            results_dir = Path(self.run_dir)
-        else:
-            run_timestamp = datetime.now().strftime("%H_%M_%S")
-            results_dir = Path(self.config.get("results_dir", "./results")) / "discovery" / trade_date / f"run_{run_timestamp}"
-            results_dir.mkdir(parents=True, exist_ok=True)
-        
-        # Save main results as markdown
-        try:
-            with open(results_dir / "discovery_results.md", "w") as f:
-                f.write(f"# Discovery Results - {trade_date}\n\n")
-                f.write(f"## Final Ranking\n\n")
-                f.write(state.get("final_ranking", "No ranking available"))
-                f.write("\n\n## Candidates Analyzed\n\n")
-                for opp in state.get("opportunities", []):
-                    f.write(f"### {opp['ticker']} ({opp['strategy']})\n\n")
-        except Exception as e:
-            print(f"   Error saving results: {e}")
-        
-        # Save as JSON
-        try:
-            with open(results_dir / "discovery_result.json", "w") as f:
-                json_state = {
-                    "trade_date": trade_date,
-                    "tickers": state.get("tickers", []),
-                    "filtered_tickers": state.get("filtered_tickers", []),
-                    "final_ranking": state.get("final_ranking", ""),
-                    "status": state.get("status", "")
-                }
-                json.dump(json_state, f, indent=2)
-        except Exception as e:
-            print(f"   Error saving JSON: {e}")
-        
-        # Save tool logs
-        tool_logs = state.get("tool_logs", [])
-        if tool_logs:
-            try:
-                with open(results_dir / "tool_execution_logs.json", "w") as f:
-                    json.dump(tool_logs, f, indent=2)
-                
-                with open(results_dir / "tool_execution_logs.md", "w") as f:
-                    f.write(f"# Tool Execution Logs - {trade_date}\n\n")
-                    for i, log in enumerate(tool_logs, 1):
-                        f.write(f"## {i}. {log['step']}\n\n")
-                        f.write(f"- **Tool:** `{log['tool']}`\n")
-                        f.write(f"- **Node:** {log['node']}\n")
-                        f.write(f"- **Timestamp:** {log['timestamp']}\n")
-                        if log.get('context'):
-                            f.write(f"- **Context:** {log['context']}\n")
-                        f.write(f"- **Parameters:** `{log['parameters']}`\n")
-                        f.write(f"- **Output Length:** {log['output_length']} chars\n\n")
-                        f.write(f"### Output\n```\n{log['output']}\n```\n\n")
-                        f.write("---\n\n")
-            except Exception as e:
-                print(f"   Error saving tool logs: {e}")
-        
-        print(f"   Results saved to: {results_dir}")
+    def _execute_tool_logged(
+        self,
+        state: DiscoveryState,
+        *,
+        node: str,
+        step: str,
+        tool_name: str,
+        context: str = "",
+        **params,
+    ) -> Any:
+        """
+        Execute a tool with optional logging.
 
-    def _create_graph(self):
+        Args:
+            state: Current discovery state containing tool_logs
+            node: Name of the graph node executing the tool
+            step: Description of the current step
+            tool_name: Name of the tool to execute
+            context: Additional context for logging
+            **params: Parameters to pass to the tool
+
+        Returns:
+            Tool execution result
+
+        Raises:
+            Exception: Re-raises any exception from tool execution after logging
+        """
+        tool_logs = state.get("tool_logs", [])
+
+        if not self.log_tool_calls or tool_name in self.tool_log_exclude:
+            return execute_tool(tool_name, **params)
+
+        try:
+            result = execute_tool(tool_name, **params)
+            self._log_tool_call(
+                tool_logs,
+                node=node,
+                step_name=step,
+                tool_name=tool_name,
+                params=params,
+                output=result,
+                context=context,
+            )
+            state["tool_logs"] = tool_logs
+            return result
+        except Exception as e:
+            self._log_tool_call(
+                tool_logs,
+                node=node,
+                step_name=step,
+                tool_name=tool_name,
+                params=params,
+                output="",
+                context=context,
+                error=str(e),
+            )
+            state["tool_logs"] = tool_logs
+            raise
+
+    def _create_graph(self) -> StateGraph:
+        """
+        Create the discovery workflow graph.
+
+        The graph follows this flow:
+        scanner -> filter -> ranker -> END
+
+        Returns:
+            Compiled workflow graph
+        """
         workflow = StateGraph(DiscoveryState)
 
-        workflow.add_node("scanner", self.scanner_node)
-        workflow.add_node("filter", self.filter_node)
-        workflow.add_node("deep_dive", self.deep_dive_node)
-        workflow.add_node("ranker", self.ranker_node)
+        workflow.add_node(self.NODE_SCANNER, self.scanner_node)
+        workflow.add_node(self.NODE_FILTER, self.filter_node)
+        workflow.add_node(self.NODE_RANKER, self.preliminary_ranker_node)
 
-        workflow.set_entry_point("scanner")
-        workflow.add_edge("scanner", "filter")
-        workflow.add_edge("filter", "deep_dive")
-        workflow.add_edge("deep_dive", "ranker")
-        workflow.add_edge("ranker", END)
+        workflow.set_entry_point(self.NODE_SCANNER)
+        workflow.add_edge(self.NODE_SCANNER, self.NODE_FILTER)
+        workflow.add_edge(self.NODE_FILTER, self.NODE_RANKER)
+        workflow.add_edge(self.NODE_RANKER, END)
 
         return workflow.compile()
 
-    def scanner_node(self, state: DiscoveryState):
-        """Scan the market for potential candidates."""
-        print("🔍 Scanning market for opportunities...")
-        
-        candidates = []
-        tool_logs = state.get("tool_logs", [])
-        
-        # 0. Macro Theme Discovery (Top-Down) - DISABLED
-        # This section used Twitter API which has rate limit issues
-        # try:
-        #     from datetime import datetime
-        #     today = datetime.now().strftime("%Y-%m-%d")
-        #     global_news = execute_tool("get_global_news", date=today, limit=5)
-        #     ... (macro theme code disabled)
-        # except Exception as e:
-        #     print(f"   Error in Macro Theme Discovery: {e}")
-
-        # 1. Get Reddit Trending (Social Sentiment)
+    def _update_performance_tracking(self) -> None:
+        """Update performance tracking for historical recommendations (runs before discovery)."""
         try:
-            reddit_report = execute_tool("get_trending_tickers", limit=self.reddit_trending_limit)
-            # Use LLM to extract tickers WITH context
-            prompt = """Extract valid stock ticker symbols from this Reddit report, along with context about why they're trending.
-
-For each ticker, include:
-- ticker: The stock symbol (1-5 uppercase letters)
-- context: Brief description of sentiment, mentions, or key discussion points
-
-Do not include currencies (RMB), cryptocurrencies (BTC), or invalid symbols.
-
-Report:
-{report}
-
-Return a JSON object with a 'candidates' array of objects, each having 'ticker' and 'context' fields.""".format(report=reddit_report)
-            
-            # Use structured output for ticker+context extraction
-            structured_llm = self.quick_thinking_llm.with_structured_output(
-                schema=TickerContextList.model_json_schema(),
-                method="json_schema"
-            )
-            response = structured_llm.invoke([HumanMessage(content=prompt)])
-            
-            # Validate and add tickers with context
-            reddit_candidates = response.get("candidates", [])
-            for c in reddit_candidates:
-                ticker = c.get("ticker", "").upper().strip()
-                context = c.get("context", "Trending on Reddit")
-                # Validate ticker - Exclude garbage, verify existence
-                if re.match(r'^[A-Z]{1,5}$', ticker):
-                    try:
-                        if execute_tool("validate_ticker", symbol=ticker):
-                             candidates.append({"ticker": ticker, "source": "social_trending", "context": context})
-                    except: pass
+            self.analytics.update_performance_tracking()
         except Exception as e:
-            print(f"   Error fetching Reddit tickers: {e}")
+            logger.warning(f"Performance tracking update failed: {e}")
+            logger.warning("Continuing with discovery...")
 
-        # 2. Get Twitter Trending (Social Sentiment) - DISABLED due to API issues
-        # try:
-        #     # Search for general market discussions
-        #     tweets_report = execute_tool("get_tweets", query="stocks to watch", count=20)
-        #     
-        #     # Use LLM to extract tickers
-        #     prompt = """Extract ONLY valid stock ticker symbols from this Twitter report.
-        # ... (Twitter extraction code disabled)
-        # except Exception as e:
-        #     print(f"   Error fetching Twitter tickers: {e}")
-
-        # 2. Get Market Movers (Gainers & Losers)
-        try:
-            movers_report = execute_tool("get_market_movers", limit=self.market_movers_limit)
-            # Use LLM to extract movers with context
-            prompt = f"""Extract stock tickers from this market movers data with context about their performance.
-
-For each ticker, include:
-- ticker: The stock symbol (1-5 uppercase letters)
-- type: Either 'gainer' or 'loser'
-- reason: Brief description of the price movement (%, volume, catalyst if mentioned)
-
-Data:
-{movers_report}
-
-Return a JSON object with a 'movers' array containing objects with 'ticker', 'type', and 'reason' fields."""
-            
-            # Use structured output for market movers
-            structured_llm = self.quick_thinking_llm.with_structured_output(
-                schema=MarketMovers.model_json_schema(),
-                method="json_schema"
-            )
-            response = structured_llm.invoke([HumanMessage(content=prompt)])
-            
-            # Validate and add tickers with context
-            movers = response.get("movers", [])
-            for m in movers:
-                ticker = m.get('ticker', '').upper().strip()
-                if ticker and re.match(r'^[A-Z]{1,5}$', ticker):
-                    try:
-                        if execute_tool("validate_ticker", symbol=ticker):
-                            mover_type = m.get('type', 'gainer')
-                            reason = m.get('reason', f"Top {mover_type}")
-                            candidates.append({
-                                "ticker": ticker, 
-                                "source": "market_mover", 
-                                "context": f"{reason} ({m.get('change_percent', 0)}%)"
-                            })
-                    except: pass
-
-        except Exception as e:
-            print(f"   Error fetching Market Movers: {e}")
-
-        # 3. Get Earnings Calendar (Event-based Discovery)
-        try:
-            from datetime import datetime, timedelta
-            today = datetime.now()
-            from_date = today.strftime("%Y-%m-%d")
-            to_date = (today + timedelta(days=7)).strftime("%Y-%m-%d")  # Next 7 days
-
-            earnings_report = execute_tool("get_earnings_calendar", from_date=from_date, to_date=to_date)
-
-            # Extract tickers with earnings context
-            prompt = """Extract stock tickers from this earnings calendar with context about their upcoming earnings.
-
-For each ticker, include:
-- ticker: The stock symbol (1-5 uppercase letters)
-- context: Earnings date, expected EPS, and any other relevant info
-
-Earnings Calendar:
-{report}
-
-Return a JSON object with a 'candidates' array of objects, each having 'ticker' and 'context' fields.""".format(report=earnings_report)
-
-            structured_llm = self.quick_thinking_llm.with_structured_output(
-                schema=TickerContextList.model_json_schema(),
-                method="json_schema"
-            )
-            response = structured_llm.invoke([HumanMessage(content=prompt)])
-
-            earnings_candidates = response.get("candidates", [])
-            for c in earnings_candidates:
-                ticker = c.get("ticker", "").upper().strip()
-                context = c.get("context", "Upcoming earnings")
-                if re.match(r'^[A-Z]{1,5}$', ticker):
-                     try:
-                        if execute_tool("validate_ticker", symbol=ticker):
-                            candidates.append({"ticker": ticker, "source": "earnings_catalyst", "context": context})
-                     except: pass
-        except Exception as e:
-            print(f"   Error fetching Earnings Calendar: {e}")
-
-        # 4. Get IPO Calendar (New Listings Discovery)
-        try:
-            from datetime import datetime, timedelta
-            today = datetime.now()
-            from_date = (today - timedelta(days=7)).strftime("%Y-%m-%d")  # Past 7 days
-            to_date = (today + timedelta(days=14)).strftime("%Y-%m-%d")   # Next 14 days
-
-            ipo_report = execute_tool("get_ipo_calendar", from_date=from_date, to_date=to_date)
-
-            # Extract tickers with IPO context
-            prompt = """Extract stock tickers from this IPO calendar with context about the offering.
-
-For each ticker, include:
-- ticker: The stock symbol (1-5 uppercase letters)
-- context: IPO date, price range, shares offered, and company description
-
-IPO Calendar:
-{report}
-
-Return a JSON object with a 'candidates' array of objects, each having 'ticker' and 'context' fields.""".format(report=ipo_report)
-
-            structured_llm = self.quick_thinking_llm.with_structured_output(
-                schema=TickerContextList.model_json_schema(),
-                method="json_schema"
-            )
-            response = structured_llm.invoke([HumanMessage(content=prompt)])
-
-            ipo_candidates = response.get("candidates", [])
-            for c in ipo_candidates:
-                ticker = c.get("ticker", "").upper().strip()
-                context = c.get("context", "Recent/upcoming IPO")
-                if re.match(r'^[A-Z]{1,5}$', ticker):
-                     try:
-                        if execute_tool("validate_ticker", symbol=ticker):
-                            candidates.append({"ticker": ticker, "source": "ipo_listing", "context": context})
-                     except: pass
-        except Exception as e:
-            print(f"   Error fetching IPO Calendar: {e}")
-
-        # 5. Short Squeeze Detection (High Short Interest)
-        try:
-            # Get stocks with high short interest - potential squeeze candidates
-            short_interest_report = execute_tool(
-                "get_short_interest",
-                min_short_interest_pct=15.0,  # 15%+ short interest
-                min_days_to_cover=3.0,        # 3+ days to cover
-                top_n=15
-            )
-            
-            # Extract tickers with short squeeze context
-            prompt = """Extract stock tickers from this short interest report with context about squeeze potential.
-
-For each ticker, include:
-- ticker: The stock symbol (1-5 uppercase letters)
-- context: Short interest %, days to cover, squeeze potential rating, and any other relevant metrics
-
-Short Interest Report:
-{report}
-
-Return a JSON object with a 'candidates' array of objects, each having 'ticker' and 'context' fields.""".format(report=short_interest_report)
-
-            structured_llm = self.quick_thinking_llm.with_structured_output(
-                schema=TickerContextList.model_json_schema(),
-                method="json_schema"
-            )
-            response = structured_llm.invoke([HumanMessage(content=prompt)])
-
-            short_candidates = response.get("candidates", [])
-            for c in short_candidates:
-                ticker = c.get("ticker", "").upper().strip()
-                context = c.get("context", "High short interest")
-                if re.match(r'^[A-Z]{1,5}$', ticker):
-                     try:
-                        if execute_tool("validate_ticker", symbol=ticker):
-                            candidates.append({"ticker": ticker, "source": "short_squeeze", "context": context})
-                     except: pass
-            
-            print(f"   Found {len(short_candidates)} short squeeze candidates")
-        except Exception as e:
-            print(f"   Error fetching Short Interest: {e}")
-
-        # 6. Unusual Volume Detection (Accumulation Signal)
-        try:
-            from datetime import datetime
-            today = datetime.now().strftime("%Y-%m-%d")
-            
-            volume_report = execute_tool(
-                "get_unusual_volume",
-                date=today,
-                min_volume_multiple=3.0,  # 3x average volume
-                max_price_change=5.0,     # Less than 5% price change
-                top_n=15
-            )
-            
-            # Extract tickers with volume context
-            prompt = """Extract stock tickers from this unusual volume report with context about the accumulation pattern.
-
-For each ticker, include:
-- ticker: The stock symbol (1-5 uppercase letters)
-- context: Volume multiple, price change, and any interpretation of the pattern
-
-Unusual Volume Report:
-{report}
-
-Return a JSON object with a 'candidates' array of objects, each having 'ticker' and 'context' fields.""".format(report=volume_report)
-
-            structured_llm = self.quick_thinking_llm.with_structured_output(
-                schema=TickerContextList.model_json_schema(),
-                method="json_schema"
-            )
-            response = structured_llm.invoke([HumanMessage(content=prompt)])
-
-            volume_candidates = response.get("candidates", [])
-            for c in volume_candidates:
-                ticker = c.get("ticker", "").upper().strip()
-                context = c.get("context", "Unusual volume pattern")
-                if re.match(r'^[A-Z]{1,5}$', ticker):
-                     try:
-                        if execute_tool("validate_ticker", symbol=ticker):
-                            candidates.append({"ticker": ticker, "source": "unusual_volume", "context": context})
-                     except: pass
-            
-            print(f"   Found {len(volume_candidates)} unusual volume candidates")
-        except Exception as e:
-            print(f"   Error fetching Unusual Volume: {e}")
-
-        # 7. Analyst Rating Changes (Institutional Catalyst)
-        try:
-            analyst_report = execute_tool(
-                "get_analyst_rating_changes",
-                lookback_days=7,
-                change_types=["upgrade", "initiated"],  # Focus on positive catalysts
-                top_n=15
-            )
-            
-            # Extract tickers with analyst context
-            prompt = """Extract stock tickers from this analyst rating changes report with context about the rating action.
-
-For each ticker, include:
-- ticker: The stock symbol (1-5 uppercase letters)
-- context: Type of change (upgrade/initiated), analyst firm, price target, and any other relevant details
-
-Analyst Rating Changes:
-{report}
-
-Return a JSON object with a 'candidates' array of objects, each having 'ticker' and 'context' fields.""".format(report=analyst_report)
-
-            structured_llm = self.quick_thinking_llm.with_structured_output(
-                schema=TickerContextList.model_json_schema(),
-                method="json_schema"
-            )
-            response = structured_llm.invoke([HumanMessage(content=prompt)])
-
-            analyst_candidates = response.get("candidates", [])
-            for c in analyst_candidates:
-                ticker = c.get("ticker", "").upper().strip()
-                context = c.get("context", "Recent analyst action")
-                if re.match(r'^[A-Z]{1,5}$', ticker):
-                    try:
-                        if execute_tool("validate_ticker", symbol=ticker):
-                            candidates.append({"ticker": ticker, "source": "analyst_upgrade", "context": context})
-                    except: pass
-            
-            print(f"   Found {len(analyst_candidates)} analyst upgrade candidates")
-        except Exception as e:
-            print(f"   Error fetching Analyst Ratings: {e}")
-
-        # Deduplicate
-        unique_candidates = {}
-        for c in candidates:
-            if c['ticker'] not in unique_candidates:
-                unique_candidates[c['ticker']] = c
-        
-        final_candidates = list(unique_candidates.values())
-        print(f"   Found {len(final_candidates)} unique candidates.")
-        return {"tickers": [c['ticker'] for c in final_candidates], "candidate_metadata": final_candidates, "tool_logs": tool_logs, "status": "scanned"}
-
-    def filter_node(self, state: DiscoveryState):
-        """Filter candidates based on strategy (Contrarian vs Momentum)."""
-        candidates = state.get("candidate_metadata", [])
-        if not candidates:
-            # Fallback if metadata missing (backward compatibility)
-            candidates = [{"ticker": t, "source": "unknown"} for t in state["tickers"]]
-            
-        print(f"🔍 Filtering {len(candidates)} candidates...")
-        
-        filtered_candidates = []
-        
-        for cand in candidates:
-            ticker = cand['ticker']
-            source = cand['source']
-            
-            try:
-                # Get Fundamentals
-                # We use get_fundamentals to get P/E, Market Cap, etc.
-                # Since get_fundamentals returns a JSON string (from Alpha Vantage), we can parse it.
-                # Note: In a real run, we'd use the tool. Here we simulate the logic.
-                
-                # Logic:
-                # 1. Contrarian (Losers): Look for Strong Fundamentals (Low P/E, High Profit)
-                # 2. Momentum (Gainers/Social): Look for Growth (Revenue Growth)
-                
-                # For this implementation, we'll pass them to the deep dive 
-                # but tag them with the strategy we want to verify.
-                
-                strategy = "momentum"
-                if source == "loser":
-                    strategy = "contrarian_value"
-                elif source == "social_trending" or source == "twitter_sentiment":
-                    strategy = "social_hype"
-                elif source == "earnings_catalyst":
-                    strategy = "earnings_play"
-                elif source == "ipo_listing":
-                    strategy = "ipo_opportunity"
-                
-                cand['strategy'] = strategy
-                
-                # Technical Analysis Check (New)
-                try:
-                    from datetime import datetime
-                    today = datetime.now().strftime("%Y-%m-%d")
-                    
-                    # Get RSI (and other indicators)
-                    rsi_data = execute_tool("get_indicators", symbol=ticker, curr_date=today)
-                    
-                    # Simple parsing of the string report to find the latest value
-                    # The report format is usually "## rsi values...\n\nDATE: VALUE"
-                    # We'll just store the report for the LLM to analyze in deep dive if needed, 
-                    # OR we can try to parse it here. For now, let's just add it to metadata.
-                    cand['technical_indicators'] = rsi_data
-                    
-                except Exception as e:
-                    print(f"   Error getting technicals for {ticker}: {e}")
-                
-                filtered_candidates.append(cand)
-                
-            except Exception as e:
-                print(f"   Error checking {ticker}: {e}")
-        
-        # Limit to configured max
-        filtered_candidates = filtered_candidates[:self.max_candidates_to_analyze]
-        
-        print(f"   Selected {len(filtered_candidates)} for deep dive.")
-        return {"filtered_tickers": [c['ticker'] for c in filtered_candidates], "candidate_metadata": filtered_candidates, "status": "filtered"}
-
-    def deep_dive_node(self, state: DiscoveryState):
-        """Perform deep dive analysis on selected candidates."""
-        candidates = state.get("candidate_metadata", [])
-        trade_date = state.get("trade_date", "")
-        
-        # Calculate date range for news (configurable days back from trade_date)
-        from datetime import datetime, timedelta
-        
-        if trade_date:
-            end_date_obj = datetime.strptime(trade_date, "%Y-%m-%d")
-        else:
-            end_date_obj = datetime.now()
-            
-        start_date_obj = end_date_obj - timedelta(days=self.news_lookback_days)
-        start_date = start_date_obj.strftime("%Y-%m-%d")
-        end_date = end_date_obj.strftime("%Y-%m-%d")
-        
-        print(f"🔍 Performing deep dive on {len(candidates)} candidates...")
-        print(f"   News date range: {start_date} to {end_date}")
-        
-        opportunities = []
-        
-        for cand in candidates:
-            ticker = cand['ticker']
-            strategy = cand['strategy']
-            print(f"   Analyzing {ticker} ({strategy})...")
-            
-            try:
-                # 1. Get News Sentiment
-                news = execute_tool("get_news", ticker=ticker, start_date=start_date, end_date=end_date)
-                
-                # 2. Get Insider Transactions & Sentiment
-                insider = execute_tool("get_insider_transactions", ticker=ticker)
-                insider_sentiment = execute_tool("get_insider_sentiment", ticker=ticker)
-                
-                # 3. Get Fundamentals (for the Contrarian check)
-                fundamentals = execute_tool("get_fundamentals", ticker=ticker, curr_date=end_date)
-                
-                # 4. Get Analyst Recommendations
-                recommendations = execute_tool("get_recommendation_trends", ticker=ticker)
-                
-                opportunities.append({
-                    "ticker": ticker,
-                    "strategy": strategy,
-                    "news": news,
-                    "insider_transactions": insider,
-                    "insider_sentiment": insider_sentiment,
-                    "fundamentals": fundamentals,
-                    "recommendations": recommendations
-                })
-                
-            except Exception as e:
-                print(f"   Failed to analyze {ticker}: {e}")
-        
-        return {"opportunities": opportunities, "status": "analyzed"}
-
-    def ranker_node(self, state: DiscoveryState):
-        """Rank opportunities and select the best ones."""
-        from datetime import datetime
-        
-        opportunities = state["opportunities"]
-        print("🔍 Ranking opportunities...")
-        
-        # Truncate data to prevent token limit errors
-        # Keep only essential info for ranking
-        truncated_opps = []
-        for opp in opportunities:
-            truncated_opps.append({
-                "ticker": opp["ticker"],
-                "strategy": opp["strategy"],
-                # Truncate to ~1000 chars each (roughly 250 tokens)
-                "news": opp["news"][:1000] + "..." if len(opp["news"]) > 1000 else opp["news"],
-                "insider_sentiment": opp.get("insider_sentiment", "")[:500],
-                "insider_transactions": opp["insider_transactions"][:1000] + "..." if len(opp["insider_transactions"]) > 1000 else opp["insider_transactions"],
-                "fundamentals": opp["fundamentals"][:1000] + "..." if len(opp["fundamentals"]) > 1000 else opp["fundamentals"],
-                "recommendations": opp["recommendations"][:1000] + "..." if len(opp["recommendations"]) > 1000 else opp["recommendations"],
-            })
-        
-        prompt = f"""
-        Analyze these investment opportunities and select the TOP {self.final_recommendations} most promising ones.
-        
-        STRATEGIES TO LOOK FOR:
-        1. **Contrarian Value**: Stock is a "Loser" or has bad sentiment, BUT has strong fundamentals (Low P/E, good financials).
-        2. **Momentum/Hype**: Stock is Trending/Gainer AND has news/growth to support it.
-        3. **Insider Play**: Significant insider buying regardless of trend.
-        
-        OPPORTUNITIES:
-        {truncated_opps}
-        
-        Return a JSON list of the top {self.final_recommendations}, with fields: 
-        - "ticker"
-        - "strategy_match" (e.g., "Contrarian Value", "Momentum")
-        - "reason" (Explain WHY it fits the strategy)
-        - "confidence" (0-10)
+    def _merge_candidates_into_dict(
+        self, candidates: List[Dict[str, Any]], target_dict: Dict[str, Dict[str, Any]]
+    ) -> None:
         """
-        
-        response = self.deep_thinking_llm.invoke([HumanMessage(content=prompt)])
-        
-        print("   Ranking complete.")
-        
-        # Build result state
-        result_state = {
-            "status": "complete", 
-            "opportunities": opportunities, 
-            "final_ranking": response.content,
-            "tool_logs": state.get("tool_logs", [])
+        Merge candidates into target dictionary with smart deduplication.
+
+        For duplicate tickers, merges sources and contexts intelligently,
+        upgrading priority when higher-priority sources are found.
+
+        Args:
+            candidates: List of candidate dictionaries to merge
+            target_dict: Target dictionary to merge into (ticker -> candidate data)
+        """
+        for candidate in candidates:
+            ticker = candidate["ticker"]
+
+            if ticker not in target_dict:
+                # First time seeing this ticker - initialize tracking fields
+                entry = candidate.copy()
+                source = candidate.get("source", self.SOURCE_UNKNOWN)
+                context = candidate.get("context", "").strip()
+                entry["all_sources"] = [source]
+                entry["all_contexts"] = [context] if context else []
+                target_dict[ticker] = entry
+            else:
+                # Duplicate ticker - merge sources, contexts, and priority
+                existing = target_dict[ticker]
+                existing.setdefault("all_sources", [existing.get("source", self.SOURCE_UNKNOWN)])
+                existing.setdefault(
+                    "all_contexts",
+                    [existing.get("context", "")] if existing.get("context") else [],
+                )
+
+                incoming_source = candidate.get("source", self.SOURCE_UNKNOWN)
+                if incoming_source not in existing["all_sources"]:
+                    existing["all_sources"].append(incoming_source)
+
+                incoming_context = candidate.get("context", "").strip()
+                incoming_rank = PRIORITY_ORDER.get(
+                    candidate.get("priority", Priority.UNKNOWN.value), 4
+                )
+                existing_rank = PRIORITY_ORDER.get(
+                    existing.get("priority", Priority.UNKNOWN.value), 4
+                )
+
+                if incoming_rank < existing_rank:
+                    # Higher priority incoming - upgrade and prepend context
+                    existing["priority"] = candidate.get("priority")
+                    existing["source"] = candidate.get("source")
+                    self._add_context(incoming_context, existing, prepend=True)
+                else:
+                    self._add_context(incoming_context, existing, prepend=False)
+
+    def _add_context(self, new_context: str, candidate: Dict[str, Any], *, prepend: bool) -> None:
+        """
+        Add context string to a candidate's context fields.
+
+        When prepend is True, the new context leads the combined string
+        (used when a higher-priority source is being merged in).
+
+        Args:
+            new_context: New context string to add
+            candidate: Candidate dictionary to update
+            prepend: If True, new context leads the combined string
+        """
+        if not new_context or new_context in candidate["all_contexts"]:
+            return
+
+        candidate["all_contexts"].append(new_context)
+        current_ctx = candidate.get("context", "")
+
+        if not current_ctx:
+            candidate["context"] = new_context
+        elif new_context not in current_ctx:
+            if prepend:
+                candidate["context"] = f"{new_context}; Also: {current_ctx}"
+            else:
+                candidate["context"] = f"{current_ctx}; Also: {new_context}"
+
+    def scanner_node(self, state: DiscoveryState) -> Dict[str, Any]:
+        """
+        Scan the market for potential candidates using the modular scanner registry.
+
+        Iterates through all scanners in SCANNER_REGISTRY, checks if they're enabled,
+        and runs them to collect candidates organized by pipeline.
+
+        Args:
+            state: Current discovery state
+
+        Returns:
+            Updated state with discovered candidates
+        """
+        logger.info("Scanning market for opportunities...")
+
+        self._update_performance_tracking()
+        state.setdefault("tool_logs", [])
+
+        # Get execution config
+        exec_config = self.config.get("discovery", {}).get("scanner_execution", {})
+        concurrent = exec_config.get("concurrent", True)
+        max_workers = exec_config.get("max_workers", 8)
+        timeout_seconds = exec_config.get("timeout_seconds", 30)
+
+        # Get pipeline_config from config
+        pipeline_config = self.config.get("discovery", {}).get("pipelines", {})
+
+        # Prepare enabled scanners
+        enabled_scanners = []
+        for scanner_class in SCANNER_REGISTRY.get_all_scanners():
+            pipeline = scanner_class.pipeline
+
+            # Check if scanner's pipeline is enabled
+            if not pipeline_config.get(pipeline, {}).get("enabled", True):
+                logger.info(f"Skipping {scanner_class.name} (pipeline '{pipeline}' disabled)")
+                continue
+
+            try:
+                # Instantiate scanner with config
+                scanner = scanner_class(self.config)
+
+                # Check if scanner is enabled
+                if not scanner.is_enabled():
+                    logger.info(f"Skipping {scanner_class.name} (scanner disabled)")
+                    continue
+
+                enabled_scanners.append((scanner, scanner_class.name, pipeline))
+
+            except Exception as e:
+                logger.error(f"Error instantiating {scanner_class.name}: {e}")
+                continue
+
+        # Run scanners concurrently or sequentially based on config
+        if concurrent and len(enabled_scanners) > 1:
+            pipeline_candidates = self._run_scanners_concurrent(
+                enabled_scanners, state, max_workers, timeout_seconds
+            )
+        else:
+            pipeline_candidates = self._run_scanners_sequential(enabled_scanners, state)
+
+        # Merge all candidates from all pipelines using _merge_candidates_into_dict()
+        all_candidates_dict: Dict[str, Dict[str, Any]] = {}
+        for pipeline, candidates in pipeline_candidates.items():
+            self._merge_candidates_into_dict(candidates, all_candidates_dict)
+
+        # Convert merged dict to list
+        final_candidates = list(all_candidates_dict.values())
+        final_tickers = [c["ticker"] for c in final_candidates]
+
+        logger.info(f"Found {len(final_candidates)} unique candidates from all scanners.")
+
+        # Return state with tickers, candidate_metadata, tool_logs, status
+        return {
+            "tickers": final_tickers,
+            "candidate_metadata": final_candidates,
+            "tool_logs": state.get("tool_logs", []),
+            "status": "scanned",
         }
-        
-        # Save results to files
-        trade_date = state.get("trade_date", datetime.now().strftime("%Y-%m-%d"))
-        self._save_results(result_state, trade_date)
-        
-        return result_state
+
+    def _run_scanners_sequential(
+        self, enabled_scanners: List[tuple], state: DiscoveryState
+    ) -> Dict[str, List[Dict[str, Any]]]:
+        """
+        Run scanners sequentially (original behavior).
+
+        Args:
+            enabled_scanners: List of (scanner, name, pipeline) tuples
+            state: Current discovery state
+
+        Returns:
+            Dict mapping pipeline -> list of candidates
+        """
+        pipeline_candidates: Dict[str, List[Dict[str, Any]]] = {}
+
+        for scanner, name, pipeline in enabled_scanners:
+            # Initialize pipeline list if needed
+            if pipeline not in pipeline_candidates:
+                pipeline_candidates[pipeline] = []
+
+            try:
+                # Set tool_executor in state for scanner to use
+                state["tool_executor"] = self._execute_tool_logged
+
+                # Call scanner.scan_with_validation(state)
+                logger.info(f"Running {name}...")
+                candidates = scanner.scan_with_validation(state)
+
+                # Route candidates to appropriate pipeline
+                pipeline_candidates[pipeline].extend(candidates)
+                logger.info(f"Found {len(candidates)} candidates")
+
+            except Exception as e:
+                logger.error(f"Error in {name}: {e}")
+                continue
+
+        return pipeline_candidates
+
+    def _run_scanners_concurrent(
+        self,
+        enabled_scanners: List[tuple],
+        state: DiscoveryState,
+        max_workers: int,
+        timeout_seconds: int,
+    ) -> Dict[str, List[Dict[str, Any]]]:
+        """
+        Run scanners concurrently using ThreadPoolExecutor.
+
+        Args:
+            enabled_scanners: List of (scanner, name, pipeline) tuples
+            state: Current discovery state
+            max_workers: Maximum concurrent threads
+            timeout_seconds: Timeout per scanner in seconds
+
+        Returns:
+            Dict mapping pipeline -> list of candidates
+        """
+        from concurrent.futures import ThreadPoolExecutor, TimeoutError, as_completed
+
+        pipeline_candidates: Dict[str, List[Dict[str, Any]]] = {}
+
+        logger.info(
+            f"Running {len(enabled_scanners)} scanners concurrently (max {max_workers} workers)..."
+        )
+
+        def run_scanner(scanner_info: tuple) -> tuple:
+            """Execute a single scanner with error handling."""
+            scanner, name, pipeline = scanner_info
+            try:
+                # Create a copy of state for thread safety
+                scanner_state = state.copy()
+                scanner_state["tool_logs"] = []  # Fresh log list
+                scanner_state["tool_executor"] = self._execute_tool_logged
+
+                # Run scanner with validation
+                candidates = scanner.scan_with_validation(scanner_state)
+
+                # Return logs to be merged later (not in-place)
+                scanner_logs = scanner_state.get("tool_logs", [])
+                return (name, pipeline, candidates, None, scanner_logs)
+
+            except Exception as e:
+                logger.error(f"Scanner {name} failed: {e}", exc_info=True)
+                return (name, pipeline, [], str(e), [])
+
+        # Submit all scanner tasks
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            future_to_scanner = {
+                executor.submit(run_scanner, scanner_info): scanner_info[1]
+                for scanner_info in enabled_scanners
+            }
+
+            # Collect results as they complete (no global timeout, handle per-scanner)
+            completed_count = 0
+            for future in as_completed(future_to_scanner):
+                scanner_name = future_to_scanner[future]
+
+                try:
+                    # Get result with per-scanner timeout
+                    name, pipeline, candidates, error, scanner_logs = future.result(
+                        timeout=timeout_seconds
+                    )
+
+                    # Initialize pipeline list if needed
+                    if pipeline not in pipeline_candidates:
+                        pipeline_candidates[pipeline] = []
+
+                    if error:
+                        logger.warning(f"⚠️ {name}: {error}")
+                    else:
+                        pipeline_candidates[pipeline].extend(candidates)
+                        logger.info(f"✓ {name}: {len(candidates)} candidates")
+
+                    # Thread-safe log merging
+                    if scanner_logs:
+                        with self._tool_logs_lock:
+                            state.setdefault("tool_logs", []).extend(scanner_logs)
+
+                except TimeoutError:
+                    logger.warning(f"⏱️ {scanner_name}: timeout after {timeout_seconds}s")
+
+                except Exception as e:
+                    logger.error(f"⚠️ {scanner_name}: unexpected error - {e}", exc_info=True)
+
+                finally:
+                    completed_count += 1
+
+            # Log completion stats
+            if completed_count < len(enabled_scanners):
+                logger.warning(f"Only {completed_count}/{len(enabled_scanners)} scanners completed")
+
+        return pipeline_candidates
+
+    def filter_node(self, state: DiscoveryState) -> Dict[str, Any]:
+        """
+        Filter candidates and enrich with additional data.
+
+        Filters candidates based on:
+        - Ticker validity
+        - Liquidity (volume)
+        - Same-day price movement
+        - Data availability
+
+        Enriches with:
+        - Current price
+        - Fundamentals
+        - Business description
+        - Technical indicators
+        - News
+        - Insider transactions
+        - Analyst recommendations
+        - Options activity
+
+        Args:
+            state: Current discovery state with candidates
+
+        Returns:
+            Updated state with filtered and enriched candidates
+        """
+        from tradingagents.dataflows.discovery.filter import CandidateFilter
+
+        cand_filter = CandidateFilter(self.config, self._execute_tool_logged)
+        return cand_filter.filter(state)
+
+    def preliminary_ranker_node(self, state: DiscoveryState) -> Dict[str, Any]:
+        """
+        Rank all filtered candidates and select top opportunities.
+
+        Uses LLM to analyze all enriched candidate data and rank
+        by investment potential based on:
+        - Strategy match
+        - Fundamental strength
+        - Technical setup
+        - Catalyst timing
+        - Options flow
+        - Historical performance patterns
+
+        Args:
+            state: Current discovery state with filtered candidates
+
+        Returns:
+            Final state with ranked opportunities and final_ranking JSON
+        """
+        from tradingagents.dataflows.discovery.ranker import CandidateRanker
+
+        ranker = CandidateRanker(self.config, self.deep_thinking_llm, self.analytics)
+        return ranker.rank(state)
+
+    def run(self, trade_date: str = None):
+        """Execute the discovery graph workflow.
+
+        Args:
+            trade_date: Trade date in YYYY-MM-DD format (defaults to today if not provided)
+        """
+        from tradingagents.dataflows.discovery.utils import resolve_trade_date_str
+
+        trade_date = resolve_trade_date_str({"trade_date": trade_date})
+
+        logger.info(f"\n{'='*60}")
+        logger.info(f"Discovery Analysis - {trade_date}")
+        logger.info(f"{'='*60}")
+
+        initial_state = {
+            "trade_date": trade_date,
+            "tickers": [],
+            "filtered_tickers": [],
+            "final_ranking": "",
+            "status": "initialized",
+            "tool_logs": [],
+        }
+
+        final_state = self.graph.invoke(initial_state)
+
+        # Save results and recommendations
+        self.analytics.save_discovery_results(final_state, trade_date, self.config)
+
+        # Extract and save rankings if available
+        rankings_list = self._normalize_rankings(final_state.get("final_ranking", []))
+        if rankings_list:
+            self.analytics.save_recommendations(
+                rankings_list, trade_date, self.config.get("llm_provider", "unknown")
+            )
+
+        return final_state
+
+    # ------------------------------------------------------------------
+    # Price chart delegation (implementation in price_charts.py)
+    # ------------------------------------------------------------------
+
+    def _get_chart_builder(self) -> PriceChartBuilder:
+        """Lazily create and cache the PriceChartBuilder instance."""
+        if not hasattr(self, "_chart_builder"):
+            from tradingagents.graph.price_charts import PriceChartBuilder
+
+            c = self.dc.charts
+            self._chart_builder = PriceChartBuilder(
+                enabled=c.enabled,
+                library=c.library,
+                windows=c.windows,
+                lookback_days=c.lookback_days,
+                width=c.width,
+                height=c.height,
+                max_tickers=c.max_tickers,
+                show_movement_stats=c.show_movement_stats,
+            )
+        return self._chart_builder
+
+    def build_price_chart_bundle(self, rankings: Any) -> Dict[str, Dict[str, Any]]:
+        """Build per-ticker chart + movement stats for top recommendations."""
+        return self._get_chart_builder().build_bundle(self._normalize_rankings(rankings))
+
+    def build_price_chart_map(self, rankings: Any) -> Dict[str, str]:
+        """Build mini price charts keyed by ticker."""
+        return self._get_chart_builder().build_map(self._normalize_rankings(rankings))
+
+    def build_price_chart_strings(self, rankings: Any) -> List[str]:
+        """Build mini price charts for top recommendations (returns ANSI strings)."""
+        return self._get_chart_builder().build_strings(self._normalize_rankings(rankings))
+
+    def _print_price_charts(self, rankings_list: List[Dict[str, Any]]) -> None:
+        """Render mini price charts for top recommendations in the console."""
+        self._get_chart_builder().print_charts(rankings_list)
+
+    @staticmethod
+    def _normalize_rankings(rankings: Any) -> List[Dict[str, Any]]:
+        """Normalize ranking payload into a list of ranking dicts."""
+        if isinstance(rankings, str):
+            try:
+                import json
+
+                parsed = json.loads(rankings)
+                # Validate parsed result is expected type
+                if isinstance(parsed, dict):
+                    return parsed.get("rankings", [])
+                elif isinstance(parsed, list):
+                    return parsed
+                else:
+                    logger.warning(f"Unexpected JSON type after parsing: {type(parsed)}")
+                    return []
+            except Exception as e:
+                logger.warning(f"Failed to parse rankings JSON: {e}")
+                return []
+        if isinstance(rankings, dict):
+            return rankings.get("rankings", [])
+        if isinstance(rankings, list):
+            return rankings
+        logger.warning(f"Unexpected rankings type: {type(rankings)}")
+        return []

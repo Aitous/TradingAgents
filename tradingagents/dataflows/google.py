@@ -1,6 +1,8 @@
-from typing import Annotated
 from datetime import datetime
+from typing import Annotated
+
 from dateutil.relativedelta import relativedelta
+
 from .googlenews_utils import getNewsData
 
 
@@ -32,7 +34,9 @@ def get_google_news(
         start_dt = datetime.strptime(curr_date, "%Y-%m-%d")
         before = (start_dt - relativedelta(days=look_back_days)).strftime("%Y-%m-%d")
     else:
-        raise ValueError("Must provide either (start_date, end_date) or (curr_date, look_back_days)")
+        raise ValueError(
+            "Must provide either (start_date, end_date) or (curr_date, look_back_days)"
+        )
 
     news_results = getNewsData(search_query, before, target_date)
 
@@ -40,7 +44,9 @@ def get_google_news(
 
     for news in news_results:
         news_str += (
-            f"### {news['title']} (source: {news['source']}) \n\n{news['snippet']}\n\n"
+            f"### {news['title']} (source: {news['source']}, date: {news['date']})\n"
+            f"Link: {news['link']}\n"
+            f"Snippet: {news['snippet']}\n\n"
         )
 
     if len(news_results) == 0:
@@ -49,24 +55,18 @@ def get_google_news(
     return f"## {search_query} Google News, from {before} to {target_date}:\n\n{news_str}"
 
 
-def get_global_news_google(
-    date: str,
-    look_back_days: int = 3,
-    limit: int = 5
-) -> str:
+def get_global_news_google(date: str, look_back_days: int = 3, limit: int = 5) -> str:
     """Retrieve global market news using Google News.
-    
+
     Args:
         date: Date for news, yyyy-mm-dd
         look_back_days: Days to look back
         limit: Max number of articles (not strictly enforced by underlying function but good for interface)
-        
+
     Returns:
         Global news report
     """
     # Query for general market topics
     return get_google_news(
-        query="financial markets macroeconomics",
-        curr_date=date,
-        look_back_days=look_back_days
+        query="financial markets macroeconomics", curr_date=date, look_back_days=look_back_days
     )
