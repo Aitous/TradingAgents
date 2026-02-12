@@ -137,28 +137,10 @@ DEFAULT_CONFIG = {
                 "unusual_volume_multiple": 2.0,  # Min volume/OI ratio for unusual activity
                 "min_premium": 25000,  # Minimum premium ($) to filter noise
                 "min_volume": 1000,  # Minimum option volume to consider
-                "ticker_universe": [
-                    "AAPL",
-                    "MSFT",
-                    "GOOGL",
-                    "AMZN",
-                    "META",
-                    "NVDA",
-                    "AMD",
-                    "TSLA",
-                    "TSMC",
-                    "ASML",
-                    "AVGO",
-                    "ORCL",
-                    "CRM",
-                    "ADBE",
-                    "INTC",
-                    "QCOM",
-                    "TXN",
-                    "AMAT",
-                    "LRCX",
-                    "KLAC",
-                ],  # Top 20 liquid options
+                # ticker_file: path to ticker list (defaults to tickers_file from root config)
+                # ticker_universe: explicit list overrides ticker_file if set
+                "max_tickers": 150,  # Max tickers to scan (from start of file)
+                "max_workers": 8,  # Parallel option chain fetch threads
             },
             "congress_trades": {
                 "enabled": False,
@@ -178,7 +160,7 @@ DEFAULT_CONFIG = {
                 "compression_min_volume_ratio": 1.3,  # Min volume ratio for compression
             },
             "market_movers": {
-                "enabled": True,
+                "enabled": False,
                 "pipeline": "momentum",
                 "limit": 10,
             },
@@ -195,7 +177,7 @@ DEFAULT_CONFIG = {
                 "news_lookback_days": 0.5,  # Days of news history to analyze
             },
             "analyst_upgrade": {
-                "enabled": False,
+                "enabled": True,
                 "pipeline": "news",
                 "limit": 5,
                 "lookback_days": 1,  # Days to look back for rating changes
@@ -221,7 +203,7 @@ DEFAULT_CONFIG = {
                 "min_market_cap": 0,  # Minimum market cap in billions (0 = no filter)
             },
             "short_squeeze": {
-                "enabled": False,
+                "enabled": True,
                 "pipeline": "events",
                 "limit": 5,
                 "min_short_interest_pct": 15.0,  # Minimum short interest %

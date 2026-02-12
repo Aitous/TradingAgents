@@ -119,10 +119,16 @@ def route_page(page):
         "Config": pages.settings,
     }
     module = page_map.get(page)
-    if module:
-        module.render()
-    else:
+    if module is None:
         st.error(f"Unknown page: {page}")
+        return
+    try:
+        module.render()
+    except Exception as exc:
+        st.error(f"Error rendering {page}: {exc}")
+        import traceback
+
+        st.code(traceback.format_exc(), language="python")
 
 
 def main():

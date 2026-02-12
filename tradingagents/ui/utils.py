@@ -196,42 +196,73 @@ def load_performance_database() -> List[Dict[str, Any]]:
     return []
 
 
+_STRATEGY_ALIASES: Dict[str, str] = {
+    "momentum": "momentum",
+    "momentum/hype": "momentum",
+    "momentum/hype / short squeeze": "momentum",
+    "insider play": "insider_buying",
+    "insider_buying": "insider_buying",
+    "earnings play": "earnings_play",
+    "earnings_play": "earnings_play",
+    "earnings_calendar": "earnings_calendar",
+    "news catalyst": "news_catalyst",
+    "news_catalyst": "news_catalyst",
+    "volume accumulation": "volume_accumulation",
+    "volume_accumulation": "volume_accumulation",
+    "contrarian value": "contrarian_value",
+    "contrarian_value": "contrarian_value",
+}
+
+
+def normalize_strategy(raw: str) -> str:
+    """Map strategy name variants to a canonical lowercase form."""
+    key = raw.strip().lower()
+    return _STRATEGY_ALIASES.get(key, key)
+
+
 def load_strategy_metrics() -> List[Dict[str, Any]]:
     """
     Build per-strategy metrics from the performance database if available.
     Falls back to statistics.json when performance database is missing.
+
+    Normalizes strategy names so variants like 'Momentum', 'momentum',
+    and 'Momentum/Hype' all merge into a single bucket.  Counts ALL
+    recommendations per strategy; win rate and avg return are computed
+    from the subset that has 7-day return data.
     """
     recs = load_performance_database()
     if recs:
         metrics: Dict[str, Dict[str, float]] = {}
         for rec in recs:
-            strategy = rec.get("strategy_match", "unknown")
+            strategy = normalize_strategy(rec.get("strategy_match", "unknown"))
             if strategy not in metrics:
                 metrics[strategy] = {
-                    "count": 0,
+                    "total": 0,
+                    "evaluated": 0,
                     "wins": 0,
                     "sum_return": 0.0,
                 }
 
-            if "return_7d" in rec:
-                metrics[strategy]["count"] += 1
+            metrics[strategy]["total"] += 1
+
+            if "return_7d" in rec and rec["return_7d"] is not None:
+                metrics[strategy]["evaluated"] += 1
                 metrics[strategy]["sum_return"] += float(rec.get("return_7d", 0.0) or 0.0)
                 if rec.get("win_7d"):
                     metrics[strategy]["wins"] += 1
 
         results = []
         for strategy, data in metrics.items():
-            count = int(data["count"])
-            if count == 0:
-                continue
-            win_rate = round((data["wins"] / count) * 100, 1)
-            avg_return = round(data["sum_return"] / count, 2)
+            total = int(data["total"])
+            evaluated = int(data["evaluated"])
+            win_rate = round((data["wins"] / evaluated) * 100, 1) if evaluated > 0 else None
+            avg_return = round(data["sum_return"] / evaluated, 2) if evaluated > 0 else None
             results.append(
                 {
                     "Strategy": strategy,
                     "Win Rate": win_rate,
                     "Avg Return": avg_return,
-                    "Count": count,
+                    "Count": total,
                 }
             )
         return results
@@ -242,10 +273,10 @@ def load_strategy_metrics() -> List[Dict[str, Any]]:
     for strategy, data in by_strategy.items():
         win_rate = data.get("win_rate_7d") or data.get("win_rate", 0)
         avg_return = data.get("avg_return_7d", 0)
-        count = data.get("wins_7d", 0) + data.get("losses_7d", 0)
+        count = data.get("count", data.get("wins_7d", 0) + data.get("losses_7d", 0))
         results.append(
             {
-                "Strategy": strategy,
+                "Strategy": normalize_strategy(strategy),
                 "Win Rate": win_rate,
                 "Avg Return": avg_return,
                 "Count": count,
