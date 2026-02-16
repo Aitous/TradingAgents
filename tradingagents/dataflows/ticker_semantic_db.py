@@ -52,8 +52,7 @@ class TickerSemanticDB:
             self.openai_client = OpenAI(api_key=openai_api_key)
             self.embedding_dim = 1536  # OpenAI text-embedding-3-small dimension
         else:
-            # TODO: Add local HuggingFace model support
-            # Use sentence-transformers with a good MTEB-ranked model
+            # Local sentence-transformers embedding backend.
             from sentence_transformers import SentenceTransformer
 
             self.embedding_model = config.get("embedding_model", "BAAI/bge-small-en-v1.5")

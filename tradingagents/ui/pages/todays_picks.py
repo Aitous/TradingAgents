@@ -8,11 +8,19 @@ confidence bars, and expandable thesis sections.
 from datetime import datetime
 
 import pandas as pd
-import plotly.express as px
+import plotly.graph_objects as go
 import streamlit as st
 
 from tradingagents.ui.theme import COLORS, get_plotly_template, page_header, signal_card
 from tradingagents.ui.utils import load_recommendations
+
+TIMEFRAME_LOOKBACK_DAYS = {
+    "7D": 7,
+    "1M": 30,
+    "3M": 90,
+    "6M": 180,
+    "1Y": 365,
+}
 
 
 @st.cache_data(ttl=3600)
@@ -43,7 +51,120 @@ def _load_price_history(ticker: str, period: str) -> pd.DataFrame:
     if close_col not in data.columns:
         return pd.DataFrame()
 
-    return data[[date_col, close_col]].rename(columns={date_col: "date", close_col: "close"})
+    history = data[[date_col, close_col]].rename(columns={date_col: "date", close_col: "close"})
+    history["date"] = pd.to_datetime(history["date"])
+    history = history.dropna(subset=["close"]).sort_values("date")
+    return history
+
+
+def _slice_history_window(history: pd.DataFrame, timeframe: str) -> pd.DataFrame:
+    days = TIMEFRAME_LOOKBACK_DAYS.get(timeframe)
+    if history.empty or days is None:
+        return pd.DataFrame()
+
+    latest_date = history["date"].max()
+    cutoff = latest_date - pd.Timedelta(days=days)
+    window = history[history["date"] >= cutoff].copy()
+    if len(window) < 2:
+        return pd.DataFrame()
+    return window
+
+
+def _format_move_pct(window: pd.DataFrame) -> str:
+    first_close = float(window["close"].iloc[0])
+    last_close = float(window["close"].iloc[-1])
+    if first_close == 0:
+        return "0.00%"
+    move = ((last_close - first_close) / first_close) * 100
+    return f"{move:+.2f}%"
+
+
+def _build_mini_chart(window: pd.DataFrame, timeframe: str) -> go.Figure:
+    template = get_plotly_template()
+    first_close = float(window["close"].iloc[0])
+    last_close = float(window["close"].iloc[-1])
+    line_color = COLORS["green"] if last_close >= first_close else COLORS["red"]
+
+    fig = go.Figure()
+    fig.add_trace(
+        go.Scatter(
+            x=window["date"],
+            y=window["close"],
+            mode="lines",
+            line=dict(color=line_color, width=1.8),
+            fill="tozeroy",
+            fillcolor="rgba(34,197,94,0.08)" if line_color == COLORS["green"] else "rgba(239,68,68,0.08)",
+            hovertemplate=f"{timeframe}<br>%{{x|%b %d, %Y}}<br>$%{{y:.2f}}<extra></extra>",
+            name=timeframe,
+        )
+    )
+    fig.update_layout(
+        **template,
+        height=140,
+        showlegend=False,
+        margin=dict(l=0, r=0, t=0, b=0),
+    )
+    fig.update_xaxes(showticklabels=False, showgrid=False)
+    fig.update_yaxes(showgrid=True, gridcolor="rgba(42,53,72,0.28)", tickprefix="$", nticks=4)
+    return fig
+
+
+def _render_multi_timeframe_charts(ticker: str, selected_timeframes: list[str]) -> None:
+    if not selected_timeframes:
+        return
+
+    base_history = _load_price_history(ticker, "1y")
+    if base_history.empty:
+        return
+
+    ordered_timeframes = [tf for tf in TIMEFRAME_LOOKBACK_DAYS.keys() if tf in selected_timeframes]
+    if not ordered_timeframes:
+        return
+
+    st.markdown(
+        f"""
+        <div style="margin-top:0.4rem;margin-bottom:0.45rem;padding:0.4rem 0.55rem;
+            border:1px solid {COLORS['border']};border-radius:8px;
+            background:linear-gradient(120deg, rgba(6,182,212,0.10), rgba(59,130,246,0.05));">
+            <span style="font-family:'JetBrains Mono',monospace;font-size:0.66rem;
+                text-transform:uppercase;letter-spacing:0.07em;color:{COLORS['text_secondary']};">
+                Multi-Timeframe Price Map
+            </span>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    for i in range(0, len(ordered_timeframes), 2):
+        cols = st.columns(2)
+        for j, col in enumerate(cols):
+            idx = i + j
+            if idx >= len(ordered_timeframes):
+                continue
+            timeframe = ordered_timeframes[idx]
+            window = _slice_history_window(base_history, timeframe)
+            if window.empty:
+                continue
+            first_close = float(window["close"].iloc[0])
+            last_close = float(window["close"].iloc[-1])
+            move_text = _format_move_pct(window)
+            move_color = COLORS["green"] if last_close >= first_close else COLORS["red"]
+            fig = _build_mini_chart(window, timeframe)
+
+            with col:
+                st.markdown(
+                    f"""
+                    <div style="display:flex;justify-content:space-between;align-items:center;
+                        margin:0.1rem 0 0.2rem 0;">
+                        <span style="font-family:'JetBrains Mono',monospace;font-size:0.70rem;
+                            color:{COLORS['text_secondary']};letter-spacing:0.05em;">{timeframe}</span>
+                        <span style="font-family:'JetBrains Mono',monospace;font-size:0.70rem;
+                            font-weight:600;color:{move_color};">{move_text}</span>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+                st.plotly_chart(fig, width="stretch")
 
 
 def render():
@@ -79,9 +200,13 @@ def render():
     with ctrl_cols[3]:
         show_charts = st.checkbox("Price Charts", value=False)
         if show_charts:
-            chart_window = st.selectbox("Window", ["1mo", "3mo", "6mo", "1y"], index=1)
+            selected_timeframes = st.multiselect(
+                "Timeframes",
+                list(TIMEFRAME_LOOKBACK_DAYS.keys()),
+                default=["1M", "3M", "6M", "1Y"],
+            )
         else:
-            chart_window = "3mo"
+            selected_timeframes = []
 
     # Apply filters
     filtered = [
@@ -134,30 +259,7 @@ def render():
                 )
 
                 if show_charts:
-                    history = _load_price_history(ticker, chart_window)
-                    if not history.empty:
-                        template = get_plotly_template()
-                        fig = px.line(
-                            history, x="date", y="close", labels={"date": "", "close": "Price"}
-                        )
-
-                        # Color line green if trending up, red if down
-                        first_close = history["close"].iloc[0]
-                        last_close = history["close"].iloc[-1]
-                        line_color = COLORS["green"] if last_close >= first_close else COLORS["red"]
-
-                        fig.update_traces(line=dict(color=line_color, width=1.5))
-                        fig.update_layout(
-                            **template,
-                            height=160,
-                            showlegend=False,
-                        )
-                        fig.update_layout(margin=dict(l=0, r=0, t=0, b=0))
-                        fig.update_xaxes(showticklabels=False, showgrid=False)
-                        fig.update_yaxes(
-                            showgrid=True, gridcolor="rgba(42,53,72,0.3)", tickprefix="$"
-                        )
-                        st.plotly_chart(fig, width="stretch")
+                    _render_multi_timeframe_charts(ticker, selected_timeframes)
 
                 # Action buttons
                 btn_cols = st.columns(2)
