@@ -43,15 +43,9 @@ def render() -> None:
     # Weighted averages only over strategies that have evaluated data (non-NaN)
     eval_df = df.dropna(subset=["Win Rate", "Avg Return"])
     eval_trades = eval_df["Count"].sum()
-    avg_wr = (
-        (eval_df["Win Rate"] * eval_df["Count"]).sum() / eval_trades
-        if eval_trades > 0
-        else 0
-    )
+    avg_wr = (eval_df["Win Rate"] * eval_df["Count"]).sum() / eval_trades if eval_trades > 0 else 0
     avg_ret = (
-        (eval_df["Avg Return"] * eval_df["Count"]).sum() / eval_trades
-        if eval_trades > 0
-        else 0
+        (eval_df["Avg Return"] * eval_df["Count"]).sum() / eval_trades if eval_trades > 0 else 0
     )
     n_strategies = len(df)
 
@@ -358,8 +352,7 @@ def _render_recommendation_history(template: dict) -> None:
     # ---- Full history table ----
     st.markdown("<div style='height:1rem;'></div>", unsafe_allow_html=True)
     st.markdown(
-        '<div class="section-title">All Picks '
-        '<span class="accent">// detail table</span></div>',
+        '<div class="section-title">All Picks ' '<span class="accent">// detail table</span></div>',
         unsafe_allow_html=True,
     )
     _render_history_table(filtered)

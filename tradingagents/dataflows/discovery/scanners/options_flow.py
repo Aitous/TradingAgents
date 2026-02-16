@@ -76,8 +76,7 @@ class OptionsFlowScanner(BaseScanner):
 
         with ThreadPoolExecutor(max_workers=self.max_workers) as pool:
             futures = {
-                pool.submit(self._analyze_ticker_options, ticker): ticker
-                for ticker in universe
+                pool.submit(self._analyze_ticker_options, ticker): ticker for ticker in universe
             }
             for future in as_completed(futures):
                 try:
