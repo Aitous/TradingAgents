@@ -1,0 +1,171 @@
+{
+  "date": "2026-02-16",
+  "llm_provider": "google",
+  "recommendations": [
+    {
+      "ticker": "ADM",
+      "rank": 1,
+      "strategy_match": "options_flow",
+      "final_score": 96,
+      "confidence": 10,
+      "reason": "ADM presents a perfect convergence of bullish signals with an extraordinarily low Put/Call ratio of 0.007 on high volume, indicating massive bullish positioning. Insider confidence is confirmed by a recent Director purchase of $486k. Technically, the stock is in a strong uptrend, trading above both its 50 and 200 SMAs with rising OBV. The combination of institutional accumulation and technical strength suggests immediate upside.",
+      "entry_price": 69.51000213623047,
+      "discovery_date": "2026-02-16",
+      "status": "open"
+    },
+    {
+      "ticker": "WRB",
+      "rank": 2,
+      "strategy_match": "insider_buying",
+      "final_score": 94,
+      "confidence": 9,
+      "reason": "Institutional insider Mitsui Sumitomo has aggressively accumulated over $223M in shares, including a $68M purchase on Feb 11. This level of insider conviction is a leading indicator of undervaluation or upcoming catalysts. The stock is technically healthy, holding an uptrend above its 50 SMA. The risk/reward is skewed heavily to the upside given the magnitude of capital commitment from insiders.",
+      "entry_price": 69.69999694824219,
+      "discovery_date": "2026-02-16",
+      "status": "open"
+    },
+    {
+      "ticker": "AMGN",
+      "rank": 3,
+      "strategy_match": "options_flow",
+      "final_score": 92,
+      "confidence": 9,
+      "reason": "Amgen shows extremely bullish options activity with a volume Put/Call ratio of 0.016 and over 100k calls traded, signaling an expectation of a sharp move. The stock is in a strong uptrend, trading well above its 50 SMA with a bullish MACD setup. The confluence of momentum and aggressive call buying makes this a high-probability trade for the coming week.",
+      "entry_price": 369.19000244140625,
+      "discovery_date": "2026-02-16",
+      "status": "open"
+    },
+    {
+      "ticker": "APA",
+      "rank": 4,
+      "strategy_match": "momentum",
+      "final_score": 89,
+      "confidence": 9,
+      "reason": "APA is exhibiting strong technical momentum with a fresh MACD bullish crossover and a stochastic buy signal. Options flow supports the move with a bullish P/C ratio of 0.094. The stock is trading above key moving averages with rising on-balance volume, indicating accumulation. Short-term momentum is robust heading into earnings later this month.",
+      "entry_price": 27.920000076293945,
+      "discovery_date": "2026-02-16",
+      "status": "open"
+    },
+    {
+      "ticker": "KKR",
+      "rank": 5,
+      "strategy_match": "insider_buying",
+      "final_score": 88,
+      "confidence": 8,
+      "reason": "A Director recently purchased $5.2M in shares, providing a strong vote of confidence despite the recent downtrend. The stock is currently oversold (RSI 31.4), creating a prime setup for a mean-reversion bounce supported by the insider floor. Bullish options flow (P/C 0.121) further suggests traders are positioning for a reversal.",
+      "entry_price": 101.7300033569336,
+      "discovery_date": "2026-02-16",
+      "status": "open"
+    },
+    {
+      "ticker": "AI",
+      "rank": 6,
+      "strategy_match": "momentum",
+      "final_score": 85,
+      "confidence": 8,
+      "reason": "This is a high-conviction squeeze play; despite insider selling, the options market shows explosive bullish sentiment with a P/C ratio of 0.012 on massive volume (129k calls). With short interest at 32%, any upward momentum could trigger a violent short squeeze. The stock recently flashed a stochastic bullish crossover, adding technical fuel to the gamma squeeze potential.",
+      "entry_price": 10.779999732971191,
+      "discovery_date": "2026-02-16",
+      "status": "open"
+    },
+    {
+      "ticker": "RDDT",
+      "rank": 7,
+      "strategy_match": "insider_buying",
+      "final_score": 83,
+      "confidence": 8,
+      "reason": "A Director purchased $7.4M worth of shares on Feb 11, signaling value at these levels. The stock is deeply oversold with an RSI of 28.6, often a precursor to a sharp relief rally. Combined with high short interest (15.5%), the insider buying could act as the catalyst for a rapid repricing upwards.",
+      "entry_price": 139.64999389648438,
+      "discovery_date": "2026-02-16",
+      "status": "open"
+    },
+    {
+      "ticker": "BBWI",
+      "rank": 8,
+      "strategy_match": "momentum",
+      "final_score": 81,
+      "confidence": 7,
+      "reason": "BBWI is showing strong momentum with a 5% daily gain and a MACD bullish crossover. Options flow is supportive with a P/C ratio of 0.164. While it is near the upper Bollinger Band, the strength of the trend and volume suggests a continuation breakout is possible.",
+      "entry_price": 24.06999969482422,
+      "discovery_date": "2026-02-16",
+      "status": "open"
+    },
+    {
+      "ticker": "BKR",
+      "rank": 9,
+      "strategy_match": "options_flow",
+      "final_score": 79,
+      "confidence": 7,
+      "reason": "Options traders are aggressively betting on upside with a P/C ratio of 0.016, contradicting recent insider selling. The stock is in a strong uptrend, trading well above moving averages. The divergence between insider creates risk, but the sheer volume of bullish options suggests near-term momentum will prevail.",
+      "entry_price": 61.20000076293945,
+      "discovery_date": "2026-02-16",
+      "status": "open"
+    },
+    {
+      "ticker": "CAG",
+      "rank": 10,
+      "strategy_match": "options_flow",
+      "final_score": 78,
+      "confidence": 7,
+      "reason": "Conagra displays a steady uptrend and solid relative strength. The options flow is bullish (P/C 0.23), and technicals show rising on-balance volume. It offers a lower-beta, defensive trade setup with clear support around the 50 SMA.",
+      "entry_price": 19.760000228881836,
+      "discovery_date": "2026-02-16",
+      "status": "open"
+    },
+    {
+      "ticker": "AON",
+      "rank": 11,
+      "strategy_match": "insider_buying",
+      "final_score": 76,
+      "confidence": 7,
+      "reason": "A Director purchased $1.2M in shares, catching the stock as it sits near the lower Bollinger Band. This insider activity suggests the recent pullback is an overreaction. OBV is rising despite the price drop, indicating smart money accumulation ahead of a potential reversal.",
+      "entry_price": 321.70001220703125,
+      "discovery_date": "2026-02-16",
+      "status": "open"
+    },
+    {
+      "ticker": "BBY",
+      "rank": 12,
+      "strategy_match": "options_flow",
+      "final_score": 75,
+      "confidence": 6,
+      "reason": "Best Buy shows a classic bullish divergence on OBV, where volume is rising while price consolidates, often preceding a breakout. Bullish options flow (P/C 0.49) supports this thesis. The stock is oversold and due for a rotation back toward the mean.",
+      "entry_price": 65.80000305175781,
+      "discovery_date": "2026-02-16",
+      "status": "open"
+    },
+    {
+      "ticker": "BAC",
+      "rank": 13,
+      "strategy_match": "options_flow",
+      "final_score": 72,
+      "confidence": 6,
+      "reason": "Unusual bullish options activity with a P/C ratio of 0.385 suggests traders expect a bounce. The stock is testing support levels, and the financials sector remains robust. Analyst sentiment is overwhelmingly bullish (80%), providing a backstop.",
+      "entry_price": 52.54999923706055,
+      "discovery_date": "2026-02-16",
+      "status": "open"
+    },
+    {
+      "ticker": "TMC",
+      "rank": 14,
+      "strategy_match": "reddit_dd",
+      "final_score": 70,
+      "confidence": 5,
+      "reason": "Driven by retail speculation and Reddit DD regarding deep-sea mining catalysts, TMC sees bullish options positioning. Short interest is moderate at 10.5%, providing some squeeze fuel. This is a high-volatility speculative play based on sentiment and news catalysts.",
+      "entry_price": 6.090000152587891,
+      "discovery_date": "2026-02-16",
+      "status": "open"
+    },
+    {
+      "ticker": "POET",
+      "rank": 15,
+      "strategy_match": "reddit_dd",
+      "final_score": 68,
+      "confidence": 5,
+      "reason": "Speculative interest driven by rumors of a large partner/investment ('$75M drop'). Options volume is tilting bullish. While technicals are weak, the stock has high volatility, making it a candidate for a rapid 5-10% move if rumors substantiate or retail volume surges.",
+      "entry_price": 5.579999923706055,
+      "discovery_date": "2026-02-16",
+      "status": "open"
+    }
+  ]
+}
