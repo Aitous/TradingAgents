@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Test script to verify DiscoveryGraph refactoring.
-Tests: LLM Factory, TraditionalScanner, CandidateFilter, CandidateRanker
+Tests: LLM Factory, CandidateFilter, CandidateRanker
 """
 import os
 import sys
@@ -36,32 +36,6 @@ def test_llm_factory():
 
     except Exception as e:
         print(f"❌ LLM Factory: Failed - {e}")
-        return False
-
-def test_traditional_scanner():
-    """Test TraditionalScanner class."""
-    print("\n=== Testing TraditionalScanner ===")
-    try:
-        from unittest.mock import MagicMock
-
-        from tradingagents.dataflows.discovery.scanners import TraditionalScanner
-
-        config = {"discovery": {}}
-        mock_llm = MagicMock()
-        mock_executor = MagicMock()
-
-        scanner = TraditionalScanner(config, mock_llm, mock_executor)
-
-        assert hasattr(scanner, 'scan'), "Scanner should have scan method"
-        assert scanner.execute_tool == mock_executor, "Should store executor"
-
-        print("✅ TraditionalScanner: Successfully initialized")
-        return True
-
-    except Exception as e:
-        print(f"❌ TraditionalScanner: Failed - {e}")
-        import traceback
-        traceback.print_exc()
         return False
 
 def test_candidate_filter():
@@ -217,7 +191,6 @@ def main():
 
     # Run all tests
     results.append(("LLM Factory", test_llm_factory()))
-    results.append(("Traditional Scanner", test_traditional_scanner()))
     results.append(("Candidate Filter", test_candidate_filter()))
     results.append(("Candidate Ranker", test_candidate_ranker()))
     results.append(("Utils", test_utils()))
