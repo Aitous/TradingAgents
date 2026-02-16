@@ -2,14 +2,137 @@ name: Daily Discovery
 
 on:
   schedule:
-    - cron: '30 12 * * *'
+    # 7:30 AM ET (12:30 UTC) daily (including weekends)
+    - cron: "30 12 * * *"
+  workflow_dispatch:
+    # Manual trigger with optional overrides
+    inputs:
+      date:
+        description: "Analysis date (YYYY-MM-DD, blank = today)"
+        required: false
+        default: ""
+      provider:
+        description: "LLM provider"
+        required: false
+        default: "google"
+        type: choice
+        options:
+          - google
+          - openai
+          - anthropic
+
+env:
+  PYTHON_VERSION: "3.10"
 
 jobs:
   discovery:
     runs-on: ubuntu-latest
+    environment: TradingAgent
+    timeout-minutes: 30
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-      - name: Run discovery script
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install dependencies
         run: |
-          echo 'Running discovery script'
+          pip install --upgrade pip
+          pip install -e .
+
+      - name: Determine analysis date
+        id: date
+        run: |
+          if [ -n "${{ github.event.inputs.date }}" ]; then
+            echo "analysis_date=${{ github.event.inputs.date }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "analysis_date=$(date -u +%Y-%m-%d)" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run discovery pipeline
+        env:
+          # LLM keys (set whichever provider you use)
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          # Data source keys
+          FINNHUB_API_KEY: ${{ secrets.FINNHUB_API_KEY }}
+          ALPHA_VANTAGE_API_KEY: ${{ secrets.ALPHA_VANTAGE_API_KEY }}
+          FMP_API_KEY: ${{ secrets.FMP_API_KEY }}
+          REDDIT_CLIENT_ID: ${{ secrets.REDDIT_CLIENT_ID }}
+          REDDIT_CLIENT_SECRET: ${{ secrets.REDDIT_CLIENT_SECRET }}
+          TRADIER_API_KEY: ${{ secrets.TRADIER_API_KEY }}
+        run: |
+          python scripts/run_daily_discovery.py \
+            --date "${{ steps.date.outputs.analysis_date }}" \
+            --no-update-positions
+
+      - name: Commit recommendations to repo
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Stage new/updated recommendation files
+          git add data/recommendations/ || true
+          git add results/ || true
+
+          # Only commit if there are changes
+          if git diff --cached --quiet; then
+            echo "No new recommendations to commit"
+          else
+            git commit -m "chore: daily discovery ${{ steps.date.outputs.analysis_date }}"
+            git push
+          fi
+
+      - name: Track recommendation performance
+        if: success()
+        run: |
+          python scripts/track_recommendation_performance.py
+
+      - name: Commit performance updates
+        if: success()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/recommendations/ || true
+          if git diff --cached --quiet; then
+            echo "No performance updates"
+          else
+            git commit -m "chore: update performance tracking ${{ steps.date.outputs.analysis_date }}"
+            git push
+          fi
+
+      - name: Update positions
+        if: success()
+        env:
+          FINNHUB_API_KEY: ${{ secrets.FINNHUB_API_KEY }}
+        run: |
+          python scripts/update_positions.py
+
+      - name: Commit position updates
+        if: success()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/recommendations/ || true
+          if git diff --cached --quiet; then
+            echo "No position updates"
+          else
+            git commit -m "chore: update positions ${{ steps.date.outputs.analysis_date }}"
+            git push
+          fi
+
+      - name: Upload results as artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: discovery-${{ steps.date.outputs.analysis_date }}
+          path: |
+            data/recommendations/${{ steps.date.outputs.analysis_date }}*.json
+            results/discovery/${{ steps.date.outputs.analysis_date }}/
+          retention-days: 30
