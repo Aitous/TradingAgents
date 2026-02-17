@@ -79,15 +79,53 @@ def _format_move_pct(window: pd.DataFrame) -> str:
     return f"{move:+.2f}%"
 
 
-def _build_dynamic_chart(history: pd.DataFrame, timeframe: str) -> tuple[go.Figure, str, str]:
+def _get_daily_movement(ticker: str) -> str:
+    """Get today's intraday price movement percentage."""
+    try:
+        from tradingagents.dataflows.y_finance import download_history
+
+        today_data = download_history(
+            ticker,
+            period="1d",
+            interval="1d",
+            auto_adjust=True,
+            progress=False,
+        )
+        if today_data is None or today_data.empty:
+            return "N/A"
+
+        if isinstance(today_data.columns, pd.MultiIndex):
+            tickers = today_data.columns.get_level_values(1).unique()
+            if ticker not in tickers:
+                ticker = tickers[0]
+            today_data = today_data.xs(ticker, level=1, axis=1)
+
+        close_col = "Close" if "Close" in today_data.columns else "Adj Close"
+        if close_col not in today_data.columns:
+            return "N/A"
+
+        today_close = float(today_data[close_col].iloc[-1])
+        today_open = float(today_data.get("Open", today_data[close_col]).iloc[-1])
+        if today_open != 0:
+            daily_move = ((today_close - today_open) / today_open) * 100
+            return f"{daily_move:+.2f}%"
+    except Exception:
+        pass
+    return "N/A"
+
+
+def _build_dynamic_chart(
+    history: pd.DataFrame, timeframe: str, ticker: str = ""
+) -> tuple[go.Figure, str, str, str]:
     window = _slice_history_window(history, timeframe)
     if window.empty:
-        return go.Figure(), "N/A", COLORS["text_muted"]
+        return go.Figure(), "N/A", COLORS["text_muted"], "N/A"
 
     first_close = float(window["close"].iloc[0])
     last_close = float(window["close"].iloc[-1])
     line_color = COLORS["green"] if last_close >= first_close else COLORS["red"]
     move_text = _format_move_pct(window)
+    daily_move_text = _get_daily_movement(ticker) if ticker else "N/A"
 
     template = dict(get_plotly_template())
 
@@ -144,7 +182,7 @@ def _build_dynamic_chart(history: pd.DataFrame, timeframe: str) -> tuple[go.Figu
         nticks=5,
         range=[y_min - pad, y_max + pad],
     )
-    return fig, move_text, line_color
+    return fig, move_text, line_color, daily_move_text
 
 
 def _render_single_dynamic_chart(ticker: str, timeframe: str) -> None:
@@ -158,17 +196,31 @@ def _render_single_dynamic_chart(ticker: str, timeframe: str) -> None:
         st.caption(f"Not enough data to render {timeframe} window.")
         return
 
-    fig, move_text, move_color = _build_dynamic_chart(base_history, timeframe)
+    fig, move_text, move_color, daily_move_text = _build_dynamic_chart(base_history, timeframe, ticker)
+
+    # Determine daily movement color
+    try:
+        daily_move_val = float(daily_move_text.strip().rstrip('%'))
+        daily_color = COLORS["green"] if daily_move_val >= 0 else COLORS["red"]
+    except (ValueError, AttributeError):
+        daily_color = COLORS["text_muted"]
+
     st.markdown(
         f"""
         <div style="margin-top:0.4rem;margin-bottom:0.45rem;padding:0.45rem 0.6rem;
             border:1px solid {COLORS['border']};border-radius:8px;
             background:linear-gradient(120deg, rgba(6,182,212,0.10), rgba(59,130,246,0.05));
             display:flex;justify-content:space-between;align-items:center;">
-            <span style="font-family:'JetBrains Mono',monospace;font-size:0.68rem;
-                text-transform:uppercase;letter-spacing:0.07em;color:{COLORS['text_secondary']};">
-                Dynamic Price View • {timeframe}
-            </span>
+            <div>
+                <span style="font-family:'JetBrains Mono',monospace;font-size:0.68rem;
+                    text-transform:uppercase;letter-spacing:0.07em;color:{COLORS['text_secondary']};">
+                    Dynamic Price View • {timeframe}
+                </span>
+                <span style="font-family:'JetBrains Mono',monospace;font-size:0.62rem;
+                    color:{COLORS['text_muted']};margin-left:0.8rem;">
+                    Daily: <span style="color:{daily_color};font-weight:600;">{daily_move_text}</span>
+                </span>
+            </div>
             <span style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;
                 font-weight:700;color:{move_color};">{move_text}</span>
         </div>
