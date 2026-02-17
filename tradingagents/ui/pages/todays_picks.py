@@ -110,9 +110,7 @@ def _build_dynamic_chart(history: pd.DataFrame, timeframe: str) -> tuple[go.Figu
             line=dict(color=line_color, width=2.8),
             fill="tozeroy",
             fillcolor=(
-                "rgba(34,197,94,0.18)"
-                if line_color == COLORS["green"]
-                else "rgba(239,68,68,0.18)"
+                "rgba(34,197,94,0.18)" if line_color == COLORS["green"] else "rgba(239,68,68,0.18)"
             ),
             hovertemplate=f"{timeframe}<br>%{{x|%b %d, %Y}}<br>$%{{y:.2f}}<extra></extra>",
             name=f"{timeframe} Focus",
