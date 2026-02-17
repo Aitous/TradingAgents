@@ -79,92 +79,105 @@ def _format_move_pct(window: pd.DataFrame) -> str:
     return f"{move:+.2f}%"
 
 
-def _build_mini_chart(window: pd.DataFrame, timeframe: str) -> go.Figure:
-    template = get_plotly_template()
+def _build_dynamic_chart(history: pd.DataFrame, timeframe: str) -> tuple[go.Figure, str, str]:
+    window = _slice_history_window(history, timeframe)
+    if window.empty:
+        return go.Figure(), "N/A", COLORS["text_muted"]
+
     first_close = float(window["close"].iloc[0])
     last_close = float(window["close"].iloc[-1])
     line_color = COLORS["green"] if last_close >= first_close else COLORS["red"]
+    move_text = _format_move_pct(window)
+
+    template = dict(get_plotly_template())
 
     fig = go.Figure()
+    fig.add_trace(
+        go.Scatter(
+            x=history["date"],
+            y=history["close"],
+            mode="lines",
+            line=dict(color="rgba(148,163,184,0.22)", width=1.1),
+            hovertemplate="%{x|%b %d, %Y}<br>$%{y:.2f}<extra></extra>",
+            name="History",
+        )
+    )
     fig.add_trace(
         go.Scatter(
             x=window["date"],
             y=window["close"],
             mode="lines",
-            line=dict(color=line_color, width=1.8),
+            line=dict(color=line_color, width=2.8),
             fill="tozeroy",
-            fillcolor="rgba(34,197,94,0.08)" if line_color == COLORS["green"] else "rgba(239,68,68,0.08)",
+            fillcolor=(
+                "rgba(34,197,94,0.18)"
+                if line_color == COLORS["green"]
+                else "rgba(239,68,68,0.18)"
+            ),
             hovertemplate=f"{timeframe}<br>%{{x|%b %d, %Y}}<br>$%{{y:.2f}}<extra></extra>",
-            name=timeframe,
+            name=f"{timeframe} Focus",
         )
     )
-    fig.update_layout(
-        **template,
-        height=140,
-        showlegend=False,
-        margin=dict(l=0, r=0, t=0, b=0),
+
+    # Override template keys before expansion to avoid duplicate keyword args.
+    template["height"] = 210
+    template["showlegend"] = False
+    template["margin"] = dict(l=0, r=0, t=10, b=0)
+    fig.update_layout(**template)
+
+    # Tighten Y-axis to selected timeframe range for better signal visibility.
+    y_min = float(window["close"].min())
+    y_max = float(window["close"].max())
+    if y_min == y_max:
+        pad = max(0.5, y_min * 0.01)
+    else:
+        pad = max((y_max - y_min) * 0.08, y_max * 0.01)
+
+    fig.update_xaxes(
+        showticklabels=False,
+        showgrid=False,
+        range=[window["date"].min(), history["date"].max()],
+        rangeslider=dict(visible=False),
     )
-    fig.update_xaxes(showticklabels=False, showgrid=False)
-    fig.update_yaxes(showgrid=True, gridcolor="rgba(42,53,72,0.28)", tickprefix="$", nticks=4)
-    return fig
+    fig.update_yaxes(
+        showgrid=True,
+        gridcolor="rgba(42,53,72,0.28)",
+        tickprefix="$",
+        nticks=5,
+        range=[y_min - pad, y_max + pad],
+    )
+    return fig, move_text, line_color
 
 
-def _render_multi_timeframe_charts(ticker: str, selected_timeframes: list[str]) -> None:
-    if not selected_timeframes:
-        return
-
+def _render_single_dynamic_chart(ticker: str, timeframe: str) -> None:
     base_history = _load_price_history(ticker, "1y")
     if base_history.empty:
+        st.caption("No price history available for this ticker.")
         return
 
-    ordered_timeframes = [tf for tf in TIMEFRAME_LOOKBACK_DAYS.keys() if tf in selected_timeframes]
-    if not ordered_timeframes:
+    window = _slice_history_window(base_history, timeframe)
+    if window.empty:
+        st.caption(f"Not enough data to render {timeframe} window.")
         return
 
+    fig, move_text, move_color = _build_dynamic_chart(base_history, timeframe)
     st.markdown(
         f"""
-        <div style="margin-top:0.4rem;margin-bottom:0.45rem;padding:0.4rem 0.55rem;
+        <div style="margin-top:0.4rem;margin-bottom:0.45rem;padding:0.45rem 0.6rem;
             border:1px solid {COLORS['border']};border-radius:8px;
-            background:linear-gradient(120deg, rgba(6,182,212,0.10), rgba(59,130,246,0.05));">
-            <span style="font-family:'JetBrains Mono',monospace;font-size:0.66rem;
+            background:linear-gradient(120deg, rgba(6,182,212,0.10), rgba(59,130,246,0.05));
+            display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-family:'JetBrains Mono',monospace;font-size:0.68rem;
                 text-transform:uppercase;letter-spacing:0.07em;color:{COLORS['text_secondary']};">
-                Multi-Timeframe Price Map
+                Dynamic Price View • {timeframe}
             </span>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;
+                font-weight:700;color:{move_color};">{move_text}</span>
         </div>
         """,
         unsafe_allow_html=True,
     )
-
-    for i in range(0, len(ordered_timeframes), 2):
-        cols = st.columns(2)
-        for j, col in enumerate(cols):
-            idx = i + j
-            if idx >= len(ordered_timeframes):
-                continue
-            timeframe = ordered_timeframes[idx]
-            window = _slice_history_window(base_history, timeframe)
-            if window.empty:
-                continue
-            first_close = float(window["close"].iloc[0])
-            last_close = float(window["close"].iloc[-1])
-            move_text = _format_move_pct(window)
-            move_color = COLORS["green"] if last_close >= first_close else COLORS["red"]
-            fig = _build_mini_chart(window, timeframe)
-
-            with col:
-                st.markdown(
-                    f"""
-                    <div style="display:flex;justify-content:space-between;align-items:center;
-                        margin:0.1rem 0 0.2rem 0;">
-                        <span style="font-family:'JetBrains Mono',monospace;font-size:0.70rem;
-                            color:{COLORS['text_secondary']};letter-spacing:0.05em;">{timeframe}</span>
-                        <span style="font-family:'JetBrains Mono',monospace;font-size:0.70rem;
-                            font-weight:600;color:{move_color};">{move_text}</span>
-                    </div>
-                    """,
-                    unsafe_allow_html=True,
-                )
-                st.plotly_chart(fig, width="stretch")
+    st.plotly_chart(fig, width="stretch", config={"displayModeBar": False})
 
 
 def render():
@@ -199,14 +212,6 @@ def render():
         min_score = st.slider("Min Score", 0, 100, 0)
     with ctrl_cols[3]:
         show_charts = st.checkbox("Price Charts", value=False)
-        if show_charts:
-            selected_timeframes = st.multiselect(
-                "Timeframes",
-                list(TIMEFRAME_LOOKBACK_DAYS.keys()),
-                default=["1M", "3M", "6M", "1Y"],
-            )
-        else:
-            selected_timeframes = []
 
     # Apply filters
     filtered = [
@@ -259,7 +264,26 @@ def render():
                 )
 
                 if show_charts:
-                    _render_multi_timeframe_charts(ticker, selected_timeframes)
+                    st.markdown(
+                        f"""
+                        <div style="margin-top:0.35rem;margin-bottom:0.25rem;
+                            font-family:'JetBrains Mono',monospace;font-size:0.66rem;
+                            text-transform:uppercase;letter-spacing:0.06em;
+                            color:{COLORS['text_muted']};">
+                            Chart Timeframe
+                        </div>
+                        """,
+                        unsafe_allow_html=True,
+                    )
+                    chart_timeframe = st.radio(
+                        f"Timeframe for {ticker}",
+                        list(TIMEFRAME_LOOKBACK_DAYS.keys()),
+                        index=2,
+                        horizontal=True,
+                        label_visibility="collapsed",
+                        key=f"chart_tf_{ticker}_{idx}",
+                    )
+                    _render_single_dynamic_chart(ticker, chart_timeframe)
 
                 # Action buttons
                 btn_cols = st.columns(2)
