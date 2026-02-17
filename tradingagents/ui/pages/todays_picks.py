@@ -15,6 +15,7 @@ from tradingagents.ui.theme import COLORS, get_plotly_template, page_header, sig
 from tradingagents.ui.utils import load_recommendations
 
 TIMEFRAME_LOOKBACK_DAYS = {
+    "1D": 1,
     "7D": 7,
     "1M": 30,
     "3M": 90,
@@ -23,8 +24,18 @@ TIMEFRAME_LOOKBACK_DAYS = {
 }
 
 
+def _get_interval_for_timeframe(timeframe: str) -> str:
+    """Return appropriate data interval for a given timeframe."""
+    if timeframe == "1D":
+        return "5m"  # 5-minute for intraday detail
+    elif timeframe == "7D":
+        return "1h"  # Hourly for smooth 7-day view
+    else:
+        return "1d"  # Daily for longer timeframes
+
+
 @st.cache_data(ttl=3600)
-def _load_price_history(ticker: str, period: str) -> pd.DataFrame:
+def _load_price_history(ticker: str, period: str, interval: str = "1d") -> pd.DataFrame:
     try:
         from tradingagents.dataflows.y_finance import download_history
     except Exception:
@@ -33,7 +44,7 @@ def _load_price_history(ticker: str, period: str) -> pd.DataFrame:
     data = download_history(
         ticker,
         period=period,
-        interval="1d",
+        interval=interval,
         auto_adjust=True,
         progress=False,
     )
@@ -46,13 +57,17 @@ def _load_price_history(ticker: str, period: str) -> pd.DataFrame:
         data = data.xs(target, level=1, axis=1).copy()
 
     data = data.reset_index()
-    date_col = "Date" if "Date" in data.columns else data.columns[0]
+    # yfinance uses "Datetime" for intraday and "Date" for daily data
+    date_col = next(
+        (c for c in ("Datetime", "Date") if c in data.columns),
+        data.columns[0],
+    )
     close_col = "Close" if "Close" in data.columns else "Adj Close"
     if close_col not in data.columns:
         return pd.DataFrame()
 
     history = data[[date_col, close_col]].rename(columns={date_col: "date", close_col: "close"})
-    history["date"] = pd.to_datetime(history["date"])
+    history["date"] = pd.to_datetime(history["date"], utc=True).dt.tz_localize(None)
     history = history.dropna(subset=["close"]).sort_values("date")
     return history
 
@@ -114,6 +129,11 @@ def _get_daily_movement(ticker: str) -> str:
     return "N/A"
 
 
+def _is_intraday(timeframe: str) -> bool:
+    """Return True for timeframes that use intraday (sub-daily) data."""
+    return timeframe in ("1D", "7D")
+
+
 def _build_dynamic_chart(
     history: pd.DataFrame, timeframe: str, ticker: str = ""
 ) -> tuple[go.Figure, str, str, str]:
@@ -127,33 +147,74 @@ def _build_dynamic_chart(
     move_text = _format_move_pct(window)
     daily_move_text = _get_daily_movement(ticker) if ticker else "N/A"
 
+    intraday = _is_intraday(timeframe)
+
     template = dict(get_plotly_template())
 
     fig = go.Figure()
-    fig.add_trace(
-        go.Scatter(
-            x=history["date"],
-            y=history["close"],
-            mode="lines",
-            line=dict(color="rgba(148,163,184,0.22)", width=1.1),
-            hovertemplate="%{x|%b %d, %Y}<br>$%{y:.2f}<extra></extra>",
-            name="History",
+
+    if intraday:
+        # For intraday charts, plot against a sequential index to eliminate
+        # overnight and weekend gaps. Use customdata for hover timestamps.
+        window = window.reset_index(drop=True)
+        x_vals = list(range(len(window)))
+
+        # Build tick labels: show date at the start of each trading day
+        tick_vals = []
+        tick_labels = []
+        prev_day = None
+        for i, row in window.iterrows():
+            day = row["date"].date()
+            if day != prev_day:
+                tick_vals.append(i)
+                tick_labels.append(row["date"].strftime("%b %d"))
+                prev_day = day
+
+        fig.add_trace(
+            go.Scatter(
+                x=x_vals,
+                y=window["close"],
+                mode="lines",
+                line=dict(color=line_color, width=2.4),
+                fill="tozeroy",
+                fillcolor=(
+                    "rgba(34,197,94,0.18)"
+                    if line_color == COLORS["green"]
+                    else "rgba(239,68,68,0.18)"
+                ),
+                customdata=window["date"],
+                hovertemplate="%{customdata|%b %d %H:%M}<br>$%{y:.2f}<extra></extra>",
+                name=f"{timeframe} Focus",
+            )
         )
-    )
-    fig.add_trace(
-        go.Scatter(
-            x=window["date"],
-            y=window["close"],
-            mode="lines",
-            line=dict(color=line_color, width=2.8),
-            fill="tozeroy",
-            fillcolor=(
-                "rgba(34,197,94,0.18)" if line_color == COLORS["green"] else "rgba(239,68,68,0.18)"
-            ),
-            hovertemplate=f"{timeframe}<br>%{{x|%b %d, %Y}}<br>$%{{y:.2f}}<extra></extra>",
-            name=f"{timeframe} Focus",
+    else:
+        # For daily charts, keep the original two-trace approach
+        fig.add_trace(
+            go.Scatter(
+                x=history["date"],
+                y=history["close"],
+                mode="lines",
+                line=dict(color="rgba(148,163,184,0.22)", width=1.1),
+                hovertemplate="%{x|%b %d, %Y}<br>$%{y:.2f}<extra></extra>",
+                name="History",
+            )
         )
-    )
+        fig.add_trace(
+            go.Scatter(
+                x=window["date"],
+                y=window["close"],
+                mode="lines",
+                line=dict(color=line_color, width=2.8),
+                fill="tozeroy",
+                fillcolor=(
+                    "rgba(34,197,94,0.18)"
+                    if line_color == COLORS["green"]
+                    else "rgba(239,68,68,0.18)"
+                ),
+                hovertemplate=f"{timeframe}<br>%{{x|%b %d, %Y}}<br>$%{{y:.2f}}<extra></extra>",
+                name=f"{timeframe} Focus",
+            )
+        )
 
     # Override template keys before expansion to avoid duplicate keyword args.
     template["height"] = 210
@@ -169,12 +230,23 @@ def _build_dynamic_chart(
     else:
         pad = max((y_max - y_min) * 0.08, y_max * 0.01)
 
-    fig.update_xaxes(
-        showticklabels=False,
-        showgrid=False,
-        range=[window["date"].min(), history["date"].max()],
-        rangeslider=dict(visible=False),
-    )
+    if intraday:
+        fig.update_xaxes(
+            showticklabels=True,
+            showgrid=False,
+            tickvals=tick_vals,
+            ticktext=tick_labels,
+            tickfont=dict(size=9, color=COLORS["text_muted"]),
+            rangeslider=dict(visible=False),
+        )
+    else:
+        fig.update_xaxes(
+            showticklabels=False,
+            showgrid=False,
+            range=[window["date"].min(), history["date"].max()],
+            rangeslider=dict(visible=False),
+        )
+
     fig.update_yaxes(
         showgrid=True,
         gridcolor="rgba(42,53,72,0.28)",
@@ -186,18 +258,45 @@ def _build_dynamic_chart(
 
 
 def _render_single_dynamic_chart(ticker: str, timeframe: str) -> None:
-    base_history = _load_price_history(ticker, "1y")
+    # Load base history with daily data for context (full year)
+    base_history = _load_price_history(ticker, "1y", interval="1d")
     if base_history.empty:
         st.caption("No price history available for this ticker.")
         return
 
-    window = _slice_history_window(base_history, timeframe)
-    if window.empty:
-        st.caption(f"Not enough data to render {timeframe} window.")
-        return
+    # For 1D and 7D, load higher granularity (intraday) data
+    intraday = _is_intraday(timeframe)
+    if intraday:
+        # Map timeframe to yfinance period: 1D -> "1d", 7D -> "7d"
+        yf_period = {"1D": "1d", "7D": "7d"}[timeframe]
+        interval = _get_interval_for_timeframe(timeframe)
+        history_for_chart = _load_price_history(ticker, yf_period, interval=interval)
+
+        if history_for_chart.empty or len(history_for_chart) < 2:
+            # Fallback to daily data
+            history_for_chart = base_history
+            intraday = False
+
+        if intraday:
+            # Use all loaded intraday data directly — yfinance already
+            # returned exactly the period we asked for.
+            window = history_for_chart
+        else:
+            window = _slice_history_window(history_for_chart, timeframe)
+    else:
+        history_for_chart = base_history
+        window = _slice_history_window(history_for_chart, timeframe)
+
+    if window.empty or len(window) < 2:
+        # Last-resort fallback: use all available data
+        if len(history_for_chart) >= 2:
+            window = history_for_chart.copy()
+        else:
+            st.caption(f"Not enough data to render {timeframe} window.")
+            return
 
     fig, move_text, move_color, daily_move_text = _build_dynamic_chart(
-        base_history, timeframe, ticker
+        history_for_chart, timeframe, ticker
     )
 
     # Determine daily movement color
@@ -330,7 +429,7 @@ def render():
                     chart_timeframe = st.radio(
                         f"Timeframe for {ticker}",
                         list(TIMEFRAME_LOOKBACK_DAYS.keys()),
-                        index=2,
+                        index=3,
                         horizontal=True,
                         label_visibility="collapsed",
                         key=f"chart_tf_{ticker}_{idx}",
