@@ -1,0 +1,171 @@
+{
+  "date": "2026-02-17",
+  "llm_provider": "google",
+  "recommendations": [
+    {
+      "ticker": "ADM",
+      "rank": 1,
+      "strategy_match": "options_flow",
+      "final_score": 92,
+      "confidence": 9,
+      "reason": "ADM presents a powerful confluence of bullish signals, highlighted by an extraordinarily low Put/Call ratio of 0.007 and 10 unusual call strikes versus zero puts, indicating aggressive institutional positioning. Insider buying from a Director adds conviction to the strong uptrend, with the price currently holding above the 20 EMA and 50 SMA. The technical setup is robust, and the heavy options volume suggests an imminent move. Risk is managed by a clear stop-loss level near the 50 SMA.",
+      "entry_price": 69.51000213623047,
+      "discovery_date": "2026-02-17",
+      "status": "open"
+    },
+    {
+      "ticker": "CVX",
+      "rank": 2,
+      "strategy_match": "options_flow",
+      "final_score": 89,
+      "confidence": 9,
+      "reason": "Chevron is exhibiting one of the strongest options flow signals in the market, with a Put/Call ratio of 0.003 and 23 unusual call strikes, suggesting massive bullish bets are being placed. The stock is in a strong uptrend, trading above all key moving averages, though the RSI is approaching overbought levels which implies strong momentum rather than exhaustion. While insider selling is noted, the sheer magnitude of the options volume overrides this as a short-term catalyst. The primary risk is a sector-wide pullback in energy.",
+      "entry_price": 183.74000549316406,
+      "discovery_date": "2026-02-17",
+      "status": "open"
+    },
+    {
+      "ticker": "ARE",
+      "rank": 3,
+      "strategy_match": "insider_buying",
+      "final_score": 88,
+      "confidence": 8,
+      "reason": "ARE combines a high quantitative pre-score of 45/100 with a compelling mean-reversion setup, as the RSI is neutral-bearish at 44.6 following a recent pullback. A significant insider purchase of $1.34M by an officer/director signals strong internal confidence at these levels. Additionally, options flow is bullish with a low P/C ratio of 0.273. The trade offers a favorable risk/reward ratio as the stock attempts to reclaim support levels after a 6.6% 5-day drop.",
+      "entry_price": 52.4900016784668,
+      "discovery_date": "2026-02-17",
+      "status": "open"
+    },
+    {
+      "ticker": "WRB",
+      "rank": 4,
+      "strategy_match": "insider_buying",
+      "final_score": 87,
+      "confidence": 8,
+      "reason": "W. R. Berkley stands out due to substantial and persistent insider buying, with over $225M in purchases recorded recently, largely from a beneficial owner. The stock is in a confirmed uptrend with the OBV rising, despite a recent 2.7% daily pullback which offers an attractive entry point. Technicals remain bullish with the price above the 20 EMA and 50 SMA. The primary risk is general financial sector volatility, but the insider conviction provides a strong floor.",
+      "entry_price": 69.69999694824219,
+      "discovery_date": "2026-02-17",
+      "status": "open"
+    },
+    {
+      "ticker": "AI",
+      "rank": 5,
+      "strategy_match": "reddit_trending",
+      "final_score": 85,
+      "confidence": 8,
+      "reason": "C3.ai presents a classic high-risk, high-reward short squeeze setup with 32% short interest and extremely high implied volatility. Despite a technical downtrend, the options volume is heavily skewed to calls (P/C 0.012), and the stock is generating buzz on Reddit. The RSI is low at 39.2, suggesting potential for an oversold bounce or squeeze if buying pressure ignites. This is a volatile trade requiring strict risk management.",
+      "entry_price": 10.779999732971191,
+      "discovery_date": "2026-02-17",
+      "status": "open"
+    },
+    {
+      "ticker": "RDDT",
+      "rank": 6,
+      "strategy_match": "momentum",
+      "final_score": 84,
+      "confidence": 8,
+      "reason": "Reddit is trading in deep oversold territory with an RSI of 28.6, often a precursor to a technical snap-back rally. High short interest at 15.5% adds fuel to a potential reversal, supported by recent insider buying activity. While the trend is currently down, the asymmetric upside from a squeeze or relief rally is significant. The risk is continued downward momentum if support at $127 fails.",
+      "entry_price": 139.64999389648438,
+      "discovery_date": "2026-02-17",
+      "status": "open"
+    },
+    {
+      "ticker": "HALO",
+      "rank": 7,
+      "strategy_match": "earnings_calendar",
+      "final_score": 83,
+      "confidence": 8,
+      "reason": "Halozyme is a strong momentum play with earnings approaching immediately (0 days), acting as a potent catalyst. The stock maintains a strong uptrend above both the 50 and 200 SMAs, and high short interest of 16.0% creates the possibility of a squeeze on a positive report. Insider selling is a concern, but the technical strength and earnings volatility favor a short-term upside move. This is a binary event trade.",
+      "entry_price": 79.44000244140625,
+      "discovery_date": "2026-02-17",
+      "status": "open"
+    },
+    {
+      "ticker": "KKR",
+      "rank": 8,
+      "strategy_match": "insider_buying",
+      "final_score": 82,
+      "confidence": 7,
+      "reason": "KKR offers a compelling value proposition with the RSI oversold at 31.4 and a significant insider purchase of $5.2M by a director. Bullish options flow (P/C 0.121) further supports the thesis of a near-term reversal. While technically in a downtrend below the 50 SMA, the combination of institutional accumulation and oversold conditions suggests the selling may be exhausted. A rebound to the 20 EMA is the immediate target.",
+      "entry_price": 101.7300033569336,
+      "discovery_date": "2026-02-17",
+      "status": "open"
+    },
+    {
+      "ticker": "CF",
+      "rank": 9,
+      "strategy_match": "options_flow",
+      "final_score": 81,
+      "confidence": 7,
+      "reason": "CF Industries shows strong alignment with a bullish P/C ratio of 0.058 and rising on-balance volume (OBV). The stock is in an uptrend, holding above key moving averages, and is positioned well ahead of earnings in 1 day. The volatility from earnings combined with bullish options positioning creates a favorable setup for a breakout. The stop loss should be tight due to the binary earnings event.",
+      "entry_price": 94.66000366210938,
+      "discovery_date": "2026-02-17",
+      "status": "open"
+    },
+    {
+      "ticker": "AMGN",
+      "rank": 10,
+      "strategy_match": "momentum",
+      "final_score": 80,
+      "confidence": 7,
+      "reason": "Amgen is displaying robust momentum, trading above all key moving averages in a strong uptrend. Institutional sentiment is bullish, evidenced by a low options P/C ratio of 0.016 and specific unusual call activity. The stock is not yet overbought (RSI 63), leaving room for further upside. Stability in the healthcare sector adds a defensive layer to this growth trade.",
+      "entry_price": 369.19000244140625,
+      "discovery_date": "2026-02-17",
+      "status": "open"
+    },
+    {
+      "ticker": "ALLE",
+      "rank": 11,
+      "strategy_match": "earnings_calendar",
+      "final_score": 79,
+      "confidence": 7,
+      "reason": "Allegion is trading with strong momentum going into earnings (0 days), with an RSI of 72 indicating powerful buying pressure. The stock is in a strong uptrend and rising OBV confirms accumulation. While overbought conditions present a risk of a ",
+      "entry_price": 179.5,
+      "discovery_date": "2026-02-17",
+      "status": "open"
+    },
+    {
+      "ticker": "BMY",
+      "rank": 12,
+      "strategy_match": "options_flow",
+      "final_score": 78,
+      "confidence": 7,
+      "reason": "BMY is in a verified strong uptrend with a Golden Cross configuration and price above the 20 EMA. Options flow is bullish with a P/C ratio of 0.136, indicating market participants expect continuation. The stock offers a defensive growth profile with lower volatility compared to tech plays. A recent slight pullback on the 5-day chart provides a tactical entry.",
+      "entry_price": 60.7400016784668,
+      "discovery_date": "2026-02-17",
+      "status": "open"
+    },
+    {
+      "ticker": "BKR",
+      "rank": 13,
+      "strategy_match": "options_flow",
+      "final_score": 77,
+      "confidence": 7,
+      "reason": "Baker Hughes shows overwhelmingly bullish options activity with 13 unusual call strikes and a P/C ratio of 0.016. The technicals confirm a strong uptrend, though the RSI is overbought at 73.2. While insider selling is a negative factor, the sheer volume of bullish options bets suggests near-term upside momentum remains intact. Stop losses should be managed carefully due to overbought conditions.",
+      "entry_price": 61.20000076293945,
+      "discovery_date": "2026-02-17",
+      "status": "open"
+    },
+    {
+      "ticker": "CCL",
+      "rank": 14,
+      "strategy_match": "options_flow",
+      "final_score": 76,
+      "confidence": 6,
+      "reason": "Carnival is benefitting from unusual bullish call activity and a strong technical uptrend, trading well above its 50 and 200 SMAs. A recent 5-day pullback of 2.7% has reset the RSI to neutral levels (54), offering a good risk/reward entry for trend continuation. Insider selling is present but outweighed by the recovery momentum in the travel sector.",
+      "entry_price": 31.770000457763672,
+      "discovery_date": "2026-02-17",
+      "status": "open"
+    },
+    {
+      "ticker": "FEAM",
+      "rank": 15,
+      "strategy_match": "insider_buying",
+      "final_score": 75,
+      "confidence": 5,
+      "reason": "FEAM is a speculative, high-volatility play driven by a massive $8M insider purchase and an imminent earnings release. With short interest near 15%, any positive news could trigger a sharp squeeze. The stock is currently in a downtrend, making this a contrarian bet relying heavily on the insider's conviction and the binary earnings event.",
+      "entry_price": 2.2100000381469727,
+      "discovery_date": "2026-02-17",
+      "status": "open"
+    }
+  ]
+}
