@@ -196,11 +196,13 @@ def _render_single_dynamic_chart(ticker: str, timeframe: str) -> None:
         st.caption(f"Not enough data to render {timeframe} window.")
         return
 
-    fig, move_text, move_color, daily_move_text = _build_dynamic_chart(base_history, timeframe, ticker)
+    fig, move_text, move_color, daily_move_text = _build_dynamic_chart(
+        base_history, timeframe, ticker
+    )
 
     # Determine daily movement color
     try:
-        daily_move_val = float(daily_move_text.strip().rstrip('%'))
+        daily_move_val = float(daily_move_text.strip().rstrip("%"))
         daily_color = COLORS["green"] if daily_move_val >= 0 else COLORS["red"]
     except (ValueError, AttributeError):
         daily_color = COLORS["text_muted"]
