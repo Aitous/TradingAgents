@@ -129,10 +129,12 @@ def main():
     6. Save updated positions
     7. Print progress messages
     """
-    logger.info("""
+    logger.info(
+        """
 ╔══════════════════════════════════════════════════════════════╗
 ║         TradingAgents - Position Updater                    ║
-╚══════════════════════════════════════════════════════════════╝""".strip())
+╚══════════════════════════════════════════════════════════════╝""".strip()
+    )
 
     # Initialize position tracker
     tracker = PositionTracker(data_dir="data")
