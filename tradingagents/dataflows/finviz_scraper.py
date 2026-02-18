@@ -251,6 +251,7 @@ def get_insider_buying_screener(
     min_value: Annotated[int, "Minimum transaction value in dollars"] = 25000,
     top_n: Annotated[int, "Number of top results to return"] = 20,
     return_structured: Annotated[bool, "Return list of dicts instead of markdown"] = False,
+    deduplicate: Annotated[bool, "If False, return all transactions without deduplication"] = True,
 ):
     """
     Discover stocks with recent insider buying/selling using OpenInsider.
@@ -389,6 +390,13 @@ def get_insider_buying_screener(
         # Sort by value (largest first)
         transactions.sort(key=lambda x: x["value_num"], reverse=True)
 
+        # Return all transactions without deduplication if requested
+        if return_structured and not deduplicate:
+            logger.info(
+                f"Returning all {len(transactions)} {filter_desc} transactions (no dedup)"
+            )
+            return transactions
+
         # Deduplicate by ticker, keeping the largest transaction per ticker
         seen_tickers = set()
         unique_transactions = []
@@ -442,11 +450,25 @@ def get_finviz_insider_buying(
     lookback_days: int = 7,
     min_value: int = 25000,
     top_n: int = 20,
-) -> str:
-    """Alias for get_insider_buying_screener to match registry naming convention"""
+    return_structured: bool = False,
+    deduplicate: bool = True,
+):
+    """Alias for get_insider_buying_screener to match registry naming convention.
+
+    Args:
+        transaction_type: "buy" for purchases, "sell" for sales
+        lookback_days: Days to look back (default 7)
+        min_value: Minimum transaction value in dollars
+        top_n: Number of top results to return
+        return_structured: If True, returns list of dicts instead of markdown
+        deduplicate: If False and return_structured=True, returns all transactions
+                     (not deduplicated by ticker). Useful for cluster detection.
+    """
     return get_insider_buying_screener(
         transaction_type=transaction_type,
         lookback_days=lookback_days,
         min_value=min_value,
         top_n=top_n,
+        return_structured=return_structured,
+        deduplicate=deduplicate,
     )
