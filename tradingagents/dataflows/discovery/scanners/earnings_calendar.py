@@ -16,6 +16,7 @@ class EarningsCalendarScanner(BaseScanner):
 
     name = "earnings_calendar"
     pipeline = "events"
+    strategy = "earnings_play"
 
     def __init__(self, config: Dict[str, Any]):
         super().__init__(config)
@@ -60,6 +61,12 @@ class EarningsCalendarScanner(BaseScanner):
             # Sort by days until earnings (sooner = higher priority)
             candidates.sort(key=lambda x: x.get("days_until", 999))
 
+            # Enrich top candidates with accumulation signal and EPS estimates
+            for cand in candidates[:10]:
+                days_until = cand.get("days_until", 999)
+                if 2 <= days_until <= 7:
+                    self._enrich_earnings_candidate(cand)
+
             # Apply limit
             candidates = candidates[: self.limit]
 
@@ -69,6 +76,37 @@ class EarningsCalendarScanner(BaseScanner):
         except Exception as e:
             logger.warning(f"⚠️  Earnings calendar failed: {e}")
             return []
+
+    def _enrich_earnings_candidate(self, cand: Dict[str, Any]) -> None:
+        """Enrich earnings candidate with accumulation signal and estimates (in-place)."""
+        ticker = cand["ticker"]
+
+        # Check pre-earnings volume accumulation
+        try:
+            from tradingagents.dataflows.y_finance import get_pre_earnings_accumulation_signal
+
+            signal = get_pre_earnings_accumulation_signal(ticker)
+            if signal and signal.get("signal"):
+                vol_ratio = signal.get("volume_ratio", 0)
+                cand["has_accumulation"] = True
+                cand["accumulation_volume_ratio"] = vol_ratio
+                cand["context"] += f" | Pre-earnings accumulation: {vol_ratio:.1f}x volume"
+                cand["priority"] = Priority.CRITICAL.value
+        except Exception:
+            pass
+
+        # Add earnings estimates
+        try:
+            from tradingagents.dataflows.finnhub_api import get_ticker_earnings_estimate
+
+            est = get_ticker_earnings_estimate(ticker)
+            if est and est.get("has_upcoming_earnings"):
+                eps = est.get("eps_estimate")
+                if eps is not None:
+                    cand["eps_estimate"] = eps
+                    cand["context"] += f" | EPS est: ${eps:.2f}"
+        except Exception:
+            pass
 
     def _parse_structured_earnings(
         self, earnings_list: List[Dict], seen_tickers: set

@@ -15,6 +15,7 @@ class RedditDDScanner(BaseScanner):
 
     name = "reddit_dd"
     pipeline = "social"
+    strategy = "social_dd"
 
     def __init__(self, config: Dict[str, Any]):
         super().__init__(config)
@@ -38,25 +39,34 @@ class RedditDDScanner(BaseScanner):
             # Handle different result formats
             if isinstance(result, list):
                 # Structured result with DD posts
-                for post in result[: self.limit]:
+                for post in result[: self.limit * 2]:
                     ticker = post.get("ticker", "").upper()
                     if not ticker:
                         continue
 
-                    title = post.get("title", "")
-                    score = post.get("score", 0)
+                    title = post.get("title", "")[:100]
+                    # Use LLM quality score (0-100) for priority, not Reddit upvotes
+                    dd_score = post.get("quality_score", post.get("score", 0))
 
-                    # Higher score = higher priority
-                    priority = Priority.HIGH.value if score > 1000 else Priority.MEDIUM.value
+                    if dd_score >= 80:
+                        priority = Priority.HIGH.value
+                    elif dd_score >= 60:
+                        priority = Priority.MEDIUM.value
+                    else:
+                        # Skip low-quality posts
+                        continue
+
+                    context = f"Reddit DD (score: {dd_score}/100): {title}"
 
                     candidates.append(
                         {
                             "ticker": ticker,
                             "source": self.name,
-                            "context": f"Reddit DD: {title[:80]}... (score: {score})",
+                            "context": context,
                             "priority": priority,
-                            "strategy": "undiscovered_dd",
-                            "dd_score": score,
+                            "strategy": self.strategy,
+                            "dd_quality_score": dd_score,
+                            "dd_title": title,
                         }
                     )
 
@@ -67,13 +77,24 @@ class RedditDDScanner(BaseScanner):
                     if not ticker:
                         continue
 
+                    title = ticker_data.get("title", "")[:100]
+                    dd_score = ticker_data.get("quality_score", ticker_data.get("score", 0))
+
+                    if dd_score >= 80:
+                        priority = Priority.HIGH.value
+                    elif dd_score >= 60:
+                        priority = Priority.MEDIUM.value
+                    else:
+                        continue
+
                     candidates.append(
                         {
                             "ticker": ticker,
                             "source": self.name,
-                            "context": "Reddit DD post",
-                            "priority": Priority.MEDIUM.value,
-                            "strategy": "undiscovered_dd",
+                            "context": f"Reddit DD (score: {dd_score}/100): {title}" if title else "Reddit DD post",
+                            "priority": priority,
+                            "strategy": self.strategy,
+                            "dd_quality_score": dd_score,
                         }
                     )
 
@@ -123,7 +144,7 @@ class RedditDDScanner(BaseScanner):
                         "source": self.name,
                         "context": f"Reddit DD: {submission.title[:80]}...",
                         "priority": Priority.MEDIUM.value,
-                        "strategy": "undiscovered_dd",
+                        "strategy": self.strategy,
                     }
                 )
 
@@ -151,7 +172,7 @@ class RedditDDScanner(BaseScanner):
                     "source": self.name,
                     "context": "Reddit DD post",
                     "priority": Priority.MEDIUM.value,
-                    "strategy": "undiscovered_dd",
+                    "strategy": self.strategy,
                 }
             )
 

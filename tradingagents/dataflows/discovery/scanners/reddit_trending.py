@@ -14,6 +14,7 @@ class RedditTrendingScanner(BaseScanner):
 
     name = "reddit_trending"
     pipeline = "social"
+    strategy = "social_hype"
 
     def __init__(self, config: Dict[str, Any]):
         super().__init__(config)
@@ -37,19 +38,48 @@ class RedditTrendingScanner(BaseScanner):
                 return []
 
             # Extract tickers using common utility
+            from collections import Counter
+
             from tradingagents.dataflows.discovery.common_utils import extract_tickers_from_text
 
             tickers_found = extract_tickers_from_text(result)
 
+            # Count ticker mentions in the raw text for priority scaling
+            ticker_counts = Counter()
+            for ticker in tickers_found:
+                # Count occurrences in the original text
+                count = result.upper().count(ticker)
+                ticker_counts[ticker] = max(count, 1)
+
+            # Deduplicate while preserving order
+            seen = set()
+            unique_tickers = []
+            for t in tickers_found:
+                if t not in seen:
+                    seen.add(t)
+                    unique_tickers.append(t)
+
             candidates = []
-            for ticker in tickers_found[: self.limit]:
+            for ticker in unique_tickers[: self.limit]:
+                count = ticker_counts.get(ticker, 1)
+
+                if count >= 50:
+                    priority = Priority.HIGH.value
+                elif count >= 20:
+                    priority = Priority.MEDIUM.value
+                else:
+                    priority = Priority.LOW.value
+
+                context = f"Trending on Reddit: ~{count} mentions"
+
                 candidates.append(
                     {
                         "ticker": ticker,
                         "source": self.name,
-                        "context": "Reddit trending discussion",
-                        "priority": Priority.MEDIUM.value,
-                        "strategy": "social_hype",
+                        "context": context,
+                        "priority": priority,
+                        "strategy": self.strategy,
+                        "mention_count": count,
                     }
                 )
 

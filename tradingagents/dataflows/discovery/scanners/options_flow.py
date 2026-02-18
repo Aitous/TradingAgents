@@ -9,6 +9,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any, Dict, List, Optional
 
 from tradingagents.dataflows.discovery.scanner_registry import SCANNER_REGISTRY, BaseScanner
+from tradingagents.dataflows.discovery.utils import Priority
 from tradingagents.dataflows.y_finance import get_option_chain, get_ticker_options
 from tradingagents.utils.logger import get_logger
 
@@ -41,6 +42,7 @@ class OptionsFlowScanner(BaseScanner):
 
     name = "options_flow"
     pipeline = "edge"
+    strategy = "options_flow"
 
     def __init__(self, config: Dict[str, Any]):
         super().__init__(config)
@@ -95,48 +97,116 @@ class OptionsFlowScanner(BaseScanner):
         return candidates
 
     def _analyze_ticker_options(self, ticker: str) -> Optional[Dict[str, Any]]:
+        """Scan a single ticker for unusual options activity across multiple expirations."""
         try:
             expirations = get_ticker_options(ticker)
             if not expirations:
                 return None
 
-            options = get_option_chain(ticker, expirations[0])
-            calls = options.calls
-            puts = options.puts
+            # Scan up to 3 nearest expirations
+            max_expirations = min(3, len(expirations))
+            total_unusual_calls = 0
+            total_unusual_puts = 0
+            total_call_vol = 0
+            total_put_vol = 0
+            best_expiration = None
+            best_unusual_count = 0
 
-            # Find unusual strikes
-            unusual_strikes = []
-            for _, opt in calls.iterrows():
-                vol = opt.get("volume", 0) or 0
-                oi = opt.get("openInterest", 0) or 0
-                if oi > 0 and vol > self.min_volume and (vol / oi) >= self.min_volume_oi_ratio:
-                    unusual_strikes.append(
-                        {"type": "call", "strike": opt["strike"], "volume": vol, "oi": oi}
-                    )
+            for exp in expirations[:max_expirations]:
+                try:
+                    options = get_option_chain(ticker, exp)
+                except Exception:
+                    continue
 
-            if not unusual_strikes:
+                if options is None:
+                    continue
+
+                calls_df, puts_df = (None, None)
+                if isinstance(options, tuple) and len(options) == 2:
+                    calls_df, puts_df = options
+                elif hasattr(options, "calls") and hasattr(options, "puts"):
+                    calls_df, puts_df = options.calls, options.puts
+                else:
+                    continue
+
+                exp_unusual_calls = 0
+                exp_unusual_puts = 0
+
+                # Analyze calls
+                if calls_df is not None and not calls_df.empty:
+                    for _, opt in calls_df.iterrows():
+                        vol = opt.get("volume", 0) or 0
+                        oi = opt.get("openInterest", 0) or 0
+                        price = opt.get("lastPrice", 0) or 0
+
+                        if vol < self.min_volume:
+                            continue
+                        # Premium filter (volume * price * 100 shares per contract)
+                        if (vol * price * 100) < self.min_premium:
+                            continue
+                        if oi > 0 and (vol / oi) >= self.min_volume_oi_ratio:
+                            exp_unusual_calls += 1
+                        total_call_vol += vol
+
+                # Analyze puts
+                if puts_df is not None and not puts_df.empty:
+                    for _, opt in puts_df.iterrows():
+                        vol = opt.get("volume", 0) or 0
+                        oi = opt.get("openInterest", 0) or 0
+                        price = opt.get("lastPrice", 0) or 0
+
+                        if vol < self.min_volume:
+                            continue
+                        if (vol * price * 100) < self.min_premium:
+                            continue
+                        if oi > 0 and (vol / oi) >= self.min_volume_oi_ratio:
+                            exp_unusual_puts += 1
+                        total_put_vol += vol
+
+                total_unusual_calls += exp_unusual_calls
+                total_unusual_puts += exp_unusual_puts
+
+                exp_total = exp_unusual_calls + exp_unusual_puts
+                if exp_total > best_unusual_count:
+                    best_unusual_count = exp_total
+                    best_expiration = exp
+
+            total_unusual = total_unusual_calls + total_unusual_puts
+            if total_unusual == 0:
                 return None
 
-            # Calculate P/C ratio
-            total_call_vol = calls["volume"].sum() if not calls.empty else 0
-            total_put_vol = puts["volume"].sum() if not puts.empty else 0
-            pc_ratio = total_put_vol / total_call_vol if total_call_vol > 0 else 0
+            # Calculate put/call ratio
+            pc_ratio = total_put_vol / total_call_vol if total_call_vol > 0 else 999
 
-            sentiment = "bullish" if pc_ratio < 0.7 else "bearish" if pc_ratio > 1.3 else "neutral"
+            if pc_ratio < 0.7:
+                sentiment = "bullish"
+            elif pc_ratio > 1.3:
+                sentiment = "bearish"
+            else:
+                sentiment = "neutral"
+
+            priority = Priority.HIGH.value if sentiment == "bullish" else Priority.MEDIUM.value
+
+            context = (
+                f"Unusual options: {total_unusual} strikes across {max_expirations} exp, "
+                f"P/C={pc_ratio:.2f} ({sentiment}), "
+                f"{total_unusual_calls} unusual calls / {total_unusual_puts} unusual puts"
+            )
 
             return {
                 "ticker": ticker,
                 "source": self.name,
-                "context": (
-                    f"Unusual options: {len(unusual_strikes)} strikes, "
-                    f"P/C={pc_ratio:.2f} ({sentiment})"
-                ),
-                "priority": "high" if sentiment == "bullish" else "medium",
-                "strategy": "options_flow",
+                "context": context,
+                "priority": priority,
+                "strategy": self.strategy,
                 "put_call_ratio": round(pc_ratio, 2),
+                "unusual_calls": total_unusual_calls,
+                "unusual_puts": total_unusual_puts,
+                "best_expiration": best_expiration,
             }
 
-        except Exception:
+        except Exception as e:
+            logger.debug(f"Error scanning {ticker}: {e}")
             return None
 
 

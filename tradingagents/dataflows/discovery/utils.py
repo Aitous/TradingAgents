@@ -45,6 +45,12 @@ class Strategy(str, Enum):
     CONTRARIAN_VALUE = "contrarian_value"
     MOMENTUM_CHASE = "momentum_chase"
     SOCIAL_HYPE = "social_hype"
+    INSIDER_BUYING = "insider_buying"
+    OPTIONS_FLOW = "options_flow"
+    ML_SIGNAL = "ml_signal"
+    SOCIAL_DD = "social_dd"
+    SECTOR_ROTATION = "sector_rotation"
+    TECHNICAL_BREAKOUT = "technical_breakout"
 
 
 PRIORITY_ORDER = {

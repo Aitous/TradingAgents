@@ -53,10 +53,11 @@ class MLSignalScanner(BaseScanner):
 
     name = "ml_signal"
     pipeline = "momentum"
+    strategy = "ml_signal"
 
     def __init__(self, config: Dict[str, Any]):
         super().__init__(config)
-        self.min_win_prob = self.scanner_config.get("min_win_prob", 0.35)
+        self.min_win_prob = self.scanner_config.get("min_win_prob", 0.50)
         self.lookback_period = self.scanner_config.get("lookback_period", "1y")
         self.max_workers = self.scanner_config.get("max_workers", 8)
         self.fetch_market_cap = self.scanner_config.get("fetch_market_cap", False)
@@ -249,9 +250,9 @@ class MLSignalScanner(BaseScanner):
                 return None
 
             # Determine priority from P(WIN)
-            if win_prob >= 0.50:
+            if win_prob >= 0.65:
                 priority = Priority.CRITICAL.value
-            elif win_prob >= 0.40:
+            elif win_prob >= 0.55:
                 priority = Priority.HIGH.value
             else:
                 priority = Priority.MEDIUM.value
@@ -265,7 +266,7 @@ class MLSignalScanner(BaseScanner):
                     f"({prediction.get('prediction', 'N/A')})"
                 ),
                 "priority": priority,
-                "strategy": "ml_signal",
+                "strategy": self.strategy,
                 "ml_win_prob": win_prob,
                 "ml_loss_prob": loss_prob,
                 "ml_prediction": prediction.get("prediction", "N/A"),

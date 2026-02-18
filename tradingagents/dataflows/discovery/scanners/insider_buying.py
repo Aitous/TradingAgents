@@ -66,8 +66,7 @@ class InsiderBuyingScanner(BaseScanner):
                 # Priority by significance
                 title_lower = title.lower()
                 is_c_suite = any(
-                    t in title_lower
-                    for t in ["ceo", "cfo", "coo", "cto", "president", "chairman"]
+                    t in title_lower for t in ["ceo", "cfo", "coo", "cto", "president", "chairman"]
                 )
                 is_director = "director" in title_lower
 
