@@ -1,8 +1,8 @@
 {
-  "total_recommendations": 285,
+  "total_recommendations": 300,
   "by_strategy": {
     "momentum": {
-      "count": 128,
+      "count": 131,
       "wins_1d": 61,
       "losses_1d": 67,
       "wins_7d": 41,
@@ -16,7 +16,7 @@
       "win_rate_7d": 36.9
     },
     "volume_accumulation": {
-      "count": 5,
+      "count": 6,
       "wins_1d": 1,
       "losses_1d": 4,
       "wins_7d": 2,
@@ -30,7 +30,7 @@
       "win_rate_7d": 40.0
     },
     "insider_buying": {
-      "count": 37,
+      "count": 39,
       "wins_1d": 25,
       "losses_1d": 12,
       "wins_7d": 18,
@@ -44,7 +44,7 @@
       "win_rate_7d": 72.0
     },
     "options_flow": {
-      "count": 28,
+      "count": 32,
       "wins_1d": 11,
       "losses_1d": 17,
       "wins_7d": 4,
@@ -58,7 +58,7 @@
       "win_rate_7d": 30.8
     },
     "earnings_calendar": {
-      "count": 29,
+      "count": 32,
       "wins_1d": 14,
       "losses_1d": 15,
       "wins_7d": 8,
@@ -282,7 +282,7 @@
       "win_rate_7d": 0.0
     },
     "reddit_trending": {
-      "count": 3,
+      "count": 5,
       "wins_1d": 0,
       "losses_1d": 3,
       "wins_7d": 0,
