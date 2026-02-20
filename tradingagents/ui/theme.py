@@ -641,15 +641,15 @@ def signal_card(
             </div>
             <div class="signal-metric">
                 <div class="signal-metric-label">Score</div>
-                <div class="signal-metric-value">{score}</div>
+                <div class="signal-metric-value">{score}/100</div>
             </div>
             <div class="signal-metric">
                 <div class="signal-metric-label">Confidence</div>
                 <div class="signal-metric-value">{confidence}/10</div>
             </div>
             <div class="signal-metric">
-                <div class="signal-metric-label">Strategy</div>
-                <div class="signal-metric-value" style="font-size:0.75rem;">{strategy.upper()}</div>
+                <div class="signal-metric-label">Risk</div>
+                <div class="signal-metric-value" style="font-size:0.8rem;">{risk_level.title() if risk_level else "—"}</div>
             </div>
         </div>
         <div class="signal-thesis">{reason}</div>
