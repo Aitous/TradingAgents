@@ -629,46 +629,58 @@ def signal_card(
 
     safe_risk_title = safe_risk.title() if safe_risk else "—"
 
-    return f"""
-    <div class="signal-card {strat_css}">
-        <div class="signal-header">
-            <div style="display:flex;align-items:center;gap:0.75rem;">
-                <span class="signal-ticker">{ticker}</span>
-                <span class="signal-rank">#{rank}</span>
-                {name_html}
-            </div>
-        </div>
-        {desc_html}
-        <div class="signal-badges">
-            <span class="badge {strat_badge}">{safe_strategy}</span>
-            <span class="badge {score_badge}">Score {score}</span>
-            <span class="badge badge-muted">Conf {confidence}/10</span>
-            {risk_badge_html}
-        </div>
-        <div class="signal-metrics">
-            <div class="signal-metric">
-                <div class="signal-metric-label">Entry</div>
-                <div class="signal-metric-value">{entry_str}</div>
-            </div>
-            <div class="signal-metric">
-                <div class="signal-metric-label">Score</div>
-                <div class="signal-metric-value">{score}/100</div>
-            </div>
-            <div class="signal-metric">
-                <div class="signal-metric-label">Confidence</div>
-                <div class="signal-metric-value">{confidence}/10</div>
-            </div>
-            <div class="signal-metric">
-                <div class="signal-metric-label">Risk</div>
-                <div class="signal-metric-value" style="font-size:0.8rem;">{safe_risk_title}</div>
-            </div>
-        </div>
-        <div class="signal-thesis">{safe_reason}</div>
-        <div class="conf-bar">
-            <div class="conf-fill" style="width:{conf_pct}%;background:{bar_color};"></div>
-        </div>
-    </div>
-    """
+    # Build HTML piece-by-piece to avoid blank/whitespace-only lines.
+    # CommonMark terminates a <div> HTML block at the FIRST blank line, so any
+    # empty interpolation (name_html, desc_html, risk_badge_html = "") would leave
+    # a whitespace-only line that makes Streamlit's markdown parser stop treating
+    # subsequent content as HTML and render it as literal text instead.
+    parts = [
+        f'<div class="signal-card {strat_css}">',
+        '<div class="signal-header">',
+        '<div style="display:flex;align-items:center;gap:0.75rem;">',
+        f'<span class="signal-ticker">{ticker}</span>',
+        f'<span class="signal-rank">#{rank}</span>',
+    ]
+    if name_html:
+        parts.append(name_html)
+    parts += ["</div>", "</div>"]
+    if desc_html:
+        parts.append(desc_html)
+    parts += [
+        '<div class="signal-badges">',
+        f'<span class="badge {strat_badge}">{safe_strategy}</span>',
+        f'<span class="badge {score_badge}">Score {score}</span>',
+        f'<span class="badge badge-muted">Conf {confidence}/10</span>',
+    ]
+    if risk_badge_html:
+        parts.append(risk_badge_html)
+    parts += [
+        "</div>",
+        '<div class="signal-metrics">',
+        '<div class="signal-metric">',
+        '<div class="signal-metric-label">Entry</div>',
+        f'<div class="signal-metric-value">{entry_str}</div>',
+        "</div>",
+        '<div class="signal-metric">',
+        '<div class="signal-metric-label">Score</div>',
+        f'<div class="signal-metric-value">{score}/100</div>',
+        "</div>",
+        '<div class="signal-metric">',
+        '<div class="signal-metric-label">Confidence</div>',
+        f'<div class="signal-metric-value">{confidence}/10</div>',
+        "</div>",
+        '<div class="signal-metric">',
+        '<div class="signal-metric-label">Risk</div>',
+        f'<div class="signal-metric-value" style="font-size:0.8rem;">{safe_risk_title}</div>',
+        "</div>",
+        "</div>",
+        f'<div class="signal-thesis">{safe_reason}</div>',
+        '<div class="conf-bar">',
+        f'<div class="conf-fill" style="width:{conf_pct}%;background:{bar_color};"></div>',
+        "</div>",
+        "</div>",
+    ]
+    return "\n".join(parts)
 
 
 def pnl_color(value: float) -> str:
