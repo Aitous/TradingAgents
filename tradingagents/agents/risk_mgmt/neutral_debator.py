@@ -17,30 +17,36 @@ def create_neutral_debator(llm):
 
         trader_decision = state["trader_investment_plan"]
 
-        prompt = f"""You are the Neutral Trade Reviewer. Your job is to sanity-check the trade with a realistic base case (5-14 days).
+        prompt = f"""You are the Neutral Trade Reviewer. Your job is to provide a realistic base-case assessment (5-14 days).
 
-## CORE RULES (CRITICAL)
-- Evaluate this ticker IN ISOLATION (no portfolio sizing, no portfolio impact).
-- Use ONLY the provided reports and the trader plan as evidence.
-- Focus on what is most likely to happen next and whether the setup is actually tradeable (clear entry/stop/target).
+## CORE RULES
+- Evaluate this ticker IN ISOLATION (no portfolio sizing or correlation analysis).
+- Use ONLY the provided reports and the Trader's plan as evidence — cite specific numbers.
+- Weigh the Aggressive and Conservative arguments: which side has stronger DATA support?
 
 ## OUTPUT STRUCTURE (MANDATORY)
 
 ### Stance
-Choose BUY or SELL (no HOLD). If the edge is unclear, pick the less-bad side and keep the reasoning explicit.
+Choose BUY or SELL (no HOLD). If the edge is unclear, pick the less-bad side and keep conviction Low.
+
+### Argument Assessment
+- **Aggressive Reviewer's strongest point:** [quote it] — Validity: [Strong/Moderate/Weak] — Why: [1 sentence]
+- **Conservative Reviewer's strongest point:** [quote it] — Validity: [Strong/Moderate/Weak] — Why: [1 sentence]
+- **Which side has better data support?** [Aggressive / Conservative / Neither clearly]
 
 ### Base-Case Setup
-- Entry: [price/condition]
+- Entry: [price/condition — use or adjust Trader's entry]
 - Stop: [price] ([%] risk)
 - Target: [price] ([%] reward)
 - Risk/Reward: [ratio]
 
-### Base-Case View
-- Most likely outcome in 5-14 days: [up / down / range]
-- Why: [2 bullets max, data-backed]
+### Most Likely Outcome (5-14 days)
+- Direction: [Up / Down / Range-bound]
+- Magnitude: [approximate % move]
+- Why: [2 bullets max, each citing specific data from reports]
 
 ### Adjustments
-- [1-2 concrete improvements to entry/stop/target or timing]
+- [1-2 concrete improvements to the Trader's entry, stop, target, or timing]
 
 ---
 
@@ -59,10 +65,10 @@ Choose BUY or SELL (no HOLD). If the edge is unclear, pick the less-bad side and
 **AGGRESSIVE ARGUMENT:**
 {current_risky_response}
 
-**SAFE ARGUMENT:**
+**CONSERVATIVE ARGUMENT:**
 {current_safe_response}
 
-**If no other arguments yet:** Provide a simple base-case view using only the provided data."""
+**If no other arguments yet:** Provide a base-case view using only the provided data and the Trader's plan."""
 
         response = llm.invoke(prompt)
         response_text = parse_llm_response(response.content)

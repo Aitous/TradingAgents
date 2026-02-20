@@ -880,31 +880,12 @@ class CandidateFilter:
             return default
 
     def _assign_strategy(self, cand: Dict[str, Any]):
-        """Assign strategy based on source."""
+        """Assign strategy by looking up the scanner's declared strategy from the registry."""
+        from tradingagents.dataflows.discovery.scanner_registry import SCANNER_REGISTRY
+
         source = cand.get("source", "")
-        strategy = Strategy.MOMENTUM.value
-        if source == "reddit_dd_undiscovered":
-            strategy = Strategy.UNDISCOVERED_DD.value  # LEADING - quality research before hype
-        elif source == "earnings_accumulation":
-            strategy = Strategy.PRE_EARNINGS_ACCUMULATION.value  # LEADING - highest priority
-        elif source == "unusual_volume":
-            strategy = Strategy.EARLY_ACCUMULATION.value  # LEADING
-        elif source == "analyst_upgrade":
-            strategy = Strategy.ANALYST_UPGRADE.value  # LEADING - institutional signal
-        elif source == "short_squeeze":
-            strategy = Strategy.SHORT_SQUEEZE.value  # Event-driven - high volatility
-        elif source == "semantic_news_match":
-            strategy = Strategy.NEWS_CATALYST.value  # LEADING - news-driven
-        elif source == "earnings_catalyst":
-            strategy = Strategy.EARNINGS_PLAY.value  # Event-driven
-        elif source == "ipo_listing":
-            strategy = Strategy.IPO_OPPORTUNITY.value  # Event-driven
-        elif source == "loser":
-            strategy = Strategy.CONTRARIAN_VALUE.value
-        elif source == "gainer":
-            strategy = Strategy.MOMENTUM_CHASE.value
-        elif source == "social_trending" or source == "twitter_sentiment":
-            strategy = Strategy.SOCIAL_HYPE.value  # LAGGING
-        elif source == "market_mover":
-            strategy = Strategy.MOMENTUM_CHASE.value  # LAGGING - lowest priority
-        cand["strategy"] = strategy
+        scanner_class = SCANNER_REGISTRY.scanners.get(source)
+        if scanner_class and getattr(scanner_class, "strategy", None):
+            cand["strategy"] = scanner_class.strategy
+        else:
+            cand["strategy"] = Strategy.MOMENTUM.value

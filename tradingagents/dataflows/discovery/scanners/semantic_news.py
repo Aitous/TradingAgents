@@ -11,16 +11,33 @@ logger = get_logger(__name__)
 # Catalyst keywords for priority classification
 CATALYST_KEYWORDS = {
     Priority.CRITICAL.value: [
-        "fda approval", "acquisition", "merger", "buyout", "takeover",
-        "breakthrough", "approved",
+        "fda approval",
+        "acquisition",
+        "merger",
+        "buyout",
+        "takeover",
+        "breakthrough",
+        "approved",
     ],
     Priority.HIGH.value: [
-        "upgrade", "initiated", "beat", "surprise", "contract win",
-        "patent", "revenue growth", "guidance raise", "price target",
+        "upgrade",
+        "initiated",
+        "beat",
+        "surprise",
+        "contract win",
+        "patent",
+        "revenue growth",
+        "guidance raise",
+        "price target",
     ],
     Priority.MEDIUM.value: [
-        "downgrade", "miss", "lawsuit", "investigation", "recall",
-        "warning", "delayed",
+        "downgrade",
+        "miss",
+        "lawsuit",
+        "investigation",
+        "recall",
+        "warning",
+        "delayed",
     ],
 }
 
@@ -64,10 +81,33 @@ class SemanticNewsScanner(BaseScanner):
             news_lines = [line.strip() for line in result.split("\n") if line.strip()]
 
             stop_words = {
-                "NYSE", "NASDAQ", "CEO", "CFO", "IPO", "ETF", "USA",
-                "SEC", "NEWS", "STOCK", "MARKET", "GDP", "CPI", "FED",
-                "THE", "FOR", "AND", "ARE", "NOT", "BUT", "HAS", "WAS",
-                "INC", "LTD", "LLC", "EST", "PDT",
+                "NYSE",
+                "NASDAQ",
+                "CEO",
+                "CFO",
+                "IPO",
+                "ETF",
+                "USA",
+                "SEC",
+                "NEWS",
+                "STOCK",
+                "MARKET",
+                "GDP",
+                "CPI",
+                "FED",
+                "THE",
+                "FOR",
+                "AND",
+                "ARE",
+                "NOT",
+                "BUT",
+                "HAS",
+                "WAS",
+                "INC",
+                "LTD",
+                "LLC",
+                "EST",
+                "PDT",
             }
 
             # Extract tickers from each line along with the headline context
@@ -90,7 +130,9 @@ class SemanticNewsScanner(BaseScanner):
             for ticker, headline in list(ticker_headlines.items())[: self.limit]:
                 priority = self._classify_catalyst(headline)
 
-                context = f"News catalyst: {headline}" if headline else "Mentioned in recent market news"
+                context = (
+                    f"News catalyst: {headline}" if headline else "Mentioned in recent market news"
+                )
 
                 candidates.append(
                     {

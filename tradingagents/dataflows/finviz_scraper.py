@@ -392,9 +392,7 @@ def get_insider_buying_screener(
 
         # Return all transactions without deduplication if requested
         if return_structured and not deduplicate:
-            logger.info(
-                f"Returning all {len(transactions)} {filter_desc} transactions (no dedup)"
-            )
+            logger.info(f"Returning all {len(transactions)} {filter_desc} transactions (no dedup)")
             return transactions
 
         # Deduplicate by ticker, keeping the largest transaction per ticker

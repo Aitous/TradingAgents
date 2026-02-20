@@ -27,11 +27,13 @@ logger = get_logger(__name__)
 
 
 def main():
-    logger.info("""
+    logger.info(
+        """
 ╔══════════════════════════════════════════════════════════════╗
 ║      TradingAgents - Historical Memory Builder               ║
 ╚══════════════════════════════════════════════════════════════╝
-    """)
+    """
+    )
 
     # Configuration
     tickers = [

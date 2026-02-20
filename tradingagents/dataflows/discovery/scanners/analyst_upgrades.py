@@ -68,9 +68,7 @@ class AnalystUpgradeScanner(BaseScanner):
                     priority = Priority.LOW.value
 
                 context = (
-                    f"Analyst {action}: {headline}"
-                    if headline
-                    else f"Analyst {action} ({source})"
+                    f"Analyst {action}: {headline}" if headline else f"Analyst {action} ({source})"
                 )
 
                 candidates.append(

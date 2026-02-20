@@ -19,7 +19,7 @@ def create_bear_researcher(llm, memory):
         prompt = f"""You are the Bear Analyst making the case for SHORT-TERM SELL/AVOID (1-2 weeks).
 
 ## YOUR OBJECTIVE
-Build evidence-based bear case emphasizing SHORT-TERM risks and refute Bull claims.
+Build an evidence-based bear case using ONLY data from the provided reports. Refute Bull claims with data.
 
 ## STRUCTURE
 
@@ -29,35 +29,26 @@ Why this is SELL/AVOID for short-term traders NOW.
 ### Key Bearish Points (3-4 max)
 For each:
 - **Risk:** [Bearish argument]
-- **Evidence:** [Specific data - numbers, dates]
+- **Evidence:** [Specific data from reports — cite numbers, dates, indicator values]
 - **Short-Term Impact:** [Impact in next 1-2 weeks]
-- **Probability:** [High/Med/Low]
-- **Strength Score:** [1-10] (10 = very strong, 5 = moderate, 1 = weak)
-- **Confidence:** [High/Med/Low] based on data quality
+- **Strength:** [Strong/Moderate/Weak] based on evidence quality
 
 ### Bull Rebuttals
 For EACH Bull claim:
-- **Bull Says:** "[Quote]"
-- **Counter:** [Why they're wrong]
-- **Flaw:** [Weakness in their logic]
-- **Rebuttal Strength:** [Strong/Moderate/Weak] - does your counter fully address their claim?
+- **Bull Says:** "[Quote their specific claim]"
+- **Counter:** [Data-driven refutation — cite report data]
+- **Rebuttal Strength:** [Strong/Moderate/Weak]
 
 ### Strengths I Acknowledge
-- [1-2 legitimate Bull points]
+- [1-2 legitimate Bull points from the data]
 - [Why risks still dominate]
 
-## EVIDENCE PRIORITY
-1. Disappointing results, guidance cuts
-2. Technical breakdown, fading momentum
-3. Near-term risk (next 1-2 weeks)
-4. Insider selling, downgrades
-
 ## RULES
-- ✅ Specific numbers and dates
-- ✅ Engage with Bull points
-- ✅ Short-term focus (1-2 weeks)
-- ❌ Don't exaggerate
-- ❌ Don't ignore Bull strengths
+- Every claim must cite specific data from the reports (numbers, dates, indicator values)
+- If data is unavailable to support a point, do not make that point
+- Do not exaggerate risks — be precise about probability and magnitude
+- Engage directly with Bull's arguments — don't ignore strong ones
+- Short-term focus: 1-2 weeks only
 
 ---
 

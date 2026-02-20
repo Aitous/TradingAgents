@@ -91,7 +91,11 @@ class RedditDDScanner(BaseScanner):
                         {
                             "ticker": ticker,
                             "source": self.name,
-                            "context": f"Reddit DD (score: {dd_score}/100): {title}" if title else "Reddit DD post",
+                            "context": (
+                                f"Reddit DD (score: {dd_score}/100): {title}"
+                                if title
+                                else "Reddit DD post"
+                            ),
                             "priority": priority,
                             "strategy": self.strategy,
                             "dd_quality_score": dd_score,

@@ -5,112 +5,142 @@
     {
       "ticker": "META",
       "rank": 1,
-      "strategy_match": "Momentum/Hype",
+      "strategy_match": "momentum",
       "final_score": 9.4,
       "confidence": 8,
       "reason": "META shows strong momentum driven by AI strategy optimism, global Threads ads rollout, and a new AI lab. Jefferies raised its price target to $910, reflecting undervaluation and AI progress. Technicals are bullish with a MACD crossover and price above the 20 EMA, along with rising OBV and institutional buying (VWAP). Options flow is highly bullish, with unusual call activity at $880, $835, and $1000 strikes for the Jan 30 expiry. Upcoming earnings on Jan 28 could be a significant catalyst. However, significant insider selling ($25M+) is a notable red flag. Actionable insight: Consider a long position targeting $700-720 post-earnings, with a stop-loss at $630 to manage risk from insider selling and potential earnings volatility.",
       "entry_price": 658.760009765625,
       "discovery_date": "2026-01-25",
-      "status": "open"
+      "status": "open",
+      "pipeline": "momentum",
+      "company_name": "META",
+      "description": ""
     },
     {
       "ticker": "APLD",
       "rank": 2,
-      "strategy_match": "Momentum/Hype / Short Squeeze",
+      "strategy_match": "short_squeeze",
       "final_score": 8.8,
       "confidence": 8,
       "reason": "APLD presents a compelling momentum and short squeeze opportunity. The company announced groundbreaking for Delta Forge 1, a 430MW AI data center, causing a 10% stock surge. Fundamentals show extremely strong quarterly revenue growth (250% YOY), despite negative EPS. Technicals are robust with a strong uptrend, price above all key moving averages, and a bullish MACD crossover. Short interest is extremely high at 29.7% of float, making it ripe for a squeeze. Options activity shows extremely bullish call volume and unusual call activity at several high strikes. Insider selling ($17M+) and bearish OBV divergence are notable risks. Actionable insight: Monitor for continued upward momentum, targeting $40-45, with a tight stop at $34 due to high volatility and insider selling.",
       "entry_price": 37.689998626708984,
       "discovery_date": "2026-01-25",
-      "status": "open"
+      "status": "open",
+      "pipeline": "short_squeeze",
+      "company_name": "APLD",
+      "description": ""
     },
     {
       "ticker": "FCX",
       "rank": 3,
-      "strategy_match": "Momentum/Hype",
+      "strategy_match": "momentum",
       "final_score": 8.5,
       "confidence": 8,
       "reason": "Freeport-McMoRan (FCX) exhibits strong momentum driven by positive news and robust technicals. The stock surged following a strong Q3 2025 earnings beat, reaching a 52-week high. Analyst upgrades from HSBC ($69 target) and Wall Street Zen confirm a positive outlook, citing strong copper demand. Technical indicators show a strong uptrend, with price significantly above 50 and 200 SMAs, high RSI, and rising OBV. Unusual call activity at $69, $75, $63, and $60 strikes suggests bullish institutional positioning. Insider selling ($1.8M+) is a minor concern, but overall sentiment is bullish. Actionable insight: Look for entry on minor pullbacks towards $58-59, targeting a breakout above the 52-week high of $62.13 towards the $65-69 analyst targets, with a stop-loss at $56.",
       "entry_price": 60.40999984741211,
       "discovery_date": "2026-01-25",
-      "status": "open"
+      "status": "open",
+      "pipeline": "momentum",
+      "company_name": "FCX",
+      "description": ""
     },
     {
       "ticker": "ANAB",
       "rank": 4,
-      "strategy_match": "Momentum/Hype / Short Squeeze",
+      "strategy_match": "short_squeeze",
       "final_score": 8.0,
       "confidence": 8,
       "reason": "AnaptysBio (ANAB) shows strong potential for a short squeeze combined with momentum. Barclays recently upgraded its price target to $78 with an 'Overweight' rating, indicating significant upside. The stock is in a strong uptrend, trading above its 50 and 200 SMAs with rising OBV. Crucially, short interest is extremely high at 35.25% of the float, and options open interest is very bullish (P/C OI ratio 0.015), suggesting institutional long positioning. While quarterly revenue growth is very strong (1.543 YOY), the company has negative EPS and ongoing insider selling ($6.7M+). Actionable insight: This is a high-risk, high-reward short squeeze play. Consider a long entry on strength above $48, targeting $55-60, with a stop-loss at $44 to mitigate fundamental and insider-selling risks.",
       "entry_price": 47.540000915527344,
       "discovery_date": "2026-01-25",
-      "status": "open"
+      "status": "open",
+      "pipeline": "short_squeeze",
+      "company_name": "ANAB",
+      "description": ""
     },
     {
       "ticker": "ABCB",
       "rank": 5,
-      "strategy_match": "Momentum/Hype",
+      "strategy_match": "momentum",
       "final_score": 8.0,
       "confidence": 7,
       "reason": "Ameris Bancorp (ABCB) displays strong momentum, reaching a new 52-week high of $82.33. The company announced a $200M share repurchase program, signaling confidence and commitment to shareholder value. Technically, ABCB is in a strong uptrend, with price well above its 50 and 200 SMAs and rising OBV. Options activity, despite low volume, shows bullish sentiment with a low Put/Call Volume Ratio (0.333) and Open Interest Ratio (0.228). Fundamentals are solid with a low P/E (13.94) and moderate revenue/earnings growth. Upcoming Q4 earnings on Jan 29 could provide further catalysts. Actionable insight: Monitor for a breakout above the 52-week high ($83.64), targeting $85-90, with a stop-loss at $78.50, anticipating positive earnings sentiment and continued buybacks.",
       "entry_price": 80.44000244140625,
       "discovery_date": "2026-01-25",
-      "status": "open"
+      "status": "open",
+      "pipeline": "momentum",
+      "company_name": "ABCB",
+      "description": ""
     },
     {
       "ticker": "SAIC",
       "rank": 6,
-      "strategy_match": "Insider Play",
+      "strategy_match": "insider_buying",
       "final_score": 6.9,
       "confidence": 7,
       "reason": "Science Applications International Corp. (SAIC) shows a strong insider buying signal, with 5 purchases totaling over $336K, including a $200K purchase by the CFO. This insider confidence aligns with a significant $1.4B U.S. Air Force contract win, a key positive catalyst. Technically, the stock is in an uptrend, trading above its 50 and 200 SMAs with rising OBV, despite a recent bearish MACD crossover. Options open interest is bullish (P/C OI 0.683), although volume is bearish. Fundamentals show a low P/E (14.08), but revenue and earnings growth have been weak. High debt (Debt/Equity 175.0) is a risk. Actionable insight: Consider a long position on dips toward $108-109, targeting the analyst target of $117.56, with a stop-loss at $104, capitalizing on insider confidence and the new contract.",
       "entry_price": 110.13999938964844,
       "discovery_date": "2026-01-25",
-      "status": "open"
+      "status": "open",
+      "pipeline": "insider_buying",
+      "company_name": "SAIC",
+      "description": ""
     },
     {
       "ticker": "PYPL",
       "rank": 7,
-      "strategy_match": "Contrarian Value",
+      "strategy_match": "contrarian_value",
       "final_score": 6.7,
       "confidence": 7,
       "reason": "PayPal (PYPL) presents a contrarian value opportunity, trading near its 52-week low ($55.015) after a significant YTD decline in 2025. Fundamentals are attractive with a low P/E (11.37) and Forward P/E (9.84), and strong quarterly earnings growth (31.3% YOY). Strategic initiatives like the Google partnership and a $15B buyback program provide potential long-term tailwinds. Technicals show a bullish MACD crossover and bullish OBV divergence (accumulation), suggesting a potential reversal despite a strong downtrend. Options volume is bullish, with unusual call activity at various strikes. However, significant insider selling ($2.4M+) and negative price action are concerns. Actionable insight: Consider accumulating shares on dips towards $55, targeting a recovery to $65-70, with a stop-loss at $53, ahead of earnings in two weeks.",
       "entry_price": 56.619998931884766,
       "discovery_date": "2026-01-25",
-      "status": "open"
+      "status": "open",
+      "pipeline": "contrarian_value",
+      "company_name": "PYPL",
+      "description": ""
     },
     {
       "ticker": "ORRF",
       "rank": 8,
-      "strategy_match": "Contrarian Value",
+      "strategy_match": "contrarian_value",
       "final_score": 6.4,
       "confidence": 6,
       "reason": "Orrstown Financial Services (ORRF) offers a potential contrarian value play, having recently experienced a 2% drop that analysts suggest could be a low-risk entry. Fundamentals are strong with a low P/E (9.21), good Price/Book (1.23), and strong quarterly revenue growth (26.9% YOY). The company also has a decent dividend yield (2.98%) with a history of growth. Technically, ORRF is in a strong uptrend, trading above its 50 and 200 SMAs, with bullish OBV divergence. Insider buying, though minimal ($10K+ by one director), adds a slight positive signal ahead of Q4 earnings on Jan 27. Options activity is too sparse to draw strong conclusions. Actionable insight: A long position could be considered on strength above $36.50, targeting $39-41, with a stop-loss at $34.50, betting on a positive earnings surprise and fundamental undervaluation.",
       "entry_price": 36.20000076293945,
       "discovery_date": "2026-01-25",
-      "status": "open"
+      "status": "open",
+      "pipeline": "contrarian_value",
+      "company_name": "ORRF",
+      "description": ""
     },
     {
       "ticker": "NWBI",
       "rank": 9,
-      "strategy_match": "Insider Play",
+      "strategy_match": "insider_buying",
       "final_score": 5.7,
       "confidence": 6,
       "reason": "Northwest Bancshares (NWBI) shows bullish insider activity with 6 purchases totaling over $131K, including a $48K purchase by a Director. This insider confidence aligns with attractive valuation metrics like a low P/E (14.36) and Price/Book ratio (<1), along with a high dividend yield (6.41%). Technically, NWBI is in a strong uptrend, having experienced a Golden Cross, and trades above its 50 and 200 SMAs with rising OBV. Upcoming Q4 earnings on Jan 26 are anticipated to show positive EPS and revenue growth. However, options flow is bearish (P/C Volume 2.426, OI 3.04), and quarterly earnings growth has been very weak (-92.3% YOY). Actionable insight: Monitor closely post-earnings. If results are positive, consider a long entry above $12.50, targeting $13.50-14, with a stop-loss at $11.80, acknowledging the conflicting options signals.",
       "entry_price": 12.489999771118164,
       "discovery_date": "2026-01-25",
-      "status": "open"
+      "status": "open",
+      "pipeline": "insider_buying",
+      "company_name": "NWBI",
+      "description": ""
     },
     {
       "ticker": "BGS",
       "rank": 10,
-      "strategy_match": "Momentum/Hype / Short Squeeze",
+      "strategy_match": "short_squeeze",
       "final_score": 5.6,
       "confidence": 7,
       "reason": "B&G Foods (BGS) presents a high-risk, high-reward opportunity due to extremely high short interest (26.63% of float) and a recent positive acquisition catalyst. The acquisition of Del Monte's broth/stock division is expected to enhance EPS and EBITDA. Technicals show a strong uptrend, with price above its 50 and 200 SMAs, and bullish MACD and Stochastic crossovers. Options open interest is bullish (P/C OI 0.485). However, fundamentals are very weak with negative EPS, negative profit margin, and extremely high debt (Debt/Equity 440.24). Analyst consensus is 'Sell,' and there is insider selling ($84K+). The OBV shows bearish divergence, indicating distribution. Actionable insight: This is a speculative short squeeze play. Consider a small, highly risk-managed long position on strength above $4.50, targeting $5.00-5.50, with a tight stop-loss at $4.10 due to significant fundamental risks and bearish technical divergence.",
       "entry_price": 4.409999847412109,
       "discovery_date": "2026-01-25",
-      "status": "open"
+      "status": "open",
+      "pipeline": "short_squeeze",
+      "company_name": "BGS",
+      "description": ""
     }
   ]
 }

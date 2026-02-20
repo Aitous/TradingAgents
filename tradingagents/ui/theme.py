@@ -332,6 +332,46 @@ div[data-testid="stMetric"] div[data-testid="stMetricDelta"] > div {{
 .strat-volume {{ border-left-color: {COLORS["cyan"]} !important; }}
 .strat-options {{ border-left-color: {COLORS["purple"]} !important; }}
 
+/* ---- Company brief panel ---- */
+.company-brief {{
+    margin: 0.45rem 0 0.7rem;
+    padding: 0.45rem 0.75rem 0.45rem 0.85rem;
+    border-left: 2px solid rgba(100, 116, 139, 0.35);
+    background: rgba(10, 14, 23, 0.45);
+    border-radius: 0 5px 5px 0;
+    position: relative;
+}}
+.company-brief-label {{
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.57rem;
+    font-weight: 600;
+    color: {COLORS["text_muted"]};
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 0.22rem;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}}
+.company-brief-label::before {{
+    content: '//';
+    color: {COLORS["green"]};
+    font-weight: 700;
+    font-size: 0.6rem;
+    opacity: 0.7;
+}}
+.company-brief-text {{
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.79rem;
+    line-height: 1.52;
+    color: {COLORS["text_secondary"]};
+    font-style: italic;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}}
+
 /* ---- Table styling ---- */
 .stDataFrame {{
     background: var(--bg-card) !important;
@@ -510,6 +550,9 @@ def signal_card(
     strategy: str,
     entry_price: float,
     reason: str,
+    company_name: str = "",
+    description: str = "",
+    risk_level: str = "",
 ) -> str:
     """Render a recommendation signal card as HTML."""
     # Confidence bar color
@@ -545,8 +588,35 @@ def signal_card(
         strat_badge = "badge-blue"
         strat_css = "strat-volume"
 
+    # Risk level badge
+    risk_badge_html = ""
+    if risk_level:
+        risk_lower = risk_level.lower()
+        if risk_lower == "low":
+            risk_badge_html = f'<span class="badge badge-green">{risk_level.title()}</span>'
+        elif risk_lower == "moderate":
+            risk_badge_html = f'<span class="badge badge-blue">{risk_level.title()}</span>'
+        elif risk_lower == "high":
+            risk_badge_html = f'<span class="badge badge-amber">{risk_level.title()}</span>'
+        elif risk_lower == "speculative":
+            risk_badge_html = f'<span class="badge badge-muted" style="border-color:{COLORS["red"]};">{risk_level.title()}</span>'
+
     entry_str = f"${entry_price:.2f}" if entry_price else "N/A"
     conf_pct = confidence * 10
+
+    name_html = (
+        f'<span style="font-size:0.8rem;color:{COLORS["text_muted"]};font-weight:400;">{company_name}</span>'
+        if company_name and company_name != ticker
+        else ""
+    )
+    desc_html = (
+        f'<div class="company-brief">'
+        f'<div class="company-brief-label">Company</div>'
+        f'<div class="company-brief-text">{description}</div>'
+        f'</div>'
+        if description
+        else ""
+    )
 
     return f"""
     <div class="signal-card {strat_css}">
@@ -554,12 +624,15 @@ def signal_card(
             <div style="display:flex;align-items:center;gap:0.75rem;">
                 <span class="signal-ticker">{ticker}</span>
                 <span class="signal-rank">#{rank}</span>
+                {name_html}
             </div>
         </div>
+        {desc_html}
         <div class="signal-badges">
             <span class="badge {strat_badge}">{strategy}</span>
             <span class="badge {score_badge}">Score {score}</span>
             <span class="badge badge-muted">Conf {confidence}/10</span>
+            {risk_badge_html}
         </div>
         <div class="signal-metrics">
             <div class="signal-metric">

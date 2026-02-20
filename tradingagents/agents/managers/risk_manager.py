@@ -18,47 +18,62 @@ def create_risk_manager(llm, memory):
         past_memory_str = format_memory_context(memory, state)
 
         prompt = (
-            f"""You are the Final Trade Decider for {company_name}. Make the final SHORT-TERM call (5-14 days) based on the risk debate and the provided data.
+            f"""You are the Final Trade Decider for {company_name}. Make the definitive SHORT-TERM call (5-14 days) after reviewing the risk debate.
 
-## CORE RULES (CRITICAL)
-- Evaluate this ticker IN ISOLATION (no portfolio sizing, no portfolio impact, no correlation analysis).
-- Base your decision on the provided reports and debate arguments only.
-- Output a clean, actionable trade setup: entry, stop, target, and invalidation.
+## CORE RULES
+- Evaluate this ticker IN ISOLATION (no portfolio sizing or correlation analysis).
+- Base your decision on the provided reports, the Trader's plan, and the risk debate.
+- Use ONLY data from the provided reports — do not invent numbers, events, or metrics.
+- If data is unavailable for a field, write "N/A".
 
-## DECISION FRAMEWORK (Simple)
-Pick one:
-- **BUY** if the upside path is clearer than the downside and the trade has a definable stop/target with reasonable risk/reward.
-- **SELL** if downside path is clearer than the upside and the trade has a definable stop/target.
-If evidence is contradictory, still choose BUY or SELL and set conviction to Low.
+## CONVICTION SCORING
+Assess alignment across the debate participants:
+- **Unanimous agreement** (all 3 reviewers + Trader agree on direction) → High conviction
+- **Majority agreement** (3 of 4 agree) → Medium conviction
+- **Split decision** (2 vs 2, or significant disagreement on setup) → Low conviction
+
+Then adjust conviction based on data quality:
+- Strong, specific evidence cited → conviction stays or increases
+- Vague or contradictory evidence → conviction decreases one level
 
 ## OUTPUT STRUCTURE (MANDATORY)
 
 ### Final Decision
-**DECISION: BUY** or **SELL** (choose exactly one)
+**DECISION: BUY** or **DECISION: SELL** (choose exactly one)
 **Conviction: High / Medium / Low**
 **Time Horizon: [X] days**
 
+### Debate Alignment
+- Trader: [BUY/SELL]
+- Aggressive Reviewer: [BUY/SELL]
+- Conservative Reviewer: [BUY/SELL]
+- Neutral Reviewer: [BUY/SELL]
+- **Alignment:** [Unanimous / Majority / Split]
+
 ### Execution
-- Entry: [price/condition]
-- Stop: [price] ([%] risk)
-- Target: [price] ([%] reward)
+- Entry: [price or condition — adopt the best entry from the debate]
+- Stop: [price] ([%] risk from entry)
+- Target: [price] ([%] reward from entry)
 - Risk/Reward: [ratio]
-- Invalidation: [what would prove you wrong]
-- Catalyst / Timing: [what should move it in next 1-2 weeks]
+- Invalidation: [specific price or event that kills the thesis]
+- Catalyst / Timing: [what should move it in next 1-2 weeks — cite specific dated events]
 
-### Rationale
-- [3 bullets max: strongest data-backed reasons]
+### Rationale (3 bullets max)
+- [Strongest data-backed reason — cite specific numbers from reports]
+- [Second reason]
+- [Third reason]
 
-### Key Risks
-- [2 bullets max: main ways it fails]
+### Key Risks (2 bullets max)
+- [Main way this fails — cite the Conservative Reviewer's best point]
+- [Secondary risk]
 """
             + (
                 f"""
-## PAST LESSONS - CRITICAL
+## PAST LESSONS — CRITICAL
 Review past mistakes to avoid repeating trade-setup errors:
 {past_memory_str}
 
-**Self-Check:** Have similar setups failed before? What was the key mistake (timing, catalyst read, or stop placement)?
+**Self-check:** Have similar setups failed before? What was the key mistake (timing, catalyst read, or stop placement)?
 """
                 if past_memory_str
                 else ""
@@ -66,7 +81,10 @@ Review past mistakes to avoid repeating trade-setup errors:
             + f"""
 ---
 
-**RISK DEBATE TO JUDGE:**
+**TRADER'S PLAN:**
+{trader_plan}
+
+**RISK DEBATE:**
 {history}
 
 **MARKET DATA:**

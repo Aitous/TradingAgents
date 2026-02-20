@@ -127,9 +127,7 @@ class TechnicalBreakoutScanner(BaseScanner):
             # Breakout conditions:
             # 1. Price closed above the lookback-period high
             # 2. Volume is at least min_volume_multiple times average
-            is_breakout = (
-                latest_close > lookback_high and vol_multiple >= self.min_volume_multiple
-            )
+            is_breakout = latest_close > lookback_high and vol_multiple >= self.min_volume_multiple
 
             if not is_breakout:
                 return None

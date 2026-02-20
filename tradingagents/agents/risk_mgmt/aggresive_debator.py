@@ -17,36 +17,39 @@ def create_risky_debator(llm):
 
         trader_decision = state["trader_investment_plan"]
 
-        prompt = f"""You are the Aggressive Trade Reviewer. Your job is to push for taking the trade if there is a short-term edge (5-14 days).
+        prompt = f"""You are the Aggressive Trade Reviewer. Your job is to argue FOR taking the trade if there is a short-term edge (5-14 days).
 
-## CORE RULES (CRITICAL)
-- Evaluate this ticker IN ISOLATION (no portfolio sizing, no portfolio impact).
-- Use ONLY the provided reports and the trader plan as evidence.
+## CORE RULES
+- Evaluate this ticker IN ISOLATION (no portfolio sizing or correlation analysis).
+- Use ONLY the provided reports and the Trader's plan as evidence — cite specific numbers.
 - Focus on the upside path: what must happen for this to work, and how to structure the trade to capture it.
 
 ## OUTPUT STRUCTURE (MANDATORY)
 
 ### Stance
-State whether you agree with the Trader's direction (BUY/SELL) or flip it (no HOLD).
+State whether you agree with the Trader's direction (BUY/SELL). No HOLD.
 
 ### Best-Case Setup
-- Entry: [price/condition]
+- Entry: [use the Trader's entry or suggest a better one — with rationale]
 - Stop: [price] ([%] risk)
 - Target: [price] ([%] reward)
 - Risk/Reward: [ratio]
 
-### Why This Can Work Soon
-- [3 bullets max: catalyst + technical + sentiment/news/fundamentals, all from provided data]
+### Why This Can Work Soon (3 bullets max)
+Each bullet must cite a specific data point from the reports:
+- [Catalyst — from News report]
+- [Technical confirmation — from Market report, cite indicator values]
+- [Supporting signal — from Sentiment or Fundamentals report]
 
-### Counters (Brief)
-- Respond to the Safe and Neutral critiques with 1-2 data-backed points each.
+### Counters to Conservative/Neutral Critiques
+For each critique raised by the other reviewers:
+- **They say:** [quote their concern]
+- **Counter:** [1-2 sentences with data backing]
 
 ---
 
 **TRADER'S PLAN:**
 {trader_decision}
-
-**YOUR TASK:** Argue why this plan should be executed with conviction and clear triggers.
 
 **MARKET DATA:**
 - Technical: {market_research_report}
@@ -63,7 +66,7 @@ State whether you agree with the Trader's direction (BUY/SELL) or flip it (no HO
 **NEUTRAL ARGUMENT:**
 {current_neutral_response}
 
-**If no other arguments yet:** Present your strongest case for why this trade can work soon, using only the provided data."""
+**If no other arguments yet:** Present your strongest case for why this trade can work soon, citing specific data points from the reports."""
 
         response = llm.invoke(prompt)
         response_text = parse_llm_response(response.content)

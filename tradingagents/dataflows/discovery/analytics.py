@@ -206,15 +206,23 @@ class DiscoveryAnalytics:
         # Collapse multiple underscores
         normalized = re.sub(r"_+", "_", normalized).strip("_")
 
-        # Map known aliases to canonical names
+        # Map known aliases to canonical names (scanner strategy values)
         aliases = {
+            # Scanner name → strategy
             "insider_play": "insider_buying",
-            "earnings_play": "earnings_calendar",
-            "contrarian_value": "contrarian_value",
-            "news_catalyst": "news_catalyst",
-            "volume_accumulation": "volume_accumulation",
+            "earnings_calendar": "earnings_play",
+            "volume_accumulation": "early_accumulation",
+            # LLM-guessed variants → canonical
             "momentum_hype": "momentum",
             "momentum_hype_short_squeeze": "short_squeeze",
+            "earnings_momentum": "earnings_play",
+            "earnings_growth": "earnings_play",
+            "earnings_reversal": "earnings_play",
+            "momentum_options": "options_flow",
+            "oversold_reversal": "contrarian_value",
+            "reddit_dd": "social_dd",
+            "reddit_trending": "social_hype",
+            "undiscovered_dd": "social_dd",
         }
         return aliases.get(normalized, normalized)
 
@@ -404,9 +412,13 @@ class DiscoveryAnalytics:
                 {
                     "ticker": ticker,
                     "rank": rank.get("rank"),
+                    "company_name": rank.get("company_name", ticker),
+                    "description": rank.get("description", ""),
                     "strategy_match": rank.get("strategy_match"),
+                    "pipeline": rank.get("strategy_match", rank.get("strategy", "unknown")),
                     "final_score": rank.get("final_score"),
                     "confidence": rank.get("confidence"),
+                    "risk_level": rank.get("risk_level", "moderate"),
                     "reason": rank.get("reason"),
                     "entry_price": entry_price,
                     "discovery_date": trade_date,
@@ -520,6 +532,7 @@ class DiscoveryAnalytics:
                 strategy = rank.get("strategy_match", "N/A")
                 final_score = rank.get("final_score", 0)
                 confidence = rank.get("confidence", 0)
+                risk_level = rank.get("risk_level", "")
                 reason = rank.get("reason", "")
                 rank_num = rank.get("rank", "?")
 
@@ -531,7 +544,8 @@ class DiscoveryAnalytics:
                 f.write(f"**Company:** {company_name}\n\n")
                 f.write(f"**Current Price:** {price_str}\n\n")
                 f.write(f"**Strategy:** {strategy}\n\n")
-                f.write(f"**Score:** {final_score} | **Confidence:** {confidence}/10\n\n")
+                risk_str = f" | **Risk:** {risk_level.title()}" if risk_level else ""
+                f.write(f"**Score:** {final_score} | **Confidence:** {confidence}/10{risk_str}\n\n")
 
                 if description:
                     f.write("**Description:**\n\n")

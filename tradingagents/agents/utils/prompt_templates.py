@@ -11,28 +11,36 @@ BASE_COLLABORATIVE_BOILERPLATE = (
     "Use the provided tools to progress towards answering the question. "
     "If you are unable to fully answer, that's OK; another assistant with different tools "
     "will help where you left off. Execute what you can to make progress. "
-    "If you or any other assistant has the FINAL TRANSACTION PROPOSAL: **BUY/HOLD/SELL** or deliverable, "
-    "prefix your response with FINAL TRANSACTION PROPOSAL: **BUY/HOLD/SELL** so the team knows to stop."
+    "If you or any other assistant has the FINAL TRANSACTION PROPOSAL: **BUY** or **SELL** or deliverable, "
+    "prefix your response with FINAL TRANSACTION PROPOSAL so the team knows to stop."
 )
 
 # Standard date awareness instructions
 STANDARD_DATE_AWARENESS_TEMPLATE = """
 ## CRITICAL: DATE AWARENESS
 **Current Analysis Date:** {current_date}
-**Instructions:**
-- Treat {current_date} as "TODAY" for all calculations and references
-- "Last 6 months" means 6 months ending on {current_date}
-- "Last week" means the 7 days ending on {current_date}
-- "Next week" means the 7 days starting from {current_date}
-- Do NOT use 2024 or 2025 unless {current_date} is actually in that year
+- Treat {current_date} as "TODAY" for all calculations
+- All time references ("last week", "recent", "next 2 weeks") are relative to {current_date}
 - When calling tools, ensure date parameters are relative to {current_date}
-- All "recent" references should be relative to {current_date}
+"""
+
+# Data integrity guardrail used across all agent prompts
+DATA_INTEGRITY_RULES = """
+## DATA INTEGRITY
+- Use ONLY data from the provided reports and tools. Do NOT invent numbers, dates, or events.
+- If a metric or data point is unavailable, state "N/A" — do not estimate or fabricate.
+- When citing data, reference the source report (e.g., "per Technical report: RSI at 72.5").
 """
 
 
 def get_date_awareness_section(current_date: str) -> str:
     """Generate date awareness section for a prompt."""
     return STANDARD_DATE_AWARENESS_TEMPLATE.format(current_date=current_date)
+
+
+def get_data_integrity_section() -> str:
+    """Return the standard data integrity guardrail section."""
+    return DATA_INTEGRITY_RULES
 
 
 def validate_analyst_output(report: str, required_sections: list) -> dict:

@@ -19,35 +19,34 @@ def create_safe_debator(llm):
 
         prompt = f"""You are the Risk Audit Reviewer. Your job is to find the fastest ways this trade fails (5-14 days) and tighten the setup if possible.
 
-## CORE RULES (CRITICAL)
-- Evaluate this ticker IN ISOLATION (no portfolio sizing, no portfolio impact).
-- Use ONLY the provided reports and trader plan as evidence.
-- You are not required to be conservative; you are required to be precise about invalidation and risk.
+## CORE RULES
+- Evaluate this ticker IN ISOLATION (no portfolio sizing or correlation analysis).
+- Use ONLY the provided reports and the Trader's plan as evidence — cite specific numbers.
+- You are not required to be conservative; you are required to be PRECISE about invalidation and risk.
 
 ## OUTPUT STRUCTURE (MANDATORY)
 
 ### Stance
-Choose BUY or SELL (no HOLD). If the setup looks poor, still pick the less-bad side and be specific about invalidation and the fastest failure modes.
+Choose BUY or SELL (no HOLD). If the setup looks poor, still pick the less-bad side and explain why the setup needs tightening.
 
 ### Failure Modes (Top 3)
-- [1] [Risk] → [what would we see in price/news/data?]
-- [2] ...
-- [3] ...
+For each, cite specific evidence:
+1. [Risk] — Evidence: [specific data point from reports] — What we'd see: [observable signal]
+2. [Risk] — Evidence: [specific data point] — What we'd see: [signal]
+3. [Risk] — Evidence: [specific data point] — What we'd see: [signal]
 
 ### Invalidation & Risk Controls
-- Invalidation trigger: [specific]
-- Stop improvement (if needed): [price/logic]
-- Timing risk: [what catalyst could flip this]
+- **Invalidation trigger:** [specific price level or event that kills the thesis]
+- **Stop improvement:** [if Trader's stop is too loose/tight, suggest better level with rationale]
+- **Timing risk:** [what catalyst or event could flip this within the holding period]
 
-### Response to Aggressive/Neutral (Brief)
-- [1-2 bullets total]
+### Response to Aggressive/Neutral (1-2 bullets)
+- [Brief counter to their strongest point, with data]
 
 ---
 
 **TRADER'S PLAN:**
 {trader_decision}
-
-**YOUR TASK:** Identify the risks others are missing and tighten the trade with clear invalidation.
 
 **MARKET DATA:**
 - Technical: {market_research_report}
@@ -64,7 +63,7 @@ Choose BUY or SELL (no HOLD). If the setup looks poor, still pick the less-bad s
 **NEUTRAL ARGUMENT:**
 {current_neutral_response}
 
-**If no other arguments yet:** Identify trade invalidation and the key risks using only the provided data."""
+**If no other arguments yet:** Identify the top failure modes and invalidation points using only the provided data."""
 
         response = llm.invoke(prompt)
         response_text = parse_llm_response(response.content)

@@ -125,8 +125,10 @@ class VolumeAccumulationScanner(BaseScanner):
 
             # Multi-day volume pattern: count days with >1.5x avg volume in last 5 days
             if len(hist) >= 6:
-                avg_vol = float(hist["Volume"].iloc[:-5].mean()) if len(hist) > 5 else float(
-                    hist["Volume"].mean()
+                avg_vol = (
+                    float(hist["Volume"].iloc[:-5].mean())
+                    if len(hist) > 5
+                    else float(hist["Volume"].mean())
                 )
                 if avg_vol > 0:
                     recent_high_vol_days = sum(
@@ -134,9 +136,9 @@ class VolumeAccumulationScanner(BaseScanner):
                     )
                     cand["high_vol_days_5d"] = recent_high_vol_days
                     if recent_high_vol_days >= 3:
-                        cand["context"] += (
-                            f" | Sustained: {recent_high_vol_days}/5 days above 1.5x avg"
-                        )
+                        cand[
+                            "context"
+                        ] += f" | Sustained: {recent_high_vol_days}/5 days above 1.5x avg"
 
             # Classify signal
             if abs(day_change_pct) < 3:
@@ -145,9 +147,9 @@ class VolumeAccumulationScanner(BaseScanner):
             elif day_change_pct < -5:
                 cand["volume_signal"] = "distribution"
                 cand["priority"] = Priority.LOW.value
-                cand["context"] += (
-                    f" | Price dropped {day_change_pct:+.1f}% — possible distribution"
-                )
+                cand[
+                    "context"
+                ] += f" | Price dropped {day_change_pct:+.1f}% — possible distribution"
             else:
                 cand["volume_signal"] = "momentum"
 

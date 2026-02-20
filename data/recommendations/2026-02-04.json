@@ -11,7 +11,10 @@
       "reason": "This is a textbook short squeeze setup triggering now, with 33.0% short interest and a +5.2% intraday move. Extremely unusual bullish options activity (P/C ratio 0.019) combined with a strong technical uptrend confirms aggressive buying pressure.",
       "entry_price": 8.835000038146973,
       "discovery_date": "2026-02-04",
-      "status": "open"
+      "status": "open",
+      "pipeline": "short_squeeze",
+      "company_name": "AXL",
+      "description": ""
     },
     {
       "ticker": "AAP",
@@ -22,7 +25,10 @@
       "reason": "High squeeze potential with 33.9% short interest and a +5.3% intraday surge. Technicals show a bullish MACD crossover and price reclaiming the 20 EMA, signaling a strong reversal and momentum shift.",
       "entry_price": 53.834999084472656,
       "discovery_date": "2026-02-04",
-      "status": "open"
+      "status": "open",
+      "pipeline": "short_squeeze",
+      "company_name": "AAP",
+      "description": ""
     },
     {
       "ticker": "RYN",
@@ -33,29 +39,38 @@
       "reason": "Classic pre-earnings accumulation pattern with volume running 2.28x average and unusual bullish options flow (P/C 0.169). Rising On-Balance Volume (OBV) indicates smart money positioning ahead of the Feb 11 report.",
       "entry_price": 22.80500030517578,
       "discovery_date": "2026-02-04",
-      "status": "open"
+      "status": "open",
+      "pipeline": "pre_earnings_accumulation",
+      "company_name": "RYN",
+      "description": ""
     },
     {
       "ticker": "LLY",
       "rank": 4,
-      "strategy_match": "earnings_momentum",
+      "strategy_match": "earnings_play",
       "final_score": 91,
       "confidence": 9,
       "reason": "Reported a significant earnings beat ($7.54 vs $6.67) and raised guidance, driving a +2.5% intraday move. Bullish divergence in OBV suggests accumulation despite recent price consolidation, setting the stage for a breakout.",
       "entry_price": 1100.3299560546875,
       "discovery_date": "2026-02-04",
-      "status": "open"
+      "status": "open",
+      "pipeline": "earnings_play",
+      "company_name": "LLY",
+      "description": ""
     },
     {
       "ticker": "HON",
       "rank": 5,
-      "strategy_match": "momentum_options",
+      "strategy_match": "options_flow",
       "final_score": 89,
       "confidence": 9,
       "reason": "Strong momentum signaled by a 'Golden Cross' technical setup and a MACD bullish crossover. Unusual bullish options flow (P/C 0.255) supports the uptrend, indicating institutional confidence in further upside.",
       "entry_price": 236.21499633789062,
       "discovery_date": "2026-02-04",
-      "status": "open"
+      "status": "open",
+      "pipeline": "options_flow",
+      "company_name": "HON",
+      "description": ""
     },
     {
       "ticker": "DELL",
@@ -66,18 +81,24 @@
       "reason": "Fresh analyst upgrade combined with a MACD bullish crossover signals a trend reversal. Unusual bullish options flow (P/C 0.344) and positive intraday action confirm immediate buyer interest.",
       "entry_price": 119.63500213623047,
       "discovery_date": "2026-02-04",
-      "status": "open"
+      "status": "open",
+      "pipeline": "analyst_upgrade",
+      "company_name": "DELL",
+      "description": ""
     },
     {
       "ticker": "ADBE",
       "rank": 7,
-      "strategy_match": "oversold_reversal",
+      "strategy_match": "contrarian_value",
       "final_score": 87,
       "confidence": 8,
       "reason": "Deeply oversold conditions (RSI 23.4) have triggered a sharp mean-reversion bounce, with shares up +4.4% intraday. Bollinger Band positioning suggests the sell-off has exhausted, presenting a high risk/reward entry.",
       "entry_price": 278.9100036621094,
       "discovery_date": "2026-02-04",
-      "status": "open"
+      "status": "open",
+      "pipeline": "contrarian_value",
+      "company_name": "ADBE",
+      "description": ""
     },
     {
       "ticker": "HPE",
@@ -88,29 +109,38 @@
       "reason": "Analyst upgrade catalyzed a +3.8% intraday move and a MACD bullish crossover. While the long-term trend is down, this momentum shift indicates a strong short-term recovery play.",
       "entry_price": 22.645099639892578,
       "discovery_date": "2026-02-04",
-      "status": "open"
+      "status": "open",
+      "pipeline": "analyst_upgrade",
+      "company_name": "HPE",
+      "description": ""
     },
     {
       "ticker": "KO",
       "rank": 9,
-      "strategy_match": "momentum_options",
+      "strategy_match": "options_flow",
       "final_score": 85,
       "confidence": 8,
       "reason": "Defensive momentum play with unusual bullish options flow (P/C 0.196). A recent MACD bullish crossover and rising OBV confirm a strong uptrend backed by volume.",
       "entry_price": 77.70999908447266,
       "discovery_date": "2026-02-04",
-      "status": "open"
+      "status": "open",
+      "pipeline": "options_flow",
+      "company_name": "KO",
+      "description": ""
     },
     {
       "ticker": "ADP",
       "rank": 10,
-      "strategy_match": "earnings_reversal",
+      "strategy_match": "earnings_play",
       "final_score": 84,
       "confidence": 8,
       "reason": "Stock is heavily oversold (RSI 26.0) despite an earnings beat ($2.62 vs estimates). The discrepancy between strong fundamentals and depressed price creates a prime setup for a mean-reversion bounce.",
       "entry_price": 236.90499877929688,
       "discovery_date": "2026-02-04",
-      "status": "open"
+      "status": "open",
+      "pipeline": "earnings_play",
+      "company_name": "ADP",
+      "description": ""
     },
     {
       "ticker": "BWA",
@@ -121,7 +151,10 @@
       "reason": "Strong uptrend leading into Feb 11 earnings, supported by bullish options flow (P/C 0.344). Technicals remain bullish with price holding above the 20 EMA and rising VWAP.",
       "entry_price": 50.13999938964844,
       "discovery_date": "2026-02-04",
-      "status": "open"
+      "status": "open",
+      "pipeline": "earnings_play",
+      "company_name": "BWA",
+      "description": ""
     },
     {
       "ticker": "ACHC",
@@ -132,40 +165,52 @@
       "reason": "High short interest (28.3%) combined with a MACD bullish crossover and unusually bullish options activity (P/C 0.504). Technical reversal signals suggest short sellers may be forced to cover.",
       "entry_price": 13.84000015258789,
       "discovery_date": "2026-02-04",
-      "status": "open"
+      "status": "open",
+      "pipeline": "short_squeeze",
+      "company_name": "ACHC",
+      "description": ""
     },
     {
       "ticker": "MCD",
       "rank": 13,
-      "strategy_match": "earnings_momentum",
+      "strategy_match": "earnings_play",
       "final_score": 81,
       "confidence": 8,
       "reason": "Robust technical strength with a MACD bullish crossover and price above 20/50/200 SMAs. Momentum is building into the Feb 11 earnings report, supported by rising OBV.",
       "entry_price": 325.6925048828125,
       "discovery_date": "2026-02-04",
-      "status": "open"
+      "status": "open",
+      "pipeline": "earnings_play",
+      "company_name": "MCD",
+      "description": ""
     },
     {
       "ticker": "SMCI",
       "rank": 14,
-      "strategy_match": "earnings_growth",
+      "strategy_match": "earnings_play",
       "final_score": 80,
       "confidence": 7,
       "reason": "Reported massive 123% revenue growth, signaling fundamental strength despite a broken chart. Bullish options volume (P/C 0.454) suggests traders are betting on a recovery rally from these levels.",
       "entry_price": 32.88159942626953,
       "discovery_date": "2026-02-04",
-      "status": "open"
+      "status": "open",
+      "pipeline": "earnings_play",
+      "company_name": "SMCI",
+      "description": ""
     },
     {
       "ticker": "EA",
       "rank": 15,
-      "strategy_match": "earnings_reversal",
+      "strategy_match": "earnings_play",
       "final_score": 79,
       "confidence": 7,
       "reason": "Reported strong Q3 revenue, yet stock is oversold (RSI 24.3). This divergence between positive news and negative price action presents a buying opportunity near the lower Bollinger Band.",
       "entry_price": 198.91000366210938,
       "discovery_date": "2026-02-04",
-      "status": "open"
+      "status": "open",
+      "pipeline": "earnings_play",
+      "company_name": "EA",
+      "description": ""
     }
   ]
 }

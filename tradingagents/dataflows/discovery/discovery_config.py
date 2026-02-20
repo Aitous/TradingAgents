@@ -45,6 +45,9 @@ class RankerConfig:
     max_candidates_to_analyze: int = 200
     analyze_all_candidates: bool = False
     final_recommendations: int = 15
+    min_score_threshold: int = 55
+    return_target_pct: float = 5.0
+    holding_period_days: str = "1-7"
     truncate_ranking_context: bool = False
     max_news_chars: int = 500
     max_insider_chars: int = 300
@@ -160,6 +163,9 @@ class DiscoveryConfig:
             ),
             analyze_all_candidates=disc.get("analyze_all_candidates", _rd.analyze_all_candidates),
             final_recommendations=disc.get("final_recommendations", _rd.final_recommendations),
+            min_score_threshold=disc.get("min_score_threshold", _rd.min_score_threshold),
+            return_target_pct=disc.get("return_target_pct", _rd.return_target_pct),
+            holding_period_days=disc.get("holding_period_days", _rd.holding_period_days),
             truncate_ranking_context=disc.get(
                 "truncate_ranking_context", _rd.truncate_ranking_context
             ),

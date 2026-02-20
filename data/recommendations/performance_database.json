@@ -20,7 +20,10 @@
         "return_1d": -2.79,
         "win_1d": false,
         "return_7d": -5.3,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "momentum",
+        "company_name": "GME",
+        "description": ""
       },
       {
         "ticker": "AVR",
@@ -39,7 +42,10 @@
         "return_1d": -2.14,
         "win_1d": false,
         "return_7d": -2.06,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "momentum",
+        "company_name": "AVR",
+        "description": ""
       },
       {
         "ticker": "PEGA",
@@ -58,7 +64,10 @@
         "return_1d": -13.7,
         "win_1d": false,
         "return_7d": 3.12,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "momentum",
+        "company_name": "PEGA",
+        "description": ""
       },
       {
         "ticker": "BLKB",
@@ -77,7 +86,10 @@
         "return_1d": -2.73,
         "win_1d": false,
         "return_7d": -1.43,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "momentum",
+        "company_name": "BLKB",
+        "description": ""
       },
       {
         "ticker": "INMD",
@@ -96,7 +108,10 @@
         "return_1d": -6.73,
         "win_1d": false,
         "return_7d": -6.54,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "momentum",
+        "company_name": "INMD",
+        "description": ""
       },
       {
         "ticker": "TMC",
@@ -115,12 +130,15 @@
         "return_1d": -2.24,
         "win_1d": false,
         "return_7d": -5.73,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "momentum",
+        "company_name": "TMC",
+        "description": ""
       },
       {
         "ticker": "DDOG",
         "rank": 7,
-        "strategy_match": "volume_accumulation",
+        "strategy_match": "early_accumulation",
         "final_score": 30,
         "confidence": 8,
         "reason": "Datadog is flagged for Volume Accumulation, a strategy with a historical 100% win rate, coinciding with its earnings release today. The ML Win Probability is solid at 43.6%, and the stock exhibits a bullish divergence in On-Balance Volume despite recent price weakness. Options sentiment is constructive with more call volume than puts. This setup suggests 'smart money' positioning ahead of the binary earnings event, offering a strong risk/reward for a reversal.",
@@ -134,7 +152,10 @@
         "return_1d": -4.87,
         "win_1d": false,
         "return_7d": -4.89,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "early_accumulation",
+        "company_name": "DDOG",
+        "description": ""
       },
       {
         "ticker": "PATH",
@@ -153,7 +174,10 @@
         "return_1d": -11.01,
         "win_1d": false,
         "return_7d": -13.42,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "momentum",
+        "company_name": "PATH",
+        "description": ""
       },
       {
         "ticker": "PMN",
@@ -172,7 +196,10 @@
         "return_1d": 8.12,
         "win_1d": true,
         "return_7d": 12.55,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "momentum",
+        "company_name": "PMN",
+        "description": ""
       },
       {
         "ticker": "IGV",
@@ -191,7 +218,10 @@
         "return_1d": -4.19,
         "win_1d": false,
         "return_7d": -4.08,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "momentum",
+        "company_name": "IGV",
+        "description": ""
       },
       {
         "ticker": "POET",
@@ -210,7 +240,10 @@
         "return_1d": -5.81,
         "win_1d": false,
         "return_7d": -8.75,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "momentum",
+        "company_name": "POET",
+        "description": ""
       },
       {
         "ticker": "ASTS",
@@ -229,7 +262,10 @@
         "return_1d": -4.8,
         "win_1d": false,
         "return_7d": -17.33,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "momentum",
+        "company_name": "ASTS",
+        "description": ""
       },
       {
         "ticker": "APH",
@@ -248,7 +284,10 @@
         "return_1d": -1.45,
         "win_1d": false,
         "return_7d": 1.05,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "momentum",
+        "company_name": "APH",
+        "description": ""
       },
       {
         "ticker": "META",
@@ -267,7 +306,10 @@
         "return_1d": -1.03,
         "win_1d": false,
         "return_7d": -4.71,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "momentum",
+        "company_name": "META",
+        "description": ""
       },
       {
         "ticker": "WRB",
@@ -286,7 +328,10 @@
         "return_1d": 2.1,
         "win_1d": true,
         "return_7d": 0.97,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "momentum",
+        "company_name": "WRB",
+        "description": ""
       }
     ],
     "2026-02-06": [
@@ -307,7 +352,10 @@
         "return_1d": -0.44,
         "win_1d": false,
         "return_7d": -5.66,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "momentum",
+        "company_name": "GME",
+        "description": ""
       },
       {
         "ticker": "LIFE",
@@ -326,7 +374,10 @@
         "return_1d": -14.56,
         "win_1d": false,
         "return_7d": -16.6,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "insider_buying",
+        "company_name": "LIFE",
+        "description": ""
       },
       {
         "ticker": "MSFT",
@@ -345,7 +396,10 @@
         "return_1d": 4.7,
         "win_1d": true,
         "return_7d": 1.8,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "options_flow",
+        "company_name": "MSFT",
+        "description": ""
       },
       {
         "ticker": "TSLA",
@@ -364,7 +418,10 @@
         "return_1d": 3.61,
         "win_1d": true,
         "return_7d": 1.62,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "options_flow",
+        "company_name": "TSLA",
+        "description": ""
       },
       {
         "ticker": "AAPL",
@@ -383,7 +440,10 @@
         "return_1d": -1.91,
         "win_1d": false,
         "return_7d": -6.2,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "momentum",
+        "company_name": "AAPL",
+        "description": ""
       },
       {
         "ticker": "POET",
@@ -402,7 +462,10 @@
         "return_1d": 4.85,
         "win_1d": true,
         "return_7d": 1.44,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "options_flow",
+        "company_name": "POET",
+        "description": ""
       },
       {
         "ticker": "MANE",
@@ -421,7 +484,10 @@
         "return_1d": 13.27,
         "win_1d": true,
         "return_7d": 24.45,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "insider_buying",
+        "company_name": "MANE",
+        "description": ""
       },
       {
         "ticker": "ABT",
@@ -440,12 +506,15 @@
         "return_1d": 2.61,
         "win_1d": true,
         "return_7d": 1.87,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "insider_buying",
+        "company_name": "ABT",
+        "description": ""
       },
       {
         "ticker": "AN",
         "rank": 9,
-        "strategy_match": "earnings_calendar",
+        "strategy_match": "earnings_play",
         "final_score": 85,
         "confidence": 8,
         "reason": "Intraday price action is up +9.4% coincident with an earnings release, indicating a very positive market reaction. Bullish divergence in On-Balance Volume (OBV) prior to this move suggests accumulation.",
@@ -459,12 +528,15 @@
         "return_1d": -6.43,
         "win_1d": false,
         "return_7d": -6.42,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "earnings_play",
+        "company_name": "AN",
+        "description": ""
       },
       {
         "ticker": "CBOE",
         "rank": 10,
-        "strategy_match": "earnings_calendar",
+        "strategy_match": "earnings_play",
         "final_score": 84,
         "confidence": 8,
         "reason": "Strong uptrend confirmed by rising OBV and price above the 50 SMA. Earnings catalyst combined with unusual bullish options flow (P/C ratio 0.533) supports continued momentum.",
@@ -478,12 +550,15 @@
         "return_1d": 0.97,
         "win_1d": true,
         "return_7d": -0.31,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "earnings_play",
+        "company_name": "CBOE",
+        "description": ""
       },
       {
         "ticker": "PM",
         "rank": 11,
-        "strategy_match": "earnings_calendar",
+        "strategy_match": "earnings_play",
         "final_score": 83,
         "confidence": 8,
         "reason": "Momentum is strong with a bullish MACD crossover and rising OBV. Trading intraday +3.1% on earnings day suggests the market is rewarding their results, favoring a short-term trend continuation.",
@@ -497,7 +572,10 @@
         "return_1d": -1.48,
         "win_1d": false,
         "return_7d": 1.9,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "earnings_play",
+        "company_name": "PM",
+        "description": ""
       },
       {
         "ticker": "NVDA",
@@ -516,7 +594,10 @@
         "return_1d": 3.37,
         "win_1d": true,
         "return_7d": 2.49,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "options_flow",
+        "company_name": "NVDA",
+        "description": ""
       },
       {
         "ticker": "NTRS",
@@ -535,7 +616,10 @@
         "return_1d": -1.35,
         "win_1d": false,
         "return_7d": -4.48,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "momentum",
+        "company_name": "NTRS",
+        "description": ""
       },
       {
         "ticker": "PATH",
@@ -554,7 +638,10 @@
         "return_1d": 4.9,
         "win_1d": true,
         "return_7d": -9.44,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "momentum",
+        "company_name": "PATH",
+        "description": ""
       },
       {
         "ticker": "GOOGL",
@@ -573,14 +660,17 @@
         "return_1d": -1.09,
         "win_1d": false,
         "return_7d": -4.06,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "options_flow",
+        "company_name": "GOOGL",
+        "description": ""
       }
     ],
     "2026-01-30": [
       {
         "ticker": "META",
         "rank": 1,
-        "strategy_match": "Momentum",
+        "strategy_match": "momentum",
         "final_score": 11.0,
         "confidence": 9,
         "reason": "Explosive Q4 earnings beat ($8.88 EPS vs expected) paired with a massive $6B AI infrastructure deal with Corning. Technicals show a bullish MACD crossover and a strong break above the 200-SMA. Options flow is highly supportive with a Volume P/C ratio of 0.548 and unusual activity at the $717.50 strike. Target $790 with a stop at $705.",
@@ -594,12 +684,15 @@
         "return_1d": -6.68,
         "win_1d": false,
         "return_7d": -6.68,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "momentum",
+        "company_name": "META",
+        "description": ""
       },
       {
         "ticker": "INOD",
         "rank": 2,
-        "strategy_match": "Momentum",
+        "strategy_match": "momentum",
         "final_score": 10.3,
         "confidence": 8,
         "reason": "Strategic partnership with Palantir Technologies for AI training data is a transformational catalyst. Technical indicators show a bullish stochastic crossover and price action holding above the 20 EMA. Options volume is heavily skewed toward calls (P/C 0.305) with high IV suggesting a volatility squeeze. Target $75 near-term with a tight stop at $56.",
@@ -613,12 +706,15 @@
         "return_1d": -15.84,
         "win_1d": false,
         "return_7d": -15.84,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "momentum",
+        "company_name": "INOD",
+        "description": ""
       },
       {
         "ticker": "USAR",
         "rank": 3,
-        "strategy_match": "Insider Play",
+        "strategy_match": "insider_buying",
         "final_score": 9.8,
         "confidence": 8,
         "reason": "Chairman Michael Blitzer purchased $2.14M in shares directly following a $1.6B LOI for federal funding under the CHIPS Act. While volatile, the ADX of 49.2 indicates a very strong trend developing. Options volume P/C ratio of 0.342 confirms bullish sentiment. Entry near $22.50, targeting $35, stop at $17.50.",
@@ -632,12 +728,15 @@
         "return_1d": -4.66,
         "win_1d": false,
         "return_7d": -4.66,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "insider_buying",
+        "company_name": "USAR",
+        "description": ""
       },
       {
         "ticker": "CSCO",
         "rank": 4,
-        "strategy_match": "Momentum",
+        "strategy_match": "momentum",
         "final_score": 9.5,
         "confidence": 9,
         "reason": "Upgraded to a $100 price target by Evercore ISI on the back of a new AI-driven networking hardware refresh cycle. Bullish MACD crossover confirmed on January 30. Options positioning is significantly bullish with a P/C volume ratio of 0.431 and heavy interest in $79 calls. Target $85-90 with a stop at $75.",
@@ -651,12 +750,15 @@
         "return_1d": 9.81,
         "win_1d": true,
         "return_7d": 9.81,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "momentum",
+        "company_name": "CSCO",
+        "description": ""
       },
       {
         "ticker": "ALGM",
         "rank": 5,
-        "strategy_match": "Momentum",
+        "strategy_match": "momentum",
         "final_score": 9.5,
         "confidence": 8,
         "reason": "Reported record data center sales and strong automotive growth. TD Cowen raised target to $45. Despite an overbought RSI of 76.6, the ADX of 47 suggests trend durability. Extremely bullish options flow with a 0.116 volume P/C ratio confirms institutional accumulation. Target $44, stop at $35.",
@@ -670,12 +772,15 @@
         "return_1d": 12.26,
         "win_1d": true,
         "return_7d": 12.26,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "momentum",
+        "company_name": "ALGM",
+        "description": ""
       },
       {
         "ticker": "NVDA",
         "rank": 6,
-        "strategy_match": "Momentum",
+        "strategy_match": "momentum",
         "final_score": 9.5,
         "confidence": 9,
         "reason": "Strong sector sentiment following record earnings from peers and a fresh bullish MACD crossover. Price remains above the 50 and 200 SMA. Options volume P/C ratio of 0.617 remains bullish with high open interest supporting a move toward $210 resistance. Entry near $192, stop at $180.",
@@ -689,12 +794,15 @@
         "return_1d": -2.01,
         "win_1d": false,
         "return_7d": -2.01,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "momentum",
+        "company_name": "NVDA",
+        "description": ""
       },
       {
         "ticker": "UA",
         "rank": 7,
-        "strategy_match": "Insider Play",
+        "strategy_match": "insider_buying",
         "final_score": 9.5,
         "confidence": 8,
         "reason": "Prem Watsa (Fairfax) significantly increased his position by $16.4M in January. The stock shows a very strong trend (ADX 56.2) and is trading above the 20, 50, and 200 EMA. This turnaround play is gaining momentum ahead of February results. Target $7.50, stop at $5.30.",
@@ -708,12 +816,15 @@
         "return_1d": 14.19,
         "win_1d": true,
         "return_7d": 14.19,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "insider_buying",
+        "company_name": "UA",
+        "description": ""
       },
       {
         "ticker": "WS",
         "rank": 8,
-        "strategy_match": "Momentum",
+        "strategy_match": "momentum",
         "final_score": 9.0,
         "confidence": 7,
         "reason": "Director Scott Kelly bought $273k in shares as the company integrates its $2.4B Kl\u00f6ckner acquisition. Bullish MACD crossover and price above 20 EMA signal continued upside. Volume divergence suggests accumulation. Target $47 based on analyst targets, stop at $37.",
@@ -727,12 +838,15 @@
         "return_1d": 18.96,
         "win_1d": true,
         "return_7d": 18.96,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "momentum",
+        "company_name": "WS",
+        "description": ""
       },
       {
         "ticker": "WDC",
         "rank": 9,
-        "strategy_match": "Momentum",
+        "strategy_match": "momentum",
         "final_score": 8.7,
         "confidence": 8,
         "reason": "Q2 earnings beat driven by booming AI storage demand. Despite a 9.8% pullback today, technicals remain in a strong uptrend above the 50 SMA. Bullish volume P/C ratio of 0.53 suggests the dip is being bought by institutional traders. Target recovery to $280, stop at $220.",
@@ -746,12 +860,15 @@
         "return_1d": 5.74,
         "win_1d": true,
         "return_7d": 5.74,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "momentum",
+        "company_name": "WDC",
+        "description": ""
       },
       {
         "ticker": "AVGO",
         "rank": 10,
-        "strategy_match": "Contrarian Value",
+        "strategy_match": "contrarian_value",
         "final_score": 8.5,
         "confidence": 8,
         "reason": "Upgraded by Wells Fargo as a core AI infrastructure provider. While the technical trend is currently weak, the options volume P/C ratio of 0.572 shows heavy institutional call buying at near-term strikes ($335-$342). Target recovery to $370, stop at $310.",
@@ -765,14 +882,17 @@
         "return_1d": 2.66,
         "win_1d": true,
         "return_7d": 2.66,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "contrarian_value",
+        "company_name": "AVGO",
+        "description": ""
       }
     ],
     "2026-01-26": [
       {
         "ticker": "GME",
         "rank": 1,
-        "strategy_match": "Insider Play",
+        "strategy_match": "insider_buying",
         "final_score": 11.5,
         "confidence": 9,
         "reason": "Highest conviction setup. CEO Ryan Cohen purchased $21.3M worth of stock on Jan 21, coupled with director buying. This aligns with store closure efficiency news. Options flow is flashing an extreme bullish signal with a Put/Call ratio of 0.11 (heavy call skew), suggesting institutional positioning for a move higher. Technicals show RSI at 64 with price holding above 200 SMA.",
@@ -786,12 +906,15 @@
         "return_1d": 3.37,
         "win_1d": true,
         "return_7d": 3.37,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "insider_buying",
+        "company_name": "GME",
+        "description": ""
       },
       {
         "ticker": "BKR",
         "rank": 2,
-        "strategy_match": "Momentum",
+        "strategy_match": "momentum",
         "final_score": 11.0,
         "confidence": 9,
         "reason": "Fresh breakout to 52-week highs following a Q4 earnings beat ($0.78 vs $0.67 est). Technicals confirm a 'Upper Bollinger Band Walk,' indicating strong momentum. Options activity is incredibly bullish with a P/C ratio of 0.209, confirming the post-earnings drift thesis. Analysts maintain a $56+ target, which price is now testing.",
@@ -805,12 +928,15 @@
         "return_1d": 5.08,
         "win_1d": true,
         "return_7d": 5.08,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "momentum",
+        "company_name": "BKR",
+        "description": ""
       },
       {
         "ticker": "VIAV",
         "rank": 3,
-        "strategy_match": "Momentum",
+        "strategy_match": "momentum",
         "final_score": 10.0,
         "confidence": 8,
         "reason": "Stock hit 52-week high ($19.78) ahead of Jan 28 earnings. B. Riley raised PT to $22. Options flow is heavily skewed bullish with a P/C volume ratio of just 0.12, suggesting smart money is positioning for a beat or raised guidance. Technical trend is strong (Price > 20/50/200 SMAs).",
@@ -824,12 +950,15 @@
         "return_1d": 37.2,
         "win_1d": true,
         "return_7d": 37.2,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "momentum",
+        "company_name": "VIAV",
+        "description": ""
       },
       {
         "ticker": "APLD",
         "rank": 4,
-        "strategy_match": "Momentum",
+        "strategy_match": "momentum",
         "final_score": 9.5,
         "confidence": 8,
         "reason": "Recent groundbreaking on 430MW AI data center and analyst upgrade to 'Strong Buy'. Options volume shows P/C ratio of 0.495, confirming bullish sentiment. Technicals show an 8.5% daily jump and price significantly above moving averages. Note: High volatility (ATR $3.26) requires wider stops.",
@@ -843,12 +972,15 @@
         "return_1d": 3.57,
         "win_1d": true,
         "return_7d": 3.57,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "momentum",
+        "company_name": "APLD",
+        "description": ""
       },
       {
         "ticker": "AMZN",
         "rank": 5,
-        "strategy_match": "Momentum",
+        "strategy_match": "momentum",
         "final_score": 9.5,
         "confidence": 9,
         "reason": "Multiple analyst upgrades (Wells Fargo PT $301, Roth PT $295) citing AWS acceleration. Layoff news typically viewed as margin-positive by Wall Street. Options flow confirms the bullish thesis with a P/C ratio of 0.449. Price is consolidating near highs, setting up for a potential breakout toward $250.",
@@ -862,12 +994,15 @@
         "return_1d": -13.2,
         "win_1d": false,
         "return_7d": -13.2,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "momentum",
+        "company_name": "AMZN",
+        "description": ""
       },
       {
         "ticker": "DDOG",
         "rank": 6,
-        "strategy_match": "Momentum",
+        "strategy_match": "momentum",
         "final_score": 9.5,
         "confidence": 8,
         "reason": "Technical breakout featuring a Golden Cross and bullish engulfing pattern. Stifel upgraded to Buy with $160 target. Options flow supports the move with a low P/C ratio of 0.30. The 9.3% 5-day change indicates strong accumulation ahead of earnings.",
@@ -881,12 +1016,15 @@
         "return_1d": -5.1,
         "win_1d": false,
         "return_7d": -5.1,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "momentum",
+        "company_name": "DDOG",
+        "description": ""
       },
       {
         "ticker": "SLV",
         "rank": 7,
-        "strategy_match": "Momentum",
+        "strategy_match": "momentum",
         "final_score": 9.0,
         "confidence": 7,
         "reason": "Strong social momentum (Reddit threads regarding tariffs and inflation hedging) and breakout to new highs. Driven by tariff threats against Canada/Korea. Caution advised as RSI is 76 (Overbought), but the trend is undeniably strong. Options flow is neutral/mixed, suggesting some profit-taking at these levels.",
@@ -900,12 +1038,15 @@
         "return_1d": -25.35,
         "win_1d": false,
         "return_7d": -25.35,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "momentum",
+        "company_name": "SLV",
+        "description": ""
       },
       {
         "ticker": "NVDA",
         "rank": 8,
-        "strategy_match": "Momentum",
+        "strategy_match": "momentum",
         "final_score": 9.0,
         "confidence": 8,
         "reason": "Approval to sell H20 chips in China removes a major overhang, outweighing the 15% revenue share fee. Options flow is bullish (P/C 0.63). Insider selling is a slight drag, but the catalyst is strong enough to drive near-term momentum. Support at $180 holds.",
@@ -919,12 +1060,15 @@
         "return_1d": 1.11,
         "win_1d": true,
         "return_7d": 1.11,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "momentum",
+        "company_name": "NVDA",
+        "description": ""
       },
       {
         "ticker": "DHR",
         "rank": 9,
-        "strategy_match": "Momentum",
+        "strategy_match": "momentum",
         "final_score": 9.0,
         "confidence": 8,
         "reason": "Goldman Sachs and Wells Fargo raised price targets ($270/$240). While price dipped slightly recently (-2%), the options flow is aggressively bullish with a P/C ratio of 0.175, indicating institutional accumulation during the dip.",
@@ -938,12 +1082,15 @@
         "return_1d": -7.16,
         "win_1d": false,
         "return_7d": -7.16,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "momentum",
+        "company_name": "DHR",
+        "description": ""
       },
       {
         "ticker": "STLD",
         "rank": 10,
-        "strategy_match": "Contrarian Value",
+        "strategy_match": "contrarian_value",
         "final_score": 8.5,
         "confidence": 7,
         "reason": "Despite lowered guidance for Q4, the stock is up 4.4% in 5 days with strong technicals (Bullish MACD). Options traders are betting on a beat or looking past Q4 weakness, evidenced by a bullish P/C ratio of 0.43. Strong backlog supports 2026 outlook.",
@@ -957,14 +1104,17 @@
         "return_1d": 16.04,
         "win_1d": true,
         "return_7d": 16.04,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "contrarian_value",
+        "company_name": "STLD",
+        "description": ""
       }
     ],
     "2026-02-01": [
       {
         "ticker": "ACRV",
         "rank": 1,
-        "strategy_match": "Insider Play",
+        "strategy_match": "insider_buying",
         "final_score": 95,
         "confidence": 9,
         "reason": "The CEO purchased 49,000 shares in mid-January, which, combined with an extremely high short interest of 63.0%, creates a textbook short squeeze setup. Upcoming Phase 2b data presentations provide a near-term fundamental catalyst to potentially ignite this volatility.",
@@ -978,12 +1128,15 @@
         "return_1d": -12.85,
         "win_1d": false,
         "return_7d": -12.85,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "insider_buying",
+        "company_name": "ACRV",
+        "description": ""
       },
       {
         "ticker": "RTX",
         "rank": 2,
-        "strategy_match": "Earnings Play",
+        "strategy_match": "earnings_play",
         "final_score": 92,
         "confidence": 9,
         "reason": "RTX reports earnings on Feb 2, supported by a record $251 billion backlog and positive 2026 guidance. The stock is in a strong uptrend, trading above its 20 and 50-day moving averages, with recent news resolving liability concerns.",
@@ -997,12 +1150,15 @@
         "return_1d": -2.86,
         "win_1d": false,
         "return_7d": -2.86,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "earnings_play",
+        "company_name": "RTX",
+        "description": ""
       },
       {
         "ticker": "IBM",
         "rank": 3,
-        "strategy_match": "Momentum",
+        "strategy_match": "momentum",
         "final_score": 90,
         "confidence": 9,
         "reason": "Shares are breaking out near decade-highs driven by a generative AI book of business exceeding $12.5 billion. Technical indicators show a bullish MACD crossover and strong trend strength (ADX rising), signaling continued momentum.",
@@ -1016,12 +1172,15 @@
         "return_1d": -4.87,
         "win_1d": false,
         "return_7d": -4.87,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "momentum",
+        "company_name": "IBM",
+        "description": ""
       },
       {
         "ticker": "GME",
         "rank": 4,
-        "strategy_match": "Insider Play",
+        "strategy_match": "insider_buying",
         "final_score": 88,
         "confidence": 8,
         "reason": "CEO Ryan Cohen recently purchased 1 million shares, a massive vote of confidence that establishes a psychological floor. Technicals show a bullish divergence in on-balance volume, indicating accumulation despite recent price consolidation.",
@@ -1035,12 +1194,15 @@
         "return_1d": 3.94,
         "win_1d": true,
         "return_7d": 3.94,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "insider_buying",
+        "company_name": "GME",
+        "description": ""
       },
       {
         "ticker": "INTC",
         "rank": 5,
-        "strategy_match": "Insider Play",
+        "strategy_match": "insider_buying",
         "final_score": 87,
         "confidence": 8,
         "reason": "Recent insider buying by the CFO aligns with a strong 1-year uptrend and positive sentiment around domestic manufacturing. The stock maintains a 'Strong Uptrend' technical status, trading well above its 50 and 200-day moving averages.",
@@ -1054,12 +1216,15 @@
         "return_1d": 1.42,
         "win_1d": true,
         "return_7d": 1.42,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "insider_buying",
+        "company_name": "INTC",
+        "description": ""
       },
       {
         "ticker": "SMCI",
         "rank": 6,
-        "strategy_match": "Earnings Play",
+        "strategy_match": "earnings_play",
         "final_score": 86,
         "confidence": 8,
         "reason": "Reporting earnings on Feb 3 with expectations of 84% revenue growth, the stock is primed for volatility. With 17-18% short interest and recent analyst upgrades, a positive report could trigger a sharp squeeze.",
@@ -1073,12 +1238,15 @@
         "return_1d": 14.5,
         "win_1d": true,
         "return_7d": 14.5,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "earnings_play",
+        "company_name": "SMCI",
+        "description": ""
       },
       {
         "ticker": "PLTR",
         "rank": 7,
-        "strategy_match": "Earnings Play",
+        "strategy_match": "earnings_play",
         "final_score": 85,
         "confidence": 8,
         "reason": "Set to report earnings on Feb 2 with projected 62.8% revenue growth. The stock is currently oversold (RSI ~25), presenting an asymmetric opportunity for a bounce if results validate its AI platform's expansion.",
@@ -1092,12 +1260,15 @@
         "return_1d": -4.83,
         "win_1d": false,
         "return_7d": -4.83,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "earnings_play",
+        "company_name": "PLTR",
+        "description": ""
       },
       {
         "ticker": "WDC",
         "rank": 8,
-        "strategy_match": "Momentum",
+        "strategy_match": "momentum",
         "final_score": 84,
         "confidence": 8,
         "reason": "Received a fresh 'Buy' upgrade following strong Q2 earnings and is positioned as a key beneficiary of AI storage demand. Technicals show a very strong trend (ADX 55+) with price holding above key moving averages.",
@@ -1111,12 +1282,15 @@
         "return_1d": 4.93,
         "win_1d": true,
         "return_7d": 4.93,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "momentum",
+        "company_name": "WDC",
+        "description": ""
       },
       {
         "ticker": "FFAI",
         "rank": 9,
-        "strategy_match": "News Catalyst",
+        "strategy_match": "news_catalyst",
         "final_score": 83,
         "confidence": 8,
         "reason": "Sales for its new AI robotics product begin Feb 4, providing a definitive near-term catalyst. BlackRock's increased stake and recent regulatory certification support the momentum in this high-volatility play.",
@@ -1130,12 +1304,15 @@
         "return_1d": -32.5,
         "win_1d": false,
         "return_7d": -32.5,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "news_catalyst",
+        "company_name": "FFAI",
+        "description": ""
       },
       {
         "ticker": "LBRDA",
         "rank": 10,
-        "strategy_match": "Volume Accumulation",
+        "strategy_match": "early_accumulation",
         "final_score": 82,
         "confidence": 8,
         "reason": "Displaying unusual volume (2.9x average) and a bullish MACD crossover, signaling accumulation ahead of earnings. The stock has rallied 7.79% recently, breaking out from lows with improving sentiment.",
@@ -1149,14 +1326,17 @@
         "return_1d": 19.7,
         "win_1d": true,
         "return_7d": 19.7,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "early_accumulation",
+        "company_name": "LBRDA",
+        "description": ""
       }
     ],
     "2026-01-27": [
       {
         "ticker": "META",
         "rank": 1,
-        "strategy_match": "Momentum",
+        "strategy_match": "momentum",
         "final_score": 9.2,
         "confidence": 9,
         "reason": "Strong momentum driven by an aggressive AI strategy, positive analyst upgrades (Jefferies target $910), and significant social media buzz around earnings (Jan 28) and new monetization efforts (premium subscriptions, Threads ads). Technicals show a clear bullish trend, breaking out from a recent low, with price above key moving averages and bullish MACD crossover. Bullish options volume (P/C 0.56) confirms positive sentiment. Entry around $660-670, stop below $640 (50-SMA). Anticipate post-earnings volatility.",
@@ -1170,12 +1350,15 @@
         "return_1d": -0.33,
         "win_1d": false,
         "return_7d": -0.33,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "momentum",
+        "company_name": "META",
+        "description": ""
       },
       {
         "ticker": "GLW",
         "rank": 2,
-        "strategy_match": "Momentum",
+        "strategy_match": "momentum",
         "final_score": 7.8,
         "confidence": 8,
         "reason": "Major positive catalyst with a new $6 billion Meta order for AI data centers, leading to a 16% stock surge. Technicals show a strong uptrend with all key moving averages confirming bullish momentum and price near 52-week highs ($113.99). Unusual options activity shows significant bullish institutional interest for near-term calls ($115, $111 strikes expiring Jan 30). Entry on a dip to $105-107, stop below $96.64 (recent high, also upper Bollinger Band).",
@@ -1189,12 +1372,15 @@
         "return_1d": 16.73,
         "win_1d": true,
         "return_7d": 16.73,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "momentum",
+        "company_name": "GLW",
+        "description": ""
       },
       {
         "ticker": "SLV",
         "rank": 3,
-        "strategy_match": "Momentum",
+        "strategy_match": "momentum",
         "final_score": 7.7,
         "confidence": 8,
         "reason": "Driven by strong silver prices (surged >150%) due to supply deficits and industrial demand, with SLV posting a 208% annual return and hitting a 52-week high. Technicals show a very strong uptrend with price far above all key moving averages. Options activity shows a recent large-volume call spread, confirming bullish momentum. However, the ETF is significantly overbought (RSI 79.4, Stochastic), and some Reddit sentiment indicates bearish bets, posing a risk of a pullback. Entry on a dip to $92-95 (near 23.6% Fib support) with a stop below $88.",
@@ -1208,12 +1394,15 @@
         "return_1d": -27.74,
         "win_1d": false,
         "return_7d": -27.74,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "momentum",
+        "company_name": "SLV",
+        "description": ""
       },
       {
         "ticker": "FFIV",
         "rank": 4,
-        "strategy_match": "Momentum",
+        "strategy_match": "momentum",
         "final_score": 6.9,
         "confidence": 7,
         "reason": "Strong earnings beat and positive guidance, coupled with an analyst upgrade by JPMorgan to 'Overweight' with a $345 target. Technicals show a short-term bullish trend (price above 50-SMA $253.73, rising OBV, price above 20-EMA $263.91 and VWAP). Bullish options flow confirms positive sentiment (P/C 0.479). However, significant insider selling ($8.4M) is a red flag. Entry on pullback to $265-268 (near 20-EMA/VWAP), with a stop below $253 (50-SMA).",
@@ -1227,12 +1416,15 @@
         "return_1d": 4.42,
         "win_1d": true,
         "return_7d": 4.42,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "momentum",
+        "company_name": "FFIV",
+        "description": ""
       },
       {
         "ticker": "TRX",
         "rank": 5,
-        "strategy_match": "Momentum",
+        "strategy_match": "momentum",
         "final_score": 6.6,
         "confidence": 8,
         "reason": "Extremely strong momentum driven by record Q1 revenue ($25.12M, doubled YoY), 100% unhedged gold exposure benefiting from rising gold prices, and a massive surge in call option volume (5,352% increase). Technicals show a parabolic uptrend, but the stock is significantly overbought (RSI 79.8, 141% above upper Bollinger band), suggesting a potential pullback. Entry on pullback to $1.25-1.30 (near 23.6% Fib support) with a stop below $1.20 (upper Bollinger band).",
@@ -1246,12 +1438,15 @@
         "return_1d": 16.45,
         "win_1d": true,
         "return_7d": 16.45,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "momentum",
+        "company_name": "TRX",
+        "description": ""
       },
       {
         "ticker": "TXN",
         "rank": 6,
-        "strategy_match": "Momentum",
+        "strategy_match": "momentum",
         "final_score": 6.0,
         "confidence": 7,
         "reason": "Strong technical uptrend with price above all key moving averages (50-SMA $177.28, 200-SMA $181.35, 20-EMA $188.06, VWAP $188.03), strong ADX (44.5), and bullish RSI/MACD. Positive news regarding a 16-year forecast. Bullish options volume (P/C 0.635). However, significant insider selling ($1.7M) and mixed analyst target adjustments (Susquehanna lowered, Barclays raised) introduce caution. Entry around $190-192 (near 20-EMA) with a stop below $185 (support below 23.6% Fib).",
@@ -1265,12 +1460,15 @@
         "return_1d": 12.35,
         "win_1d": true,
         "return_7d": 12.35,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "momentum",
+        "company_name": "TXN",
+        "description": ""
       },
       {
         "ticker": "KLAC",
         "rank": 7,
-        "strategy_match": "Momentum",
+        "strategy_match": "momentum",
         "final_score": 5.8,
         "confidence": 7,
         "reason": "Strong technical uptrend, outperforming the market, with price well above key moving averages (50-SMA $1276.50, 200-SMA $1103.85) and positive RSI (67.2). Strong fundamentals with solid revenue (13.0% YoY) and earnings growth (20.8% YoY). Upcoming earnings expected to be positive. However, substantial insider selling ($15.7M, including $12.9M by CEO) and neutral options activity are cautionary signals. Entry on pullback to $1450-1480 (near 23.6% Fib support) with a stop below $1400 (20-EMA).",
@@ -1284,12 +1482,15 @@
         "return_1d": -11.48,
         "win_1d": false,
         "return_7d": -11.48,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "momentum",
+        "company_name": "KLAC",
+        "description": ""
       },
       {
         "ticker": "KKR",
         "rank": 8,
-        "strategy_match": "Contrarian Value",
+        "strategy_match": "contrarian_value",
         "final_score": 5.8,
         "confidence": 6,
         "reason": "Strong fundamentals with good revenue (13.2% YoY) and earnings growth (40.6% YoY). Technicals show the stock is oversold (RSI 33.2) and at the lower Bollinger band, indicating a potential bounce. However, the overall trend is a strong downtrend, and bearish options volume (P/C 1.704) contradicts a bullish reversal play. The Nestle news is not a direct catalyst for KKR's stock price. Entry on confirmation of bounce from $112-115 support, stop below $110.",
@@ -1303,12 +1504,15 @@
         "return_1d": -7.58,
         "win_1d": false,
         "return_7d": -7.58,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "contrarian_value",
+        "company_name": "KKR",
+        "description": ""
       },
       {
         "ticker": "HOLO",
         "rank": 9,
-        "strategy_match": "Contrarian Value",
+        "strategy_match": "contrarian_value",
         "final_score": 5.3,
         "confidence": 6,
         "reason": "The core thesis is deep undervaluation (P/B 0.1, trading at 10% of NAV based on liquid assets). Technicals show it's at the lower Bollinger band with bullish OBV divergence, suggesting a potential bounce from oversold conditions. However, there's no insider or options data to confirm sentiment, and the stock exhibits high volatility and a weak overall trend (ADX 7.6). This is a speculative value play. Entry near $2.57 (52-week low/Fib support) with a stop below $2.50.",
@@ -1322,12 +1526,15 @@
         "return_1d": -18.55,
         "win_1d": false,
         "return_7d": -18.55,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "contrarian_value",
+        "company_name": "HOLO",
+        "description": ""
       },
       {
         "ticker": "VYMI",
         "rank": 10,
-        "strategy_match": "Momentum",
+        "strategy_match": "momentum",
         "final_score": 5.2,
         "confidence": 6,
         "reason": "Strong technical uptrend, outperforming VXUS, and a high dividend yield (369%) make it attractive for income-focused investors in a 'risk-on' international rotation. However, it's significantly overbought (RSI 76.9, Stochastic) and at the upper Bollinger band, suggesting a potential pullback. Institutional activity is mixed (some buying, some selling). Entry on a pullback to $91-92 (near 20-EMA) with a stop below $89 (50-SMA).",
@@ -1341,7 +1548,10 @@
         "return_1d": 3.42,
         "win_1d": true,
         "return_7d": 3.42,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "momentum",
+        "company_name": "VYMI",
+        "description": ""
       }
     ],
     "2026-01-31": [
@@ -1362,7 +1572,10 @@
         "return_1d": -12.85,
         "win_1d": false,
         "return_7d": -12.85,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "short_squeeze",
+        "company_name": "ACRV",
+        "description": ""
       },
       {
         "ticker": "CHTR",
@@ -1381,7 +1594,10 @@
         "return_1d": 20.41,
         "win_1d": true,
         "return_7d": 20.41,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "early_accumulation",
+        "company_name": "CHTR",
+        "description": ""
       },
       {
         "ticker": "LTRX",
@@ -1400,7 +1616,10 @@
         "return_1d": -6.33,
         "win_1d": false,
         "return_7d": -6.33,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "pre_earnings_accumulation",
+        "company_name": "LTRX",
+        "description": ""
       },
       {
         "ticker": "FN",
@@ -1419,7 +1638,10 @@
         "return_1d": -4.73,
         "win_1d": false,
         "return_7d": -4.73,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "earnings_play",
+        "company_name": "FN",
+        "description": ""
       },
       {
         "ticker": "RMBS",
@@ -1438,7 +1660,10 @@
         "return_1d": -6.01,
         "win_1d": false,
         "return_7d": -6.01,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "earnings_play",
+        "company_name": "RMBS",
+        "description": ""
       },
       {
         "ticker": "PLTR",
@@ -1457,7 +1682,10 @@
         "return_1d": -4.83,
         "win_1d": false,
         "return_7d": -4.83,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "earnings_play",
+        "company_name": "PLTR",
+        "description": ""
       },
       {
         "ticker": "MRVL",
@@ -1476,7 +1704,10 @@
         "return_1d": 3.92,
         "win_1d": true,
         "return_7d": 3.92,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "analyst_upgrade",
+        "company_name": "MRVL",
+        "description": ""
       },
       {
         "ticker": "YSS",
@@ -1495,7 +1726,10 @@
         "return_1d": -19.2,
         "win_1d": false,
         "return_7d": -19.2,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "ipo_opportunity",
+        "company_name": "YSS",
+        "description": ""
       },
       {
         "ticker": "AMZN",
@@ -1514,7 +1748,10 @@
         "return_1d": -13.51,
         "win_1d": false,
         "return_7d": -13.51,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "analyst_upgrade",
+        "company_name": "AMZN",
+        "description": ""
       },
       {
         "ticker": "SNDK",
@@ -1533,14 +1770,17 @@
         "return_1d": -6.01,
         "win_1d": false,
         "return_7d": -6.01,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "social_hype",
+        "company_name": "SNDK",
+        "description": ""
       }
     ],
     "2026-01-28": [
       {
         "ticker": "HYMC",
         "rank": 1,
-        "strategy_match": "Insider Play",
+        "strategy_match": "insider_buying",
         "final_score": 10.5,
         "confidence": 9,
         "reason": "Exceptional insider strength with 10% owner Eric Sprott purchasing an aggregate of $84.9M over 3 months, including $5M on Jan 28. High-grade silver intercepts at the Nevada mine serve as a massive fundamental catalyst. Technicals show a very strong uptrend (ADX 67.9) with price 151% above the 50-SMA. Strategy: Momentum trade with entry at $51.50, targeting $60 resistance, with a tight stop at $47.50 (1.5x ATR).",
@@ -1554,12 +1794,15 @@
         "return_1d": -29.1,
         "win_1d": false,
         "return_7d": -29.1,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "insider_buying",
+        "company_name": "HYMC",
+        "description": ""
       },
       {
         "ticker": "META",
         "rank": 2,
-        "strategy_match": "Momentum",
+        "strategy_match": "momentum",
         "final_score": 10.3,
         "confidence": 10,
         "reason": "Q4 earnings beat with $59.89B revenue and aggressive 2026 guidance. Social sentiment is highly positive following AI spend updates. MACD bullish crossover confirmed on Jan 28. Options flow is decisively bullish with a volume P/C ratio of 0.588 and unusual call activity at the $785 Jan 30 strikes (9.06x Vol/OI). Strategy: Buy on current strength targeting $710 (Fib high), stop at $645.",
@@ -1573,12 +1816,15 @@
         "return_1d": 0.3,
         "win_1d": true,
         "return_7d": 0.3,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "momentum",
+        "company_name": "META",
+        "description": ""
       },
       {
         "ticker": "MIRM",
         "rank": 3,
-        "strategy_match": "Insider Play",
+        "strategy_match": "insider_buying",
         "final_score": 10.0,
         "confidence": 9,
         "reason": "Following the Bluejay Therapeutics acquisition, Director Heron Patrick bought $8.9M in stock. Analysts (HC Wainwright) raised the target to $130 (28% upside). Technicals are in a strong uptrend with price above 20 EMA and a RSI of 77.5 indicating high demand. Strategy: Entry at $100.85, targeting $130, with a stop at $93.40 (1.5x ATR).",
@@ -1592,12 +1838,15 @@
         "return_1d": 0.06,
         "win_1d": true,
         "return_7d": 0.06,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "insider_buying",
+        "company_name": "MIRM",
+        "description": ""
       },
       {
         "ticker": "LRCX",
         "rank": 4,
-        "strategy_match": "Momentum",
+        "strategy_match": "momentum",
         "final_score": 9.6,
         "confidence": 9,
         "reason": "Fiscal Q2 revenue of $5.34B with record operating margins driven by AI data center demand. Bullish MACD crossover on Jan 28 and technical breakout above the 50-SMA (+33.4% position). Analyst sentiment is 73.7% bullish. Strategy: Ride semiconductor equipment tailwinds toward $265 target, stop loss at $223.",
@@ -1611,12 +1860,15 @@
         "return_1d": -5.41,
         "win_1d": false,
         "return_7d": -5.41,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "momentum",
+        "company_name": "LRCX",
+        "description": ""
       },
       {
         "ticker": "AMAT",
         "rank": 5,
-        "strategy_match": "Momentum",
+        "strategy_match": "momentum",
         "final_score": 9.5,
         "confidence": 8,
         "reason": "Upgraded by Mizuho and Deutsche Bank on accelerating wafer equipment spending. Technicals show a strong uptrend with a Golden Cross (50-SMA crossing 200-SMA) and MACD bullish crossover. Options volume P/C ratio is 0.698, confirming call-side dominance. Strategy: Enter on pullbacks to $330, targeting $360 resistance, stop at $315.",
@@ -1630,12 +1882,15 @@
         "return_1d": -2.28,
         "win_1d": false,
         "return_7d": -2.28,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "momentum",
+        "company_name": "AMAT",
+        "description": ""
       },
       {
         "ticker": "WDC",
         "rank": 6,
-        "strategy_match": "Momentum",
+        "strategy_match": "momentum",
         "final_score": 9.3,
         "confidence": 8,
         "reason": "AI-driven memory shortage is improving margins, pushing shares to all-time highs. RSI 73.1 indicates overbought conditions but strong ADX (57.8) suggests trend persistence. Options activity shows massive unusual call volume at $285 Feb 6 strikes (220x OI). Strategy: Momentum play targeting $300 ahead of earnings, stop loss at $231.",
@@ -1649,12 +1904,15 @@
         "return_1d": -6.13,
         "win_1d": false,
         "return_7d": -6.13,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "momentum",
+        "company_name": "WDC",
+        "description": ""
       },
       {
         "ticker": "WRB",
         "rank": 7,
-        "strategy_match": "Insider Play",
+        "strategy_match": "insider_buying",
         "final_score": 9.2,
         "confidence": 9,
         "reason": "Mitsui Sumitomo Insurance (10% owner) has purchased an aggregate of $413.5M in the last 3 months, including $69M recently. Q4 results beat revenue forecasts. While technicals are in a downtrend, the sheer scale of insider accumulation suggests a fundamental floor. Strategy: Value-entry at $67.67, targeting $78 (52-week high), stop at $64.50.",
@@ -1668,12 +1926,15 @@
         "return_1d": 3.32,
         "win_1d": true,
         "return_7d": 3.32,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "insider_buying",
+        "company_name": "WRB",
+        "description": ""
       },
       {
         "ticker": "VIAV",
         "rank": 8,
-        "strategy_match": "Momentum",
+        "strategy_match": "momentum",
         "final_score": 8.3,
         "confidence": 8,
         "reason": "Earnings reported at the high end of guidance with an upbeat Q3 outlook. Technicals show a strong uptrend and price 11.4% above VWAP. Options flow is highly bullish with a volume P/C ratio of 0.071 and heavy call volume at $24 Feb strikes (16.8x OI). Strategy: Entry at $21, target $24, stop at $19.47.",
@@ -1687,12 +1948,15 @@
         "return_1d": 29.96,
         "win_1d": true,
         "return_7d": 29.96,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "momentum",
+        "company_name": "VIAV",
+        "description": ""
       },
       {
         "ticker": "VSAT",
         "rank": 9,
-        "strategy_match": "Momentum",
+        "strategy_match": "momentum",
         "final_score": 8.3,
         "confidence": 8,
         "reason": "Needham Buy rating and $45 target based on Viasat-3 satellite deployment which will triple global capacity. Strong technical uptrend (price +41% from 200-SMA). Unusual options activity at $42 Feb 20 calls (17.7x Vol/OI). Strategy: Ride breakout above 52-week high toward $55, stop at $41.",
@@ -1706,12 +1970,15 @@
         "return_1d": -5.42,
         "win_1d": false,
         "return_7d": -5.42,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "momentum",
+        "company_name": "VSAT",
+        "description": ""
       },
       {
         "ticker": "INTC",
         "rank": 10,
-        "strategy_match": "Momentum",
+        "strategy_match": "momentum",
         "final_score": 8.2,
         "confidence": 7,
         "reason": "Shares jumped 11% on reports of Apple/Nvidia foundry interest for 2028. CFO David Zinsner purchased $250k in stock at $42.50 to signal a dip-buy opportunity. Bullish options positioning (OI P/C 0.688) confirms market confidence in the pivot. Strategy: Long position at $48.78, target $54.60, stop at $43.70.",
@@ -1725,7 +1992,10 @@
         "return_1d": -3.38,
         "win_1d": false,
         "return_7d": -3.38,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "momentum",
+        "company_name": "INTC",
+        "description": ""
       }
     ],
     "2026-02-02": [
@@ -1746,7 +2016,10 @@
         "return_1d": -13.81,
         "win_1d": false,
         "return_7d": -13.81,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "short_squeeze",
+        "company_name": "ACRV",
+        "description": ""
       },
       {
         "ticker": "PLTR",
@@ -1765,7 +2038,10 @@
         "return_1d": -5.58,
         "win_1d": false,
         "return_7d": -5.58,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "earnings_play",
+        "company_name": "PLTR",
+        "description": ""
       },
       {
         "ticker": "ATO",
@@ -1784,7 +2060,10 @@
         "return_1d": 4.59,
         "win_1d": true,
         "return_7d": 4.59,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "pre_earnings_accumulation",
+        "company_name": "ATO",
+        "description": ""
       },
       {
         "ticker": "LTRX",
@@ -1803,7 +2082,10 @@
         "return_1d": -8.53,
         "win_1d": false,
         "return_7d": -8.53,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "pre_earnings_accumulation",
+        "company_name": "LTRX",
+        "description": ""
       },
       {
         "ticker": "IP",
@@ -1822,7 +2104,10 @@
         "return_1d": 17.97,
         "win_1d": true,
         "return_7d": 17.97,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "insider_buying",
+        "company_name": "IP",
+        "description": ""
       },
       {
         "ticker": "CR",
@@ -1841,7 +2126,10 @@
         "return_1d": 7.14,
         "win_1d": true,
         "return_7d": 7.14,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "insider_buying",
+        "company_name": "CR",
+        "description": ""
       },
       {
         "ticker": "TWST",
@@ -1860,7 +2148,10 @@
         "return_1d": 4.81,
         "win_1d": true,
         "return_7d": 4.81,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "earnings_play",
+        "company_name": "TWST",
+        "description": ""
       },
       {
         "ticker": "AB",
@@ -1879,7 +2170,10 @@
         "return_1d": -4.7,
         "win_1d": false,
         "return_7d": -4.7,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "pre_earnings_accumulation",
+        "company_name": "AB",
+        "description": ""
       },
       {
         "ticker": "AI",
@@ -1898,7 +2192,10 @@
         "return_1d": 5.13,
         "win_1d": true,
         "return_7d": 5.13,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "short_squeeze",
+        "company_name": "AI",
+        "description": ""
       },
       {
         "ticker": "APLD",
@@ -1917,7 +2214,10 @@
         "return_1d": 7.67,
         "win_1d": true,
         "return_7d": 7.67,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "short_squeeze",
+        "company_name": "APLD",
+        "description": ""
       },
       {
         "ticker": "DOCN",
@@ -1936,7 +2236,10 @@
         "return_1d": 7.14,
         "win_1d": true,
         "return_7d": 7.14,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "analyst_upgrade",
+        "company_name": "DOCN",
+        "description": ""
       },
       {
         "ticker": "CEG",
@@ -1955,7 +2258,10 @@
         "return_1d": 0.1,
         "win_1d": true,
         "return_7d": 0.1,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "analyst_upgrade",
+        "company_name": "CEG",
+        "description": ""
       },
       {
         "ticker": "ORCL",
@@ -1974,7 +2280,10 @@
         "return_1d": -0.11,
         "win_1d": false,
         "return_7d": -0.11,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "news_catalyst",
+        "company_name": "ORCL",
+        "description": ""
       },
       {
         "ticker": "RTX",
@@ -1993,7 +2302,10 @@
         "return_1d": -2.93,
         "win_1d": false,
         "return_7d": -2.93,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "earnings_play",
+        "company_name": "RTX",
+        "description": ""
       },
       {
         "ticker": "WWD",
@@ -2012,7 +2324,10 @@
         "return_1d": 19.64,
         "win_1d": true,
         "return_7d": 19.64,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "earnings_play",
+        "company_name": "WWD",
+        "description": ""
       }
     ],
     "2026-02-03": [
@@ -2033,7 +2348,10 @@
         "return_1d": 12.34,
         "win_1d": true,
         "return_7d": 12.34,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "momentum",
+        "company_name": "SMCI",
+        "description": ""
       },
       {
         "ticker": "NVDA",
@@ -2052,7 +2370,10 @@
         "return_1d": 4.55,
         "win_1d": true,
         "return_7d": 4.55,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "momentum",
+        "company_name": "NVDA",
+        "description": ""
       },
       {
         "ticker": "AMAT",
@@ -2071,7 +2392,10 @@
         "return_1d": 3.26,
         "win_1d": true,
         "return_7d": 3.26,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "analyst_upgrade",
+        "company_name": "AMAT",
+        "description": ""
       },
       {
         "ticker": "LRCX",
@@ -2090,7 +2414,10 @@
         "return_1d": -1.52,
         "win_1d": false,
         "return_7d": -1.52,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "analyst_upgrade",
+        "company_name": "LRCX",
+        "description": ""
       },
       {
         "ticker": "AMD",
@@ -2109,12 +2436,15 @@
         "return_1d": -11.79,
         "win_1d": false,
         "return_7d": -11.79,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "social_hype",
+        "company_name": "AMD",
+        "description": ""
       },
       {
         "ticker": "CSCO",
         "rank": 6,
-        "strategy_match": "undiscovered_dd",
+        "strategy_match": "social_dd",
         "final_score": 82,
         "confidence": 7,
         "reason": "CSCO's recent AI summit and focus on high-margin software and security services, combined with strong upward technicals (above 50 SMA and strong trend), position it well. The 'undiscovered DD' strategy match and bullish options flow suggest potential upside.",
@@ -2128,7 +2458,10 @@
         "return_1d": 3.83,
         "win_1d": true,
         "return_7d": 3.83,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "social_dd",
+        "company_name": "CSCO",
+        "description": ""
       },
       {
         "ticker": "AKAM",
@@ -2147,12 +2480,15 @@
         "return_1d": 2.84,
         "win_1d": true,
         "return_7d": 2.84,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "momentum",
+        "company_name": "AKAM",
+        "description": ""
       },
       {
         "ticker": "SIMO",
         "rank": 8,
-        "strategy_match": "undiscovered_dd",
+        "strategy_match": "social_dd",
         "final_score": 78,
         "confidence": 7,
         "reason": "SIMO has strong uptrend technicals, trading above its 50 SMA with a high RSI. The 'undiscovered DD' strategy and strong analyst buy ratings suggest potential for further upside, despite a slight bearish MACD signal.",
@@ -2166,7 +2502,10 @@
         "return_1d": 9.05,
         "win_1d": true,
         "return_7d": 9.05,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "social_dd",
+        "company_name": "SIMO",
+        "description": ""
       },
       {
         "ticker": "AB",
@@ -2185,7 +2524,10 @@
         "return_1d": -3.51,
         "win_1d": false,
         "return_7d": -3.51,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "pre_earnings_accumulation",
+        "company_name": "AB",
+        "description": ""
       },
       {
         "ticker": "AEIS",
@@ -2204,7 +2546,10 @@
         "return_1d": 6.09,
         "win_1d": true,
         "return_7d": 6.09,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "pre_earnings_accumulation",
+        "company_name": "AEIS",
+        "description": ""
       },
       {
         "ticker": "LUMN",
@@ -2223,7 +2568,10 @@
         "return_1d": -8.04,
         "win_1d": false,
         "return_7d": -8.04,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "news_catalyst",
+        "company_name": "LUMN",
+        "description": ""
       },
       {
         "ticker": "INMD",
@@ -2242,7 +2590,10 @@
         "return_1d": -8.05,
         "win_1d": false,
         "return_7d": -8.05,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "earnings_play",
+        "company_name": "INMD",
+        "description": ""
       },
       {
         "ticker": "FFIV",
@@ -2261,7 +2612,10 @@
         "return_1d": 2.82,
         "win_1d": true,
         "return_7d": 2.82,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "momentum",
+        "company_name": "FFIV",
+        "description": ""
       },
       {
         "ticker": "RRR",
@@ -2280,7 +2634,10 @@
         "return_1d": 5.25,
         "win_1d": true,
         "return_7d": 5.25,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "earnings_play",
+        "company_name": "RRR",
+        "description": ""
       },
       {
         "ticker": "AAPL",
@@ -2299,14 +2656,17 @@
         "return_1d": 1.56,
         "win_1d": true,
         "return_7d": 1.56,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "momentum",
+        "company_name": "AAPL",
+        "description": ""
       }
     ],
     "2026-01-29": [
       {
         "ticker": "APLD",
         "rank": 1,
-        "strategy_match": "Momentum",
+        "strategy_match": "momentum",
         "final_score": 10.5,
         "confidence": 9,
         "reason": "Extreme growth profile with 250% revenue growth YoY. Nvidia's $2B investment in anchor tenant CoreWeave effectively de-risks the Ellendale campus project. Technicals show a strong uptrend above 50 SMA with a bullish MACD crossover. Options activity is highly favorable with a Put/Call volume ratio of 0.325, indicating institutional accumulation. Strategy: Enter on pullbacks to $36.78 support with a target of $45.",
@@ -2320,12 +2680,15 @@
         "return_1d": -1.58,
         "win_1d": false,
         "return_7d": -1.58,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "momentum",
+        "company_name": "APLD",
+        "description": ""
       },
       {
         "ticker": "AAPL",
         "rank": 2,
-        "strategy_match": "Momentum",
+        "strategy_match": "momentum",
         "final_score": 10.4,
         "confidence": 9,
         "reason": "Reported record Q1 revenue of $143.8B with a bullish MACD crossover indicating shifting momentum. Acquisition rumors of AI startup Q.ai provide a catalyst for Siri enhancement. Options flow is bullish with a P/C ratio of 0.63 and strong institutional positioning. Strategy: Bullish breakout play toward $287 analyst target; stop-loss at $248.",
@@ -2339,12 +2702,15 @@
         "return_1d": 5.96,
         "win_1d": true,
         "return_7d": 5.96,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "momentum",
+        "company_name": "AAPL",
+        "description": ""
       },
       {
         "ticker": "UA",
         "rank": 3,
-        "strategy_match": "Insider Play",
+        "strategy_match": "insider_buying",
         "final_score": 10.2,
         "confidence": 8,
         "reason": "Significant insider buying from V. Prem Watsa ($16.4M) and a total of over $90M in purchases this quarter shows extreme conviction. ADX of 62 indicates an incredibly strong trend. Options P/C ratio of 0.117 confirms bullish sentiment. Strategy: Follow insider lead for a move back toward $7.76 high; entry at $5.90, stop at $5.35.",
@@ -2358,12 +2724,15 @@
         "return_1d": 15.35,
         "win_1d": true,
         "return_7d": 15.35,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "insider_buying",
+        "company_name": "UA",
+        "description": ""
       },
       {
         "ticker": "MCHP",
         "rank": 4,
-        "strategy_match": "Momentum",
+        "strategy_match": "momentum",
         "final_score": 10.0,
         "confidence": 8,
         "reason": "Fresh analyst upgrade from Investing.com paired with a confirmed Golden Cross (50 SMA crossing 200 SMA). Company launched new 3-nm switches for AI data centers. Put/Call ratio of 0.13 is exceptionally bullish. RSI is overbought (73.4), suggesting a brief consolidation before the Feb 5 earnings. Strategy: Long position at $78-80 range targeting $95.",
@@ -2377,12 +2746,15 @@
         "return_1d": -3.15,
         "win_1d": false,
         "return_7d": -3.15,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "momentum",
+        "company_name": "MCHP",
+        "description": ""
       },
       {
         "ticker": "INTC",
         "rank": 5,
-        "strategy_match": "Momentum",
+        "strategy_match": "momentum",
         "final_score": 9.8,
         "confidence": 8,
         "reason": "Recent 11% jump on rumors of 2028 foundry partnerships with Apple and Nvidia. Bullish insider activity from the CFO ($250k purchase) signals manufacturing confidence. Options flow confirms the bias with a P/C ratio of 0.655. Strategy: Momentum trade toward $54 resistance; tight stop at $44.03 (ATR based).",
@@ -2396,12 +2768,15 @@
         "return_1d": -3.14,
         "win_1d": false,
         "return_7d": -3.14,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "momentum",
+        "company_name": "INTC",
+        "description": ""
       },
       {
         "ticker": "USAR",
         "rank": 6,
-        "strategy_match": "Momentum",
+        "strategy_match": "momentum",
         "final_score": 9.6,
         "confidence": 8,
         "reason": "Closing of $1.5B PIPE and CHIPS program LOI ($1.6B) provide multi-year funding runway for rare earth production. Technicals show very strong trend strength (ADX 55.5). Options P/C ratio of 0.382 indicates heavy call buying. Strategy: Target $37.20 analyst consensus with trailing stop under the 20 EMA ($20.08).",
@@ -2415,12 +2790,15 @@
         "return_1d": -0.86,
         "win_1d": false,
         "return_7d": -0.86,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "momentum",
+        "company_name": "USAR",
+        "description": ""
       },
       {
         "ticker": "LTRX",
         "rank": 7,
-        "strategy_match": "Momentum",
+        "strategy_match": "momentum",
         "final_score": 9.5,
         "confidence": 7,
         "reason": "Announced high-impact AI drone partnership for defense. Extremely low Put/Call ratio (0.024) suggests speculative call buying ahead of Feb 5 earnings. Technicals show a strong uptrend above all major EMAs. Strategy: Speculative earnings play targeting $9.00; stop-loss at 50 SMA ($5.79).",
@@ -2434,12 +2812,15 @@
         "return_1d": -8.53,
         "win_1d": false,
         "return_7d": -8.53,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "momentum",
+        "company_name": "LTRX",
+        "description": ""
       },
       {
         "ticker": "KLAC",
         "rank": 8,
-        "strategy_match": "Momentum",
+        "strategy_match": "momentum",
         "final_score": 9.1,
         "confidence": 8,
         "reason": "Crushed Q2 estimates with 17% growth driven by AI packaging demand. Strong guidance issued for the next quarter. Strong uptrend verified by OBV and VWAP. RSI is high (72.5), but momentum is supported by yielding management dominance. Strategy: Buy on confirmation of support at $1620; target $1800.",
@@ -2453,12 +2834,15 @@
         "return_1d": -15.07,
         "win_1d": false,
         "return_7d": -15.07,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "momentum",
+        "company_name": "KLAC",
+        "description": ""
       },
       {
         "ticker": "AMD",
         "rank": 9,
-        "strategy_match": "Momentum",
+        "strategy_match": "momentum",
         "final_score": 9.0,
         "confidence": 8,
         "reason": "Upgraded ahead of earnings due to MI308 chip demand and AI accelerator licenses. ADX of 39.6 indicates a solid trend. Options OI shows bullish long-term positioning. Insider selling is a minor concern (-0.1 modifier offset). Strategy: Play the earnings run-up to $267 resistance; stop at $237.",
@@ -2472,12 +2856,15 @@
         "return_1d": -15.31,
         "win_1d": false,
         "return_7d": -15.31,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "momentum",
+        "company_name": "AMD",
+        "description": ""
       },
       {
         "ticker": "THM",
         "rank": 10,
-        "strategy_match": "Insider Play",
+        "strategy_match": "insider_buying",
         "final_score": 8.5,
         "confidence": 7,
         "reason": "Paulson & Co. increased stake via a $40M purchase in a recent $115M financing round. Technicals show an extreme move (+26% in 5 days) and RSI is overbought (78.6). High institutional support (53.8%) provides floor. Strategy: Wait for mean reversion toward $2.55 (VWAP) before entering; target $3.65.",
@@ -2491,14 +2878,17 @@
         "return_1d": -11.71,
         "win_1d": false,
         "return_7d": -11.71,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "insider_buying",
+        "company_name": "THM",
+        "description": ""
       }
     ],
     "2026-01-25": [
       {
         "ticker": "META",
         "rank": 1,
-        "strategy_match": "Momentum/Hype",
+        "strategy_match": "momentum",
         "final_score": 9.4,
         "confidence": 8,
         "reason": "META shows strong momentum driven by AI strategy optimism, global Threads ads rollout, and a new AI lab. Jefferies raised its price target to $910, reflecting undervaluation and AI progress. Technicals are bullish with a MACD crossover and price above the 20 EMA, along with rising OBV and institutional buying (VWAP). Options flow is highly bullish, with unusual call activity at $880, $835, and $1000 strikes for the Jan 30 expiry. Upcoming earnings on Jan 28 could be a significant catalyst. However, significant insider selling ($25M+) is a notable red flag. Actionable insight: Consider a long position targeting $700-720 post-earnings, with a stop-loss at $630 to manage risk from insider selling and potential earnings volatility.",
@@ -2512,12 +2902,15 @@
         "return_1d": 1.82,
         "win_1d": true,
         "return_7d": 1.82,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "momentum",
+        "company_name": "META",
+        "description": ""
       },
       {
         "ticker": "APLD",
         "rank": 2,
-        "strategy_match": "Momentum/Hype / Short Squeeze",
+        "strategy_match": "short_squeeze",
         "final_score": 8.8,
         "confidence": 8,
         "reason": "APLD presents a compelling momentum and short squeeze opportunity. The company announced groundbreaking for Delta Forge 1, a 430MW AI data center, causing a 10% stock surge. Fundamentals show extremely strong quarterly revenue growth (250% YOY), despite negative EPS. Technicals are robust with a strong uptrend, price above all key moving averages, and a bullish MACD crossover. Short interest is extremely high at 29.7% of float, making it ripe for a squeeze. Options activity shows extremely bullish call volume and unusual call activity at several high strikes. Insider selling ($17M+) and bearish OBV divergence are notable risks. Actionable insight: Monitor for continued upward momentum, targeting $40-45, with a tight stop at $34 due to high volatility and insider selling.",
@@ -2531,12 +2924,15 @@
         "return_1d": -0.58,
         "win_1d": false,
         "return_7d": -0.58,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "short_squeeze",
+        "company_name": "APLD",
+        "description": ""
       },
       {
         "ticker": "FCX",
         "rank": 3,
-        "strategy_match": "Momentum/Hype",
+        "strategy_match": "momentum",
         "final_score": 8.5,
         "confidence": 8,
         "reason": "Freeport-McMoRan (FCX) exhibits strong momentum driven by positive news and robust technicals. The stock surged following a strong Q3 2025 earnings beat, reaching a 52-week high. Analyst upgrades from HSBC ($69 target) and Wall Street Zen confirm a positive outlook, citing strong copper demand. Technical indicators show a strong uptrend, with price significantly above 50 and 200 SMAs, high RSI, and rising OBV. Unusual call activity at $69, $75, $63, and $60 strikes suggests bullish institutional positioning. Insider selling ($1.8M+) is a minor concern, but overall sentiment is bullish. Actionable insight: Look for entry on minor pullbacks towards $58-59, targeting a breakout above the 52-week high of $62.13 towards the $65-69 analyst targets, with a stop-loss at $56.",
@@ -2550,12 +2946,15 @@
         "return_1d": 4.72,
         "win_1d": true,
         "return_7d": 4.72,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "momentum",
+        "company_name": "FCX",
+        "description": ""
       },
       {
         "ticker": "ANAB",
         "rank": 4,
-        "strategy_match": "Momentum/Hype / Short Squeeze",
+        "strategy_match": "short_squeeze",
         "final_score": 8.0,
         "confidence": 8,
         "reason": "AnaptysBio (ANAB) shows strong potential for a short squeeze combined with momentum. Barclays recently upgraded its price target to $78 with an 'Overweight' rating, indicating significant upside. The stock is in a strong uptrend, trading above its 50 and 200 SMAs with rising OBV. Crucially, short interest is extremely high at 35.25% of the float, and options open interest is very bullish (P/C OI ratio 0.015), suggesting institutional long positioning. While quarterly revenue growth is very strong (1.543 YOY), the company has negative EPS and ongoing insider selling ($6.7M+). Actionable insight: This is a high-risk, high-reward short squeeze play. Consider a long entry on strength above $48, targeting $55-60, with a stop-loss at $44 to mitigate fundamental and insider-selling risks.",
@@ -2569,12 +2968,15 @@
         "return_1d": 5.68,
         "win_1d": true,
         "return_7d": 5.68,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "short_squeeze",
+        "company_name": "ANAB",
+        "description": ""
       },
       {
         "ticker": "ABCB",
         "rank": 5,
-        "strategy_match": "Momentum/Hype",
+        "strategy_match": "momentum",
         "final_score": 8.0,
         "confidence": 7,
         "reason": "Ameris Bancorp (ABCB) displays strong momentum, reaching a new 52-week high of $82.33. The company announced a $200M share repurchase program, signaling confidence and commitment to shareholder value. Technically, ABCB is in a strong uptrend, with price well above its 50 and 200 SMAs and rising OBV. Options activity, despite low volume, shows bullish sentiment with a low Put/Call Volume Ratio (0.333) and Open Interest Ratio (0.228). Fundamentals are solid with a low P/E (13.94) and moderate revenue/earnings growth. Upcoming Q4 earnings on Jan 29 could provide further catalysts. Actionable insight: Monitor for a breakout above the 52-week high ($83.64), targeting $85-90, with a stop-loss at $78.50, anticipating positive earnings sentiment and continued buybacks.",
@@ -2588,12 +2990,15 @@
         "return_1d": 5.37,
         "win_1d": true,
         "return_7d": 5.37,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "momentum",
+        "company_name": "ABCB",
+        "description": ""
       },
       {
         "ticker": "SAIC",
         "rank": 6,
-        "strategy_match": "Insider Play",
+        "strategy_match": "insider_buying",
         "final_score": 6.9,
         "confidence": 7,
         "reason": "Science Applications International Corp. (SAIC) shows a strong insider buying signal, with 5 purchases totaling over $336K, including a $200K purchase by the CFO. This insider confidence aligns with a significant $1.4B U.S. Air Force contract win, a key positive catalyst. Technically, the stock is in an uptrend, trading above its 50 and 200 SMAs with rising OBV, despite a recent bearish MACD crossover. Options open interest is bullish (P/C OI 0.683), although volume is bearish. Fundamentals show a low P/E (14.08), but revenue and earnings growth have been weak. High debt (Debt/Equity 175.0) is a risk. Actionable insight: Consider a long position on dips toward $108-109, targeting the analyst target of $117.56, with a stop-loss at $104, capitalizing on insider confidence and the new contract.",
@@ -2607,12 +3012,15 @@
         "return_1d": -11.09,
         "win_1d": false,
         "return_7d": -11.09,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "insider_buying",
+        "company_name": "SAIC",
+        "description": ""
       },
       {
         "ticker": "PYPL",
         "rank": 7,
-        "strategy_match": "Contrarian Value",
+        "strategy_match": "contrarian_value",
         "final_score": 6.7,
         "confidence": 7,
         "reason": "PayPal (PYPL) presents a contrarian value opportunity, trading near its 52-week low ($55.015) after a significant YTD decline in 2025. Fundamentals are attractive with a low P/E (11.37) and Forward P/E (9.84), and strong quarterly earnings growth (31.3% YOY). Strategic initiatives like the Google partnership and a $15B buyback program provide potential long-term tailwinds. Technicals show a bullish MACD crossover and bullish OBV divergence (accumulation), suggesting a potential reversal despite a strong downtrend. Options volume is bullish, with unusual call activity at various strikes. However, significant insider selling ($2.4M+) and negative price action are concerns. Actionable insight: Consider accumulating shares on dips towards $55, targeting a recovery to $65-70, with a stop-loss at $53, ahead of earnings in two weeks.",
@@ -2626,12 +3034,15 @@
         "return_1d": -26.72,
         "win_1d": false,
         "return_7d": -26.72,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "contrarian_value",
+        "company_name": "PYPL",
+        "description": ""
       },
       {
         "ticker": "ORRF",
         "rank": 8,
-        "strategy_match": "Contrarian Value",
+        "strategy_match": "contrarian_value",
         "final_score": 6.4,
         "confidence": 6,
         "reason": "Orrstown Financial Services (ORRF) offers a potential contrarian value play, having recently experienced a 2% drop that analysts suggest could be a low-risk entry. Fundamentals are strong with a low P/E (9.21), good Price/Book (1.23), and strong quarterly revenue growth (26.9% YOY). The company also has a decent dividend yield (2.98%) with a history of growth. Technically, ORRF is in a strong uptrend, trading above its 50 and 200 SMAs, with bullish OBV divergence. Insider buying, though minimal ($10K+ by one director), adds a slight positive signal ahead of Q4 earnings on Jan 27. Options activity is too sparse to draw strong conclusions. Actionable insight: A long position could be considered on strength above $36.50, targeting $39-41, with a stop-loss at $34.50, betting on a positive earnings surprise and fundamental undervaluation.",
@@ -2645,12 +3056,15 @@
         "return_1d": 4.7,
         "win_1d": true,
         "return_7d": 4.7,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "contrarian_value",
+        "company_name": "ORRF",
+        "description": ""
       },
       {
         "ticker": "NWBI",
         "rank": 9,
-        "strategy_match": "Insider Play",
+        "strategy_match": "insider_buying",
         "final_score": 5.7,
         "confidence": 6,
         "reason": "Northwest Bancshares (NWBI) shows bullish insider activity with 6 purchases totaling over $131K, including a $48K purchase by a Director. This insider confidence aligns with attractive valuation metrics like a low P/E (14.36) and Price/Book ratio (<1), along with a high dividend yield (6.41%). Technically, NWBI is in a strong uptrend, having experienced a Golden Cross, and trades above its 50 and 200 SMAs with rising OBV. Upcoming Q4 earnings on Jan 26 are anticipated to show positive EPS and revenue growth. However, options flow is bearish (P/C Volume 2.426, OI 3.04), and quarterly earnings growth has been very weak (-92.3% YOY). Actionable insight: Monitor closely post-earnings. If results are positive, consider a long entry above $12.50, targeting $13.50-14, with a stop-loss at $11.80, acknowledging the conflicting options signals.",
@@ -2664,12 +3078,15 @@
         "return_1d": 5.36,
         "win_1d": true,
         "return_7d": 5.36,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "insider_buying",
+        "company_name": "NWBI",
+        "description": ""
       },
       {
         "ticker": "BGS",
         "rank": 10,
-        "strategy_match": "Momentum/Hype / Short Squeeze",
+        "strategy_match": "short_squeeze",
         "final_score": 5.6,
         "confidence": 7,
         "reason": "B&G Foods (BGS) presents a high-risk, high-reward opportunity due to extremely high short interest (26.63% of float) and a recent positive acquisition catalyst. The acquisition of Del Monte's broth/stock division is expected to enhance EPS and EBITDA. Technicals show a strong uptrend, with price above its 50 and 200 SMAs, and bullish MACD and Stochastic crossovers. Options open interest is bullish (P/C OI 0.485). However, fundamentals are very weak with negative EPS, negative profit margin, and extremely high debt (Debt/Equity 440.24). Analyst consensus is 'Sell,' and there is insider selling ($84K+). The OBV shows bearish divergence, indicating distribution. Actionable insight: This is a speculative short squeeze play. Consider a small, highly risk-managed long position on strength above $4.50, targeting $5.00-5.50, with a tight stop-loss at $4.10 due to significant fundamental risks and bearish technical divergence.",
@@ -2683,7 +3100,10 @@
         "return_1d": 14.74,
         "win_1d": true,
         "return_7d": 14.74,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "short_squeeze",
+        "company_name": "BGS",
+        "description": ""
       }
     ],
     "2026-02-04": [
@@ -2704,7 +3124,10 @@
         "return_1d": -4.24,
         "win_1d": false,
         "return_7d": -4.24,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "short_squeeze",
+        "company_name": "AXL",
+        "description": ""
       },
       {
         "ticker": "AAP",
@@ -2723,7 +3146,10 @@
         "return_1d": 5.14,
         "win_1d": true,
         "return_7d": 9.24,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "short_squeeze",
+        "company_name": "AAP",
+        "description": ""
       },
       {
         "ticker": "RYN",
@@ -2742,12 +3168,15 @@
         "return_1d": -1.64,
         "win_1d": false,
         "return_7d": -1.18,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "pre_earnings_accumulation",
+        "company_name": "RYN",
+        "description": ""
       },
       {
         "ticker": "LLY",
         "rank": 4,
-        "strategy_match": "earnings_momentum",
+        "strategy_match": "earnings_play",
         "final_score": 91,
         "confidence": 9,
         "reason": "Reported a significant earnings beat ($7.54 vs $6.67) and raised guidance, driving a +2.5% intraday move. Bullish divergence in OBV suggests accumulation despite recent price consolidation, setting the stage for a breakout.",
@@ -2761,12 +3190,15 @@
         "return_1d": -6.85,
         "win_1d": false,
         "return_7d": -7.27,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "earnings_play",
+        "company_name": "LLY",
+        "description": ""
       },
       {
         "ticker": "HON",
         "rank": 5,
-        "strategy_match": "momentum_options",
+        "strategy_match": "options_flow",
         "final_score": 89,
         "confidence": 9,
         "reason": "Strong momentum signaled by a 'Golden Cross' technical setup and a MACD bullish crossover. Unusual bullish options flow (P/C 0.255) supports the uptrend, indicating institutional confidence in further upside.",
@@ -2780,7 +3212,10 @@
         "return_1d": 3.02,
         "win_1d": true,
         "return_7d": 3.08,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "options_flow",
+        "company_name": "HON",
+        "description": ""
       },
       {
         "ticker": "DELL",
@@ -2799,12 +3234,15 @@
         "return_1d": 5.33,
         "win_1d": true,
         "return_7d": 3.59,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "analyst_upgrade",
+        "company_name": "DELL",
+        "description": ""
       },
       {
         "ticker": "ADBE",
         "rank": 7,
-        "strategy_match": "oversold_reversal",
+        "strategy_match": "contrarian_value",
         "final_score": 87,
         "confidence": 8,
         "reason": "Deeply oversold conditions (RSI 23.4) have triggered a sharp mean-reversion bounce, with shares up +4.4% intraday. Bollinger Band positioning suggests the sell-off has exhausted, presenting a high risk/reward entry.",
@@ -2818,7 +3256,10 @@
         "return_1d": -5.11,
         "win_1d": false,
         "return_7d": -7.41,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "contrarian_value",
+        "company_name": "ADBE",
+        "description": ""
       },
       {
         "ticker": "HPE",
@@ -2837,12 +3278,15 @@
         "return_1d": 5.85,
         "win_1d": true,
         "return_7d": 4.91,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "analyst_upgrade",
+        "company_name": "HPE",
+        "description": ""
       },
       {
         "ticker": "KO",
         "rank": 9,
-        "strategy_match": "momentum_options",
+        "strategy_match": "options_flow",
         "final_score": 85,
         "confidence": 8,
         "reason": "Defensive momentum play with unusual bullish options flow (P/C 0.196). A recent MACD bullish crossover and rising OBV confirm a strong uptrend backed by volume.",
@@ -2856,12 +3300,15 @@
         "return_1d": -1.16,
         "win_1d": false,
         "return_7d": 1.47,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "options_flow",
+        "company_name": "KO",
+        "description": ""
       },
       {
         "ticker": "ADP",
         "rank": 10,
-        "strategy_match": "earnings_reversal",
+        "strategy_match": "earnings_play",
         "final_score": 84,
         "confidence": 8,
         "reason": "Stock is heavily oversold (RSI 26.0) despite an earnings beat ($2.62 vs estimates). The discrepancy between strong fundamentals and depressed price creates a prime setup for a mean-reversion bounce.",
@@ -2875,7 +3322,10 @@
         "return_1d": -4.8,
         "win_1d": false,
         "return_7d": -7.22,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "earnings_play",
+        "company_name": "ADP",
+        "description": ""
       },
       {
         "ticker": "BWA",
@@ -2894,7 +3344,10 @@
         "return_1d": 7.66,
         "win_1d": true,
         "return_7d": 31.91,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "earnings_play",
+        "company_name": "BWA",
+        "description": ""
       },
       {
         "ticker": "ACHC",
@@ -2913,12 +3366,15 @@
         "return_1d": -1.3,
         "win_1d": false,
         "return_7d": 10.55,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "short_squeeze",
+        "company_name": "ACHC",
+        "description": ""
       },
       {
         "ticker": "MCD",
         "rank": 13,
-        "strategy_match": "earnings_momentum",
+        "strategy_match": "earnings_play",
         "final_score": 81,
         "confidence": 8,
         "reason": "Robust technical strength with a MACD bullish crossover and price above 20/50/200 SMAs. Momentum is building into the Feb 11 earnings report, supported by rising OBV.",
@@ -2932,12 +3388,15 @@
         "return_1d": 0.09,
         "win_1d": true,
         "return_7d": -0.44,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "earnings_play",
+        "company_name": "MCD",
+        "description": ""
       },
       {
         "ticker": "SMCI",
         "rank": 14,
-        "strategy_match": "earnings_growth",
+        "strategy_match": "earnings_play",
         "final_score": 80,
         "confidence": 7,
         "reason": "Reported massive 123% revenue growth, signaling fundamental strength despite a broken chart. Bullish options volume (P/C 0.454) suggests traders are betting on a recovery rally from these levels.",
@@ -2951,12 +3410,15 @@
         "return_1d": 1.36,
         "win_1d": true,
         "return_7d": -1.94,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "earnings_play",
+        "company_name": "SMCI",
+        "description": ""
       },
       {
         "ticker": "EA",
         "rank": 15,
-        "strategy_match": "earnings_reversal",
+        "strategy_match": "earnings_play",
         "final_score": 79,
         "confidence": 7,
         "reason": "Reported strong Q3 revenue, yet stock is oversold (RSI 24.3). This divergence between positive news and negative price action presents a buying opportunity near the lower Bollinger Band.",
@@ -2970,7 +3432,10 @@
         "return_1d": 1.85,
         "win_1d": true,
         "return_7d": 1.58,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "earnings_play",
+        "company_name": "EA",
+        "description": ""
       }
     ],
     "2026-02-09": [
@@ -2991,7 +3456,10 @@
         "return_1d": 0.73,
         "win_1d": true,
         "return_7d": -4.34,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "momentum",
+        "company_name": "GME",
+        "description": ""
       },
       {
         "ticker": "NVAX",
@@ -3010,7 +3478,10 @@
         "return_1d": 0.57,
         "win_1d": true,
         "return_7d": 0.0,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "momentum",
+        "company_name": "NVAX",
+        "description": ""
       },
       {
         "ticker": "CRM",
@@ -3029,7 +3500,10 @@
         "return_1d": -0.3,
         "win_1d": false,
         "return_7d": -2.22,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "momentum",
+        "company_name": "CRM",
+        "description": ""
       },
       {
         "ticker": "WRB",
@@ -3048,7 +3522,10 @@
         "return_1d": 0.97,
         "win_1d": true,
         "return_7d": 0.65,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "insider_buying",
+        "company_name": "WRB",
+        "description": ""
       },
       {
         "ticker": "TDOC",
@@ -3067,7 +3544,10 @@
         "return_1d": -2.61,
         "win_1d": false,
         "return_7d": -6.63,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "momentum",
+        "company_name": "TDOC",
+        "description": ""
       },
       {
         "ticker": "CZR",
@@ -3086,7 +3566,10 @@
         "return_1d": 0.48,
         "win_1d": true,
         "return_7d": -12.15,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "momentum",
+        "company_name": "CZR",
+        "description": ""
       },
       {
         "ticker": "WOOF",
@@ -3105,7 +3588,10 @@
         "return_1d": -0.78,
         "win_1d": false,
         "return_7d": -1.57,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "momentum",
+        "company_name": "WOOF",
+        "description": ""
       },
       {
         "ticker": "UWMC",
@@ -3124,7 +3610,10 @@
         "return_1d": 4.54,
         "win_1d": true,
         "return_7d": 5.62,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "momentum",
+        "company_name": "UWMC",
+        "description": ""
       },
       {
         "ticker": "OGN",
@@ -3143,7 +3632,10 @@
         "return_1d": -1.26,
         "win_1d": false,
         "return_7d": -6.57,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "momentum",
+        "company_name": "OGN",
+        "description": ""
       },
       {
         "ticker": "PMN",
@@ -3162,12 +3654,15 @@
         "return_1d": 9.5,
         "win_1d": true,
         "return_7d": 16.86,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "insider_buying",
+        "company_name": "PMN",
+        "description": ""
       },
       {
         "ticker": "AVXL",
         "rank": 11,
-        "strategy_match": "earnings_calendar",
+        "strategy_match": "earnings_play",
         "final_score": 75,
         "confidence": 6,
         "reason": "With earnings scheduled for today and a high short interest of 23.1%, AVXL is a high-volatility event play. Any positive news could trigger a massive short covering rally. The stock's recent intraday strength (+6.8%) suggests some market participants are positioning for an upside surprise.",
@@ -3181,7 +3676,10 @@
         "return_1d": -8.97,
         "win_1d": false,
         "return_7d": -9.66,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "earnings_play",
+        "company_name": "AVXL",
+        "description": ""
       },
       {
         "ticker": "ASTS",
@@ -3200,7 +3698,10 @@
         "return_1d": -5.73,
         "win_1d": false,
         "return_7d": -19.2,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "momentum",
+        "company_name": "ASTS",
+        "description": ""
       },
       {
         "ticker": "POET",
@@ -3219,7 +3720,10 @@
         "return_1d": -5.96,
         "win_1d": false,
         "return_7d": -10.14,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "momentum",
+        "company_name": "POET",
+        "description": ""
       },
       {
         "ticker": "RYAN",
@@ -3238,7 +3742,10 @@
         "return_1d": 2.51,
         "win_1d": true,
         "return_7d": -11.58,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "momentum",
+        "company_name": "RYAN",
+        "description": ""
       },
       {
         "ticker": "AVR",
@@ -3257,7 +3764,10 @@
         "return_1d": 3.21,
         "win_1d": true,
         "return_7d": 1.78,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "insider_buying",
+        "company_name": "AVR",
+        "description": ""
       }
     ],
     "2026-02-05": [
@@ -3278,7 +3788,10 @@
         "return_1d": 0.53,
         "win_1d": true,
         "return_7d": -1.94,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "momentum",
+        "company_name": "GME",
+        "description": ""
       },
       {
         "ticker": "IP",
@@ -3297,7 +3810,10 @@
         "return_1d": 8.18,
         "win_1d": true,
         "return_7d": 10.86,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "momentum",
+        "company_name": "IP",
+        "description": ""
       },
       {
         "ticker": "LPG",
@@ -3316,7 +3832,10 @@
         "return_1d": 5.12,
         "win_1d": true,
         "return_7d": 8.38,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "momentum",
+        "company_name": "LPG",
+        "description": ""
       },
       {
         "ticker": "POST",
@@ -3335,7 +3854,10 @@
         "return_1d": 5.02,
         "win_1d": true,
         "return_7d": 6.18,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "momentum",
+        "company_name": "POST",
+        "description": ""
       },
       {
         "ticker": "TCBI",
@@ -3354,7 +3876,10 @@
         "return_1d": 0.48,
         "win_1d": true,
         "return_7d": -0.46,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "momentum",
+        "company_name": "TCBI",
+        "description": ""
       },
       {
         "ticker": "AB",
@@ -3373,7 +3898,10 @@
         "return_1d": -5.78,
         "win_1d": false,
         "return_7d": -4.91,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "momentum",
+        "company_name": "AB",
+        "description": ""
       },
       {
         "ticker": "ROK",
@@ -3392,7 +3920,10 @@
         "return_1d": 1.45,
         "win_1d": true,
         "return_7d": 0.02,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "momentum",
+        "company_name": "ROK",
+        "description": ""
       },
       {
         "ticker": "TSLA",
@@ -3411,7 +3942,10 @@
         "return_1d": 7.05,
         "win_1d": true,
         "return_7d": 7.82,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "momentum",
+        "company_name": "TSLA",
+        "description": ""
       },
       {
         "ticker": "PECO",
@@ -3430,7 +3964,10 @@
         "return_1d": 0.4,
         "win_1d": true,
         "return_7d": -0.32,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "momentum",
+        "company_name": "PECO",
+        "description": ""
       },
       {
         "ticker": "STE",
@@ -3449,7 +3986,10 @@
         "return_1d": 0.35,
         "win_1d": true,
         "return_7d": -0.14,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "momentum",
+        "company_name": "STE",
+        "description": ""
       },
       {
         "ticker": "NTRS",
@@ -3468,7 +4008,10 @@
         "return_1d": 0.99,
         "win_1d": true,
         "return_7d": -0.66,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "momentum",
+        "company_name": "NTRS",
+        "description": ""
       },
       {
         "ticker": "MANE",
@@ -3487,7 +4030,10 @@
         "return_1d": 8.85,
         "win_1d": true,
         "return_7d": 18.51,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "momentum",
+        "company_name": "MANE",
+        "description": ""
       },
       {
         "ticker": "WEX",
@@ -3506,7 +4052,10 @@
         "return_1d": 11.75,
         "win_1d": true,
         "return_7d": 11.53,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "momentum",
+        "company_name": "WEX",
+        "description": ""
       },
       {
         "ticker": "UDMY",
@@ -3525,7 +4074,10 @@
         "return_1d": 0.21,
         "win_1d": true,
         "return_7d": -2.35,
-        "win_7d": false
+        "win_7d": false,
+        "pipeline": "momentum",
+        "company_name": "UDMY",
+        "description": ""
       },
       {
         "ticker": "CR",
@@ -3544,7 +4096,10 @@
         "return_1d": 5.71,
         "win_1d": true,
         "return_7d": 6.83,
-        "win_7d": true
+        "win_7d": true,
+        "pipeline": "momentum",
+        "company_name": "CR",
+        "description": ""
       }
     ],
     "2026-02-11": [
@@ -3665,7 +4220,7 @@
       {
         "ticker": "AUR",
         "rank": 7,
-        "strategy_match": "earnings_calendar",
+        "strategy_match": "earnings_play",
         "final_score": 80,
         "confidence": 7,
         "reason": "Aurora faces an immediate earnings catalyst today, supported by a respectable 38.8% ML win probability. The stock is technically positioned for a breakout, trading above its 20 and 50 SMAs with rising OBV volume. The low price and high volatility (ATR 5.9%) imply a significant percentage move is likely upon the news release.",
@@ -3684,7 +4239,7 @@
       {
         "ticker": "RPRX",
         "rank": 8,
-        "strategy_match": "earnings_calendar",
+        "strategy_match": "earnings_play",
         "final_score": 78,
         "confidence": 7,
         "reason": "RPRX is reacting positively to its earnings (BMO), up 5% intraday with strong volume. Technicals are extremely bullish with the price above all key moving averages and the ADX signaling a very strong trend. Unusual call volume (P/C 0.083) suggests traders are positioning for the rally to extend further in the coming days.",
@@ -3703,7 +4258,7 @@
       {
         "ticker": "APP",
         "rank": 9,
-        "strategy_match": "earnings_calendar",
+        "strategy_match": "earnings_play",
         "final_score": 76,
         "confidence": 7,
         "reason": "AppLovin reports earnings after the close today, presenting a high-volatility event risk with massive upside potential given its 22% 5-day run-up. The ML model gives it a solid 35.5% probability, and despite being in a broader downtrend, recent short-term momentum is undeniable. This is a pure volatility play on the earnings reaction.",
@@ -3779,7 +4334,7 @@
       {
         "ticker": "POET",
         "rank": 13,
-        "strategy_match": "reddit_dd",
+        "strategy_match": "social_dd",
         "final_score": 70,
         "confidence": 6,
         "reason": "POET is a speculative play driven by Reddit rumors of a large funding drop and a strong 41.2% ML win probability. The stock is highly volatile (ATR >10%), making it suitable for aggressive short-term trading. Bullish option volume supports the thesis of a potential speculative spike.",
@@ -3798,7 +4353,7 @@
       {
         "ticker": "PATH",
         "rank": 14,
-        "strategy_match": "reddit_dd",
+        "strategy_match": "social_dd",
         "final_score": 68,
         "confidence": 5,
         "reason": "UiPath is a contrarian squeeze candidate with high short interest (20.7%) and a decent ML win probability of 41.8%. The stock has taken a significant intraday hit (-10%), which could trigger an oversold bounce or short covering rally if retail interest persists. Risk is high, but the asymmetry is present.",
@@ -3914,7 +4469,7 @@
       {
         "ticker": "OI",
         "rank": 5,
-        "strategy_match": "volume_accumulation",
+        "strategy_match": "early_accumulation",
         "final_score": 84,
         "confidence": 8,
         "reason": "O-I Glass qualifies under the 'volume_accumulation' strategy, which has historically shown a 100% win rate in this context. The stock maintains a 'STRONG UPTREND' technically, with price action supported by the 50 SMA. Analyst sentiment is 77.8% bullish, providing fundamental support to the technical accumulation signals.",
@@ -3990,7 +4545,7 @@
       {
         "ticker": "KHC",
         "rank": 9,
-        "strategy_match": "volume_accumulation",
+        "strategy_match": "early_accumulation",
         "final_score": 80,
         "confidence": 7,
         "reason": "KHC was flagged for unusual volume accumulation and has just triggered a MACD bullish crossover. The stock is trading above its 20 and 50 EMAs, confirming short-term bullish momentum. It serves as a strong mean-reversion or continuation play in the consumer defensive sector.",
@@ -4066,7 +4621,7 @@
       {
         "ticker": "GTLS",
         "rank": 13,
-        "strategy_match": "volume_accumulation",
+        "strategy_match": "early_accumulation",
         "final_score": 76,
         "confidence": 6,
         "reason": "GTLS is flagged for volume accumulation and sits in a 'STRONG UPTREND'. Despite bearish analyst sentiment, the price action tells a different story, holding above key moving averages. The divergence between price strength and analyst skepticism often creates a 'climbing the wall of worry' scenario.",
@@ -4294,7 +4849,7 @@
       {
         "ticker": "HOOD",
         "rank": 15,
-        "strategy_match": "reddit_trending",
+        "strategy_match": "social_hype",
         "final_score": 72,
         "confidence": 6,
         "reason": "HOOD is an aggressive contrarian play, currently oversold with an RSI of 29.9. The stock is seeing Reddit interest and bullish volume on the options side (P/C 0.589). An oversold bounce is highly probable in the short term, though the broader trend remains negative, requiring tight risk management.",
@@ -4410,7 +4965,7 @@
       {
         "ticker": "DCH",
         "rank": 6,
-        "strategy_match": "earnings_calendar",
+        "strategy_match": "earnings_play",
         "final_score": 87,
         "confidence": 8,
         "reason": "With earnings arriving today, DCH presents a high-risk, high-reward squeeze opportunity given its massive 33.0% short interest. The stock is in a strong uptrend generally (above 50/200 SMA), though it has dipped recently, potentially setting up a 'buy the news' event if earnings surprise. The risk is asymmetric: a positive report could trigger a violent short squeeze. Volatility is moderate, allowing for managed stop-losses.",
@@ -4429,7 +4984,7 @@
       {
         "ticker": "AAP",
         "rank": 7,
-        "strategy_match": "earnings_calendar",
+        "strategy_match": "earnings_play",
         "final_score": 86,
         "confidence": 8,
         "reason": "Advance Auto Parts reports earnings today with a very high short interest of 29.8%, creating ideal conditions for a short squeeze. The stock is trading significantly above its 50 and 200 SMAs, and while RSI is overbought (72), this often precedes a parabolic move in squeeze scenarios. Options volume is bullish with a low Put/Call ratio of 0.474. The trade targets a volatility event post-earnings.",
@@ -4448,7 +5003,7 @@
       {
         "ticker": "IMPP",
         "rank": 8,
-        "strategy_match": "earnings_calendar",
+        "strategy_match": "earnings_play",
         "final_score": 85,
         "confidence": 8,
         "reason": "IMPP reports earnings today with a substantial 17.9% short interest, offering squeeze potential. Despite a recent death cross, the MACD has just turned bullish, and the 5-day change is a strong +9.01%. Bullish options flow (P/C 0.07) supports the thesis that smart money is positioning for an upside surprise. The low share price and high volatility make this a candidate for rapid percentage gains.",
@@ -4467,7 +5022,7 @@
       {
         "ticker": "ESNT",
         "rank": 9,
-        "strategy_match": "earnings_calendar",
+        "strategy_match": "earnings_play",
         "final_score": 84,
         "confidence": 7,
         "reason": "Essent reports earnings today and enters the event with a pristine technical setup: bullish MACD crossover, price above all key SMAs, and rising OBV. The stock is trading near its upper Bollinger Band, indicating strong momentum. While options volume is low, the technical strength suggests the market anticipates a positive result. A break above recent highs is likely if earnings confirm the trend.",
@@ -4486,7 +5041,7 @@
       {
         "ticker": "TMC",
         "rank": 10,
-        "strategy_match": "reddit_dd",
+        "strategy_match": "social_dd",
         "final_score": 82,
         "confidence": 7,
         "reason": "Driven by Reddit DD regarding executive orders and deep sea mining, TMC shows bullish divergence in On-Balance Volume (OBV) despite recent price drops. Options flow is notably bullish with a P/C ratio of 0.188. While the trend is currently down, the combination of social sentiment catalyst, insider option exercises, and accumulation volume sets the stage for a sharp reversal. High volatility (ATR 11.9%) implies quick potential returns.",
@@ -4505,7 +5060,7 @@
       {
         "ticker": "POET",
         "rank": 11,
-        "strategy_match": "reddit_dd",
+        "strategy_match": "social_dd",
         "final_score": 80,
         "confidence": 7,
         "reason": "Speculation regarding a $75M investment serves as a major catalyst. Options activity is highly unusual with a Put/Call ratio of 0.104, suggesting traders are betting heavily on upside. Technically the stock is beaten down (RSI 41), providing an attractive entry point for a reversion trade if the rumor mill gains traction. The high volatility (ATR 10.5%) fits the asymmetric risk profile required.",
@@ -4562,7 +5117,7 @@
       {
         "ticker": "PATH",
         "rank": 14,
-        "strategy_match": "reddit_dd",
+        "strategy_match": "social_dd",
         "final_score": 72,
         "confidence": 6,
         "reason": "A contrarian squeeze play, PATH has high short interest (20.7%) and is currently oversold (RSI 29.7). Reddit attention ('30K YOLO') provides a social catalyst that could trigger a relief rally from these depressed levels. While the trend is bearish, the lower Bollinger Band position suggests an immediate bounce is statistically probable.",
@@ -4614,7 +5169,10 @@
         "days_held": 4,
         "last_updated": "2026-02-20",
         "return_1d": 0.0,
-        "win_1d": false
+        "win_1d": false,
+        "pipeline": "options_flow",
+        "company_name": "ADM",
+        "description": ""
       },
       {
         "ticker": "WRB",
@@ -4631,7 +5189,10 @@
         "days_held": 4,
         "last_updated": "2026-02-20",
         "return_1d": 0.0,
-        "win_1d": false
+        "win_1d": false,
+        "pipeline": "insider_buying",
+        "company_name": "WRB",
+        "description": ""
       },
       {
         "ticker": "AMGN",
@@ -4648,7 +5209,10 @@
         "days_held": 4,
         "last_updated": "2026-02-20",
         "return_1d": 0.0,
-        "win_1d": false
+        "win_1d": false,
+        "pipeline": "options_flow",
+        "company_name": "AMGN",
+        "description": ""
       },
       {
         "ticker": "APA",
@@ -4665,7 +5229,10 @@
         "days_held": 4,
         "last_updated": "2026-02-20",
         "return_1d": 0.0,
-        "win_1d": false
+        "win_1d": false,
+        "pipeline": "momentum",
+        "company_name": "APA",
+        "description": ""
       },
       {
         "ticker": "KKR",
@@ -4682,7 +5249,10 @@
         "days_held": 4,
         "last_updated": "2026-02-20",
         "return_1d": 0.0,
-        "win_1d": false
+        "win_1d": false,
+        "pipeline": "insider_buying",
+        "company_name": "KKR",
+        "description": ""
       },
       {
         "ticker": "AI",
@@ -4699,7 +5269,10 @@
         "days_held": 4,
         "last_updated": "2026-02-20",
         "return_1d": 0.0,
-        "win_1d": false
+        "win_1d": false,
+        "pipeline": "momentum",
+        "company_name": "AI",
+        "description": ""
       },
       {
         "ticker": "RDDT",
@@ -4716,7 +5289,10 @@
         "days_held": 4,
         "last_updated": "2026-02-20",
         "return_1d": 0.0,
-        "win_1d": false
+        "win_1d": false,
+        "pipeline": "insider_buying",
+        "company_name": "RDDT",
+        "description": ""
       },
       {
         "ticker": "BBWI",
@@ -4733,7 +5309,10 @@
         "days_held": 4,
         "last_updated": "2026-02-20",
         "return_1d": 0.0,
-        "win_1d": false
+        "win_1d": false,
+        "pipeline": "momentum",
+        "company_name": "BBWI",
+        "description": ""
       },
       {
         "ticker": "BKR",
@@ -4750,7 +5329,10 @@
         "days_held": 4,
         "last_updated": "2026-02-20",
         "return_1d": 0.0,
-        "win_1d": false
+        "win_1d": false,
+        "pipeline": "options_flow",
+        "company_name": "BKR",
+        "description": ""
       },
       {
         "ticker": "CAG",
@@ -4767,7 +5349,10 @@
         "days_held": 4,
         "last_updated": "2026-02-20",
         "return_1d": 0.0,
-        "win_1d": false
+        "win_1d": false,
+        "pipeline": "options_flow",
+        "company_name": "CAG",
+        "description": ""
       },
       {
         "ticker": "AON",
@@ -4784,7 +5369,10 @@
         "days_held": 4,
         "last_updated": "2026-02-20",
         "return_1d": 0.0,
-        "win_1d": false
+        "win_1d": false,
+        "pipeline": "insider_buying",
+        "company_name": "AON",
+        "description": ""
       },
       {
         "ticker": "BBY",
@@ -4801,7 +5389,10 @@
         "days_held": 4,
         "last_updated": "2026-02-20",
         "return_1d": 0.0,
-        "win_1d": false
+        "win_1d": false,
+        "pipeline": "options_flow",
+        "company_name": "BBY",
+        "description": ""
       },
       {
         "ticker": "BAC",
@@ -4818,12 +5409,15 @@
         "days_held": 4,
         "last_updated": "2026-02-20",
         "return_1d": 0.0,
-        "win_1d": false
+        "win_1d": false,
+        "pipeline": "options_flow",
+        "company_name": "BAC",
+        "description": ""
       },
       {
         "ticker": "TMC",
         "rank": 14,
-        "strategy_match": "reddit_dd",
+        "strategy_match": "social_dd",
         "final_score": 70,
         "confidence": 5,
         "reason": "Driven by retail speculation and Reddit DD regarding deep-sea mining catalysts, TMC sees bullish options positioning. Short interest is moderate at 10.5%, providing some squeeze fuel. This is a high-volatility speculative play based on sentiment and news catalysts.",
@@ -4835,12 +5429,15 @@
         "days_held": 4,
         "last_updated": "2026-02-20",
         "return_1d": 0.0,
-        "win_1d": false
+        "win_1d": false,
+        "pipeline": "social_dd",
+        "company_name": "TMC",
+        "description": ""
       },
       {
         "ticker": "POET",
         "rank": 15,
-        "strategy_match": "reddit_dd",
+        "strategy_match": "social_dd",
         "final_score": 68,
         "confidence": 5,
         "reason": "Speculative interest driven by rumors of a large partner/investment ('$75M drop'). Options volume is tilting bullish. While technicals are weak, the stock has high volatility, making it a candidate for a rapid 5-10% move if rumors substantiate or retail volume surges.",
@@ -4852,7 +5449,10 @@
         "days_held": 4,
         "last_updated": "2026-02-20",
         "return_1d": 0.0,
-        "win_1d": false
+        "win_1d": false,
+        "pipeline": "social_dd",
+        "company_name": "POET",
+        "description": ""
       }
     ],
     "2026-02-17": [
@@ -4927,7 +5527,7 @@
       {
         "ticker": "AI",
         "rank": 5,
-        "strategy_match": "reddit_trending",
+        "strategy_match": "social_hype",
         "final_score": 85,
         "confidence": 8,
         "reason": "C3.ai presents a classic high-risk, high-reward short squeeze setup with 32% short interest and extremely high implied volatility. Despite a technical downtrend, the options volume is heavily skewed to calls (P/C 0.012), and the stock is generating buzz on Reddit. The RSI is low at 39.2, suggesting potential for an oversold bounce or squeeze if buying pressure ignites. This is a volatile trade requiring strict risk management.",
@@ -4961,7 +5561,7 @@
       {
         "ticker": "HALO",
         "rank": 7,
-        "strategy_match": "earnings_calendar",
+        "strategy_match": "earnings_play",
         "final_score": 83,
         "confidence": 8,
         "reason": "Halozyme is a strong momentum play with earnings approaching immediately (0 days), acting as a potent catalyst. The stock maintains a strong uptrend above both the 50 and 200 SMAs, and high short interest of 16.0% creates the possibility of a squeeze on a positive report. Insider selling is a concern, but the technical strength and earnings volatility favor a short-term upside move. This is a binary event trade.",
@@ -5029,7 +5629,7 @@
       {
         "ticker": "ALLE",
         "rank": 11,
-        "strategy_match": "earnings_calendar",
+        "strategy_match": "earnings_play",
         "final_score": 79,
         "confidence": 7,
         "reason": "Allegion is trading with strong momentum going into earnings (0 days), with an RSI of 72 indicating powerful buying pressure. The stock is in a strong uptrend and rising OBV confirms accumulation. While overbought conditions present a risk of a ",

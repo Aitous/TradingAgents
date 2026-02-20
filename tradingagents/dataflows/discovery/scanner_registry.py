@@ -11,12 +11,15 @@ class BaseScanner(ABC):
 
     name: str = None
     pipeline: str = None
+    strategy: str = None
 
     def __init__(self, config: Dict[str, Any]):
         if self.name is None:
             raise ValueError(f"{self.__class__.__name__} must define 'name'")
         if self.pipeline is None:
             raise ValueError(f"{self.__class__.__name__} must define 'pipeline'")
+        if self.strategy is None:
+            raise ValueError(f"{self.__class__.__name__} must define 'strategy'")
 
         self.config = config
         self.scanner_config = config.get("discovery", {}).get("scanners", {}).get(self.name, {})
@@ -97,6 +100,8 @@ class ScannerRegistry:
             raise ValueError(f"{scanner_class.__name__} must define class attribute 'name'")
         if not hasattr(scanner_class, "pipeline") or scanner_class.pipeline is None:
             raise ValueError(f"{scanner_class.__name__} must define class attribute 'pipeline'")
+        if not hasattr(scanner_class, "strategy") or scanner_class.strategy is None:
+            raise ValueError(f"{scanner_class.__name__} must define class attribute 'strategy'")
 
         # Check for duplicate registration
         if scanner_class.name in self.scanners:

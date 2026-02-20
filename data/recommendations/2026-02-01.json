@@ -5,112 +5,142 @@
     {
       "ticker": "ACRV",
       "rank": 1,
-      "strategy_match": "Insider Play",
+      "strategy_match": "insider_buying",
       "final_score": 95,
       "confidence": 9,
       "reason": "The CEO purchased 49,000 shares in mid-January, which, combined with an extremely high short interest of 63.0%, creates a textbook short squeeze setup. Upcoming Phase 2b data presentations provide a near-term fundamental catalyst to potentially ignite this volatility.",
       "entry_price": 1.7899999618530273,
       "discovery_date": "2026-02-01",
-      "status": "open"
+      "status": "open",
+      "pipeline": "insider_buying",
+      "company_name": "ACRV",
+      "description": ""
     },
     {
       "ticker": "RTX",
       "rank": 2,
-      "strategy_match": "Earnings Play",
+      "strategy_match": "earnings_play",
       "final_score": 92,
       "confidence": 9,
       "reason": "RTX reports earnings on Feb 2, supported by a record $251 billion backlog and positive 2026 guidance. The stock is in a strong uptrend, trading above its 20 and 50-day moving averages, with recent news resolving liability concerns.",
       "entry_price": 200.92999267578125,
       "discovery_date": "2026-02-01",
-      "status": "open"
+      "status": "open",
+      "pipeline": "earnings_play",
+      "company_name": "RTX",
+      "description": ""
     },
     {
       "ticker": "IBM",
       "rank": 3,
-      "strategy_match": "Momentum",
+      "strategy_match": "momentum",
       "final_score": 90,
       "confidence": 9,
       "reason": "Shares are breaking out near decade-highs driven by a generative AI book of business exceeding $12.5 billion. Technical indicators show a bullish MACD crossover and strong trend strength (ADX rising), signaling continued momentum.",
       "entry_price": 306.70001220703125,
       "discovery_date": "2026-02-01",
-      "status": "open"
+      "status": "open",
+      "pipeline": "momentum",
+      "company_name": "IBM",
+      "description": ""
     },
     {
       "ticker": "GME",
       "rank": 4,
-      "strategy_match": "Insider Play",
+      "strategy_match": "insider_buying",
       "final_score": 88,
       "confidence": 8,
       "reason": "CEO Ryan Cohen recently purchased 1 million shares, a massive vote of confidence that establishes a psychological floor. Technicals show a bullish divergence in on-balance volume, indicating accumulation despite recent price consolidation.",
       "entry_price": 23.8799991607666,
       "discovery_date": "2026-02-01",
-      "status": "open"
+      "status": "open",
+      "pipeline": "insider_buying",
+      "company_name": "GME",
+      "description": ""
     },
     {
       "ticker": "INTC",
       "rank": 5,
-      "strategy_match": "Insider Play",
+      "strategy_match": "insider_buying",
       "final_score": 87,
       "confidence": 8,
       "reason": "Recent insider buying by the CFO aligns with a strong 1-year uptrend and positive sentiment around domestic manufacturing. The stock maintains a 'Strong Uptrend' technical status, trading well above its 50 and 200-day moving averages.",
       "entry_price": 46.470001220703125,
       "discovery_date": "2026-02-01",
-      "status": "open"
+      "status": "open",
+      "pipeline": "insider_buying",
+      "company_name": "INTC",
+      "description": ""
     },
     {
       "ticker": "SMCI",
       "rank": 6,
-      "strategy_match": "Earnings Play",
+      "strategy_match": "earnings_play",
       "final_score": 86,
       "confidence": 8,
       "reason": "Reporting earnings on Feb 3 with expectations of 84% revenue growth, the stock is primed for volatility. With 17-18% short interest and recent analyst upgrades, a positive report could trigger a sharp squeeze.",
       "entry_price": 29.110000610351562,
       "discovery_date": "2026-02-01",
-      "status": "open"
+      "status": "open",
+      "pipeline": "earnings_play",
+      "company_name": "SMCI",
+      "description": ""
     },
     {
       "ticker": "PLTR",
       "rank": 7,
-      "strategy_match": "Earnings Play",
+      "strategy_match": "earnings_play",
       "final_score": 85,
       "confidence": 8,
       "reason": "Set to report earnings on Feb 2 with projected 62.8% revenue growth. The stock is currently oversold (RSI ~25), presenting an asymmetric opportunity for a bounce if results validate its AI platform's expansion.",
       "entry_price": 146.58999633789062,
       "discovery_date": "2026-02-01",
-      "status": "open"
+      "status": "open",
+      "pipeline": "earnings_play",
+      "company_name": "PLTR",
+      "description": ""
     },
     {
       "ticker": "WDC",
       "rank": 8,
-      "strategy_match": "Momentum",
+      "strategy_match": "momentum",
       "final_score": 84,
       "confidence": 8,
       "reason": "Received a fresh 'Buy' upgrade following strong Q2 earnings and is positioned as a key beneficiary of AI storage demand. Technicals show a very strong trend (ADX 55+) with price holding above key moving averages.",
       "entry_price": 250.22999572753906,
       "discovery_date": "2026-02-01",
-      "status": "open"
+      "status": "open",
+      "pipeline": "momentum",
+      "company_name": "WDC",
+      "description": ""
     },
     {
       "ticker": "FFAI",
       "rank": 9,
-      "strategy_match": "News Catalyst",
+      "strategy_match": "news_catalyst",
       "final_score": 83,
       "confidence": 8,
       "reason": "Sales for its new AI robotics product begin Feb 4, providing a definitive near-term catalyst. BlackRock's increased stake and recent regulatory certification support the momentum in this high-volatility play.",
       "entry_price": 1.0399999618530273,
       "discovery_date": "2026-02-01",
-      "status": "open"
+      "status": "open",
+      "pipeline": "news_catalyst",
+      "company_name": "FFAI",
+      "description": ""
     },
     {
       "ticker": "LBRDA",
       "rank": 10,
-      "strategy_match": "Volume Accumulation",
+      "strategy_match": "early_accumulation",
       "final_score": 82,
       "confidence": 8,
       "reason": "Displaying unusual volume (2.9x average) and a bullish MACD crossover, signaling accumulation ahead of earnings. The stock has rallied 7.79% recently, breaking out from lows with improving sentiment.",
       "entry_price": 48.02000045776367,
       "discovery_date": "2026-02-01",
-      "status": "open"
+      "status": "open",
+      "pipeline": "early_accumulation",
+      "company_name": "LBRDA",
+      "description": ""
     }
   ]
 }

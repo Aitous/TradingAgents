@@ -317,6 +317,48 @@ class NewsSemanticScanner:
                 max_time = item_time
         return min_time, max_time
 
+    def _build_time_constraint(self) -> str:
+        """Build the shared time constraint block used by all news prompts."""
+        current_datetime = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+        cutoff_datetime = self.cutoff_time.strftime("%Y-%m-%dT%H:%M:%S")
+        return (
+            f"CRITICAL TIME CONSTRAINT:\n"
+            f"- Current time: {current_datetime}\n"
+            f"- Only include items published AFTER: {cutoff_datetime}\n"
+            f"- Skip anything older than {self.news_lookback_hours} hours"
+        )
+
+    def _build_extraction_fields(self, detail_level: str = "full") -> str:
+        """Build the shared extraction fields block.
+
+        Args:
+            detail_level: "full" for primary searches, "brief" for parsing raw feeds.
+        """
+        current_datetime = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+        base = (
+            "For each item, extract:\n"
+            "- title: Headline\n"
+        )
+        if detail_level == "full":
+            base += "- summary: 2-3 sentence summary of key points\n"
+        else:
+            base += "- summary: Brief summary of key points\n"
+        base += (
+            f"- published_at: ISO-8601 timestamp (REQUIRED — convert relative times like '2 hours ago' to full timestamp using current time {current_datetime})\n"
+            "- companies_mentioned: List of stock ticker symbols (prefer tickers over company names, e.g. 'AAPL' not 'Apple Inc.')\n"
+            "- themes: Key themes (e.g., 'earnings beat', 'FDA approval', 'merger', 'insider buying')\n"
+            "- sentiment: one of positive, negative, neutral\n"
+            "- importance: 1-10 score (10 = highly market-moving, company-specific catalysts score higher than broad market news)"
+        )
+        return base
+
+    _COMPANY_SPECIFIC_INSTRUCTION = (
+        "Prefer company-specific or single-catalyst stories that impact one company or a small "
+        "group of companies. Avoid broad market, index, or macroeconomic headlines unless they "
+        "have a clear company-specific catalyst. If a story is sector-wide without a specific "
+        "company catalyst, skip it."
+    )
+
     def _build_web_search_prompt(self, query: str = "breaking stock market news today") -> str:
         """
         Build unified web search prompt for both OpenAI and Gemini.
@@ -329,19 +371,14 @@ class NewsSemanticScanner:
         """
         time_phrase = self._get_time_phrase()
         time_query = f"{query} {time_phrase}"
-        current_datetime = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
-        cutoff_datetime = self.cutoff_time.strftime("%Y-%m-%dT%H:%M:%S")
 
         return f"""Search the web for: {time_query}
 
-CRITICAL TIME CONSTRAINT:
-- Current time: {current_datetime}
-- Only include news published AFTER: {cutoff_datetime}
-- Skip any articles older than {self.news_lookback_hours} hours
+{self._build_time_constraint()}
 
 Find the top {self.max_news_items} most important market-moving news stories from the last {self.news_lookback_hours} hours.
 
-Prefer company-specific or single-catalyst stories that are likely to impact only one company or a small number of companies. Avoid broad market, index, or macroeconomic headlines unless they have a clear company-specific catalyst.
+{self._COMPANY_SPECIFIC_INSTRUCTION}
 
 Focus on:
 - Earnings reports and guidance
@@ -352,14 +389,7 @@ Focus on:
 - Legal/regulatory actions
 - Analyst upgrades/downgrades
 
-For each news item, extract:
-- title: Headline
-- summary: 2-3 sentence summary of key points
-- published_at: ISO-8601 timestamp (REQUIRED - convert relative times like "2 hours ago" to full timestamp using current time {current_datetime})
-- companies_mentioned: List of ticker symbols or company names mentioned
-- themes: List of key themes (e.g., "earnings beat", "FDA approval", "merger")
-- sentiment: one of positive, negative, neutral
-- importance: 1-10 score (10 = highly market-moving)
+{self._build_extraction_fields("full")}
 """
 
     def _build_openai_input(self, system_text: str, user_text: str) -> str:
@@ -448,27 +478,15 @@ For each news item, extract:
             )
 
             # Parse the report using LLM to extract structured data
-            current_datetime = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
-            cutoff_datetime = self.cutoff_time.strftime("%Y-%m-%dT%H:%M:%S")
             parse_prompt = f"""Parse this news report and extract individual news items.
 
-CRITICAL TIME CONSTRAINT:
-- Current time: {current_datetime}
-- Only include news published AFTER: {cutoff_datetime}
-- Skip any articles older than {self.news_lookback_hours} hours
+{self._build_time_constraint()}
 
-Prefer company-specific or single-catalyst stories that are likely to impact only one company or a small number of companies. Avoid broad market, index, or macroeconomic headlines unless they have a clear company-specific catalyst. If a story is broad or sector-wide without a specific company catalyst, skip it.
+{self._COMPANY_SPECIFIC_INSTRUCTION}
 
 {news_report}
 
-For each news item, extract:
-- title: Headline
-- summary: Brief summary
-- published_at: ISO-8601 timestamp (REQUIRED - convert relative times like "2 hours ago" to full timestamp using current time {current_datetime})
-- companies_mentioned: Companies or tickers mentioned
-- themes: Key themes
-- sentiment: one of positive, negative, neutral
-- importance: 1-10 score
+{self._build_extraction_fields("brief")}
 
 Return as JSON array with key "news"."""
             response = self.openai_client.responses.parse(
@@ -529,27 +547,15 @@ Return as JSON array with key "news"."""
 
             # Parse SEC filings using LLM
             # (SEC returns XML/Atom feed, we'll parse with LLM for simplicity)
-            current_datetime = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
-            cutoff_datetime = self.cutoff_time.strftime("%Y-%m-%dT%H:%M:%S")
-            filings_prompt = f"""Parse these SEC filings and extract the most important ones.
+            filings_prompt = f"""Parse these SEC 8-K filings and extract the most important material events.
 
-CRITICAL TIME CONSTRAINT:
-- Current time: {current_datetime}
-- Only include filings submitted AFTER: {cutoff_datetime}
-- Skip any filings older than {self.news_lookback_hours} hours
+{self._build_time_constraint()}
 
-Prefer company-specific filings and material events; skip broad market commentary.
+Prefer company-specific filings and material events; skip broad market commentary or routine filings.
 
-{response.text}  # Limit to avoid token limits
+{response.text}
 
-For each important filing, extract:
-- title: Company name and filing type
-- summary: What the material event is about
-- published_at: ISO-8601 timestamp (REQUIRED - extract from filing date/time)
-- companies_mentioned: [company name and ticker if available]
-- themes: Type of event (e.g., "acquisition", "earnings guidance", "executive change")
-- sentiment: one of positive, negative, neutral
-- importance: 1-10 score
+{self._build_extraction_fields("brief")}
 
 Return as JSON array with key "filings"."""
             llm_response = self.openai_client.responses.parse(
@@ -610,27 +616,15 @@ Return as JSON array with key "filings"."""
             news_report = get_alpha_vantage_news_feed(topics=topics, time_from=time_from, limit=50)
 
             # Parse with LLM
-            current_datetime = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
-            cutoff_datetime = self.cutoff_time.strftime("%Y-%m-%dT%H:%M:%S")
             parse_prompt = f"""Parse this news feed and extract the most important market-moving stories.
 
-CRITICAL TIME CONSTRAINT:
-- Current time: {current_datetime}
-- Only include news published AFTER: {cutoff_datetime}
-- Skip any articles older than {self.news_lookback_hours} hours
+{self._build_time_constraint()}
 
-Prefer company-specific or single-catalyst stories that are likely to impact only one company or a small number of companies. Avoid broad market, index, or macroeconomic headlines unless they have a clear company-specific catalyst. If a story is broad or sector-wide without a specific company catalyst, skip it.
+{self._COMPANY_SPECIFIC_INSTRUCTION}
 
 {news_report}
 
-For each news item, extract:
-- title: Headline
-- summary: Key points
-- published_at: ISO-8601 timestamp (REQUIRED - extract from the data or convert relative times using current time {current_datetime})
-- companies_mentioned: Tickers/companies mentioned
-- themes: Key themes
-- sentiment: one of positive, negative, neutral
-- importance: 1-10 score (10 = highly market-moving)
+{self._build_extraction_fields("brief")}
 
 Return as JSON array with key "news"."""
             response = self.openai_client.responses.parse(
@@ -718,24 +712,11 @@ Return as JSON array with key "news"."""
                 model="gemini-2.5-flash-lite", api_key=google_api_key
             ).with_structured_output(NewsList, method="json_schema")
 
-            current_datetime = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
-            cutoff_datetime = self.cutoff_time.strftime("%Y-%m-%dT%H:%M:%S")
-
             structure_prompt = f"""Parse the following web search results into structured news items.
 
-CRITICAL TIME CONSTRAINT:
-- Current time: {current_datetime}
-- Only include news published AFTER: {cutoff_datetime}
-- Skip any articles older than {self.news_lookback_hours} hours
+{self._build_time_constraint()}
 
-For each news item, extract:
-- title: Headline
-- summary: 2-3 sentence summary of key points
-- published_at: ISO-8601 timestamp (REQUIRED - convert "X hours ago" to full timestamp using current time {current_datetime})
-- companies_mentioned: List of ticker symbols or company names
-- themes: List of key themes (e.g., "earnings beat", "FDA approval", "merger")
-- sentiment: one of positive, negative, neutral
-- importance: 1-10 score (10 = highly market-moving)
+{self._build_extraction_fields("full")}
 
 Web search results:
 {raw_response.content}

@@ -52,6 +52,7 @@ class StockRanking(BaseModel):
     strategy_match: str = Field(description="Strategy that matched")
     final_score: int = Field(description="Score 0-100")
     confidence: int = Field(description="Confidence 1-10")
+    risk_level: str = Field(description="Risk level: low, moderate, high, or speculative")
     reason: str = Field(
         description="Detailed investment thesis (4-6 sentences) defending the trade with specific catalysts, risk/reward, and timing"
     )
@@ -77,6 +78,9 @@ class CandidateRanker:
         dc = DiscoveryConfig.from_config(config)
         self.max_candidates_to_analyze = dc.ranker.max_candidates_to_analyze
         self.final_recommendations = dc.ranker.final_recommendations
+        self.min_score_threshold = dc.ranker.min_score_threshold
+        self.return_target_pct = dc.ranker.return_target_pct
+        self.holding_period_days = dc.ranker.holding_period_days
 
         # Truncation settings
         self.truncate_context = dc.ranker.truncate_ranking_context
@@ -279,12 +283,29 @@ class CandidateRanker:
         combined_candidates_text = "\n".join(candidate_summaries)
 
         # Build Prompt
-        prompt = f"""You are an analyst tasked with selecting the absolute best {self.final_recommendations} stock opportunities from a pre-filtered list.
+        prompt = f"""You are a professional stock analyst selecting the best short-term trading opportunities from a pre-filtered candidate list.
 
 CURRENT DATE: {trade_date}
 
-GOAL: Select the top {self.final_recommendations} stocks with the highest probability of generating >5% returns in the next 1-7 days.
-Focus on asymmetric risk/reward: massive upside potential with managed risk.
+GOAL: Select UP TO {self.final_recommendations} stocks with the highest probability of generating >{self.return_target_pct}% returns within {self.holding_period_days} days. If fewer than {self.final_recommendations} candidates meet the quality bar, return only the ones that do. Quality over quantity — never pad the list with weak picks.
+
+MINIMUM QUALITY BAR:
+- Only include candidates where you have genuine conviction (final_score >= {self.min_score_threshold}).
+- If a candidate lacks a clear catalyst or has contradictory signals, SKIP it.
+- It is better to return 5 excellent picks than 15 mediocre ones.
+
+STRATEGY-SPECIFIC EVALUATION CRITERIA:
+Each candidate was discovered by a specific scanner. Evaluate them using the criteria most relevant to their strategy:
+- **insider_buying**: Focus on insider transaction SIZE relative to market cap, insider ROLE (CEO/CFO > Director), number of distinct insiders buying, and whether the stock is near support. Large cluster buys are strongest.
+- **options_flow**: Focus on put/call ratio, absolute call VOLUME vs open interest, premium size, and whether flow aligns with the technical trend. Unusually low P/C ratios (<0.1) with high volume are strongest.
+- **momentum / technical_breakout**: Focus on volume confirmation (>2x average), trend alignment (above key SMAs), and whether momentum is accelerating or fading. Avoid chasing extended moves (RSI >80).
+- **earnings_play**: Focus on short interest (squeeze potential), pre-earnings accumulation signals, analyst estimate trends, and historical earnings surprise rate. Binary risk must be acknowledged.
+- **social_dd / social_hype**: Treat as SPECULATIVE. Require corroborating technical or fundamental evidence. Pure social sentiment without data backing should score low.
+- **short_squeeze**: Focus on short interest %, days to cover, cost to borrow, and whether a catalyst exists to trigger covering. High SI alone is not enough.
+- **contrarian_value**: Focus on oversold technicals (RSI <30), fundamental support (earnings stability), and a clear reason why the selloff is overdone.
+- **news_catalyst**: Focus on the materiality of the news, whether it's already priced in (check intraday move), and the timeline of impact.
+- **sector_rotation**: Focus on relative strength vs sector ETF, whether the stock is a laggard in an accelerating sector.
+- **ml_signal**: Use the ML Win Probability as a strong quantitative signal. Scores above 65% deserve significant weight.
 
 HISTORICAL INSIGHTS:
 {json.dumps(historical_stats.get('summary', 'N/A'), indent=2)}
@@ -292,30 +313,31 @@ HISTORICAL INSIGHTS:
 CANDIDATES FOR REVIEW:
 {combined_candidates_text}
 
-INSTRUCTIONS:
-1. Analyze each candidate's "Discovery Context" (why it was found) and "Strategy Match".
-2. Cross-reference with Technicals (RSI, etc.) and Fundamentals.
-3. Use the Quantitative Pre-Score as an objective baseline. Scores above 50 indicate strong multi-factor alignment.
-4. The ML Win Probability is a trained model's estimate that this stock hits +5% within 7 days. Treat scores above 60% as strong ML confirmation.
-5. Prioritize "LEADING" indicators (Undiscovered DD, Earnings Accumulation, Insider Buying) over lagging ones.
-6. Select exactly {self.final_recommendations} winners.
-7. Use ONLY the information provided in the candidates section; do NOT invent catalysts, prices, or metrics.
-8. If a required field is missing, set it to null (do not guess).
-9. Rank only tickers from the candidates list.
-10. Reasons must reference at least two concrete facts from the candidate context.
+RANKING INSTRUCTIONS:
+1. Evaluate each candidate through the lens of its specific strategy (see criteria above).
+2. Cross-reference the strategy signal with Technicals, Fundamentals, and Options data for confirmation.
+3. Use the Quantitative Pre-Score as an objective baseline — scores above 50 indicate strong multi-factor alignment.
+4. The ML Win Probability is a trained model's estimate of hitting +{self.return_target_pct}% within 7 days. Treat >60% as strong confirmation, >70% as very strong.
+5. Prioritize LEADING indicators (Insider Buying, Pre-Earnings Accumulation, Options Flow) over lagging ones (momentum chasing, social hype).
+6. Penalize contradictory signals: e.g., bullish options but heavy insider SELLING, or strong momentum but overbought RSI with declining volume.
+7. Use ONLY the information provided in the candidates section. Do NOT invent catalysts, prices, or metrics that are not explicitly stated.
+8. If a data field is missing, note it as N/A — do not fabricate values.
+9. Only rank tickers from the candidates list.
+10. Each reason MUST cite at least two specific data points from the candidate context (e.g., "P/C ratio of 0.02", "Director purchased $5.2M").
 
-Output a JSON object with a 'rankings' list. Each item should have:
-- rank: 1 to {self.final_recommendations}
-- ticker: stock symbol
-- company_name: name
-- current_price: price
-- strategy_match: main strategy
-- final_score: 0-100 score
-- confidence: 1-10 confidence level
-- reason: Detailed investment thesis (4-6 sentences). Defend the trade: (1) what is the catalyst/edge, (2) why NOW and not later, (3) what does the risk/reward look like, (4) what could go wrong. Reference specific data points from the candidate context.
-- description: Brief company description.
+OUTPUT FORMAT — JSON object with a 'rankings' list. Each item:
+- rank: sequential from 1
+- ticker: stock symbol (must be from candidate list)
+- company_name: company name
+- current_price: numeric price from candidate data
+- strategy_match: the candidate's strategy (use the value from the candidate, do not change it)
+- final_score: 0-100 (your holistic assessment: {self.min_score_threshold}+ = included, 80+ = high conviction, 90+ = exceptional)
+- confidence: 1-10 (how confident are you in THIS specific trade)
+- risk_level: one of "low", "moderate", "high", "speculative"
+- reason: Investment thesis in 4-6 sentences. Structure: (1) What is the edge/catalyst, (2) Why NOW — what makes the timing urgent, (3) Risk/reward profile, (4) Key risk or what could invalidate the thesis. Cite specific numbers.
+- description: One-sentence company description
 
-JSON FORMAT ONLY. No markdown, no extra text. All numeric fields must be numbers (not strings)."""
+IMPORTANT: Return ONLY valid JSON. No markdown wrapping, no commentary outside the JSON. All numeric fields must be numbers, not strings."""
 
         # Invoke LLM with structured output
         logger.info("🧠 Deep Thinking Ranker analyzing opportunities...")
@@ -324,8 +346,6 @@ JSON FORMAT ONLY. No markdown, no extra text. All numeric fields must be numbers
         )
         if self.log_prompts_console:
             logger.info(f"Full ranking prompt:\n{prompt}")
-        else:
-            logger.debug(f"Full ranking prompt:\n{prompt}")
 
         try:
             # Use structured output with include_raw for debugging

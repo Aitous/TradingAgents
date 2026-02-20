@@ -11,7 +11,10 @@
       "reason": "This stock represents a premier asymmetric opportunity driven by a massive $28.75M insider purchase by L1 Capital on Jan 22, signaling profound institutional confidence. Technically, AVR is in a strong uptrend, trading well above its 50 and 200 SMAs, and has recently triggered a bullish stochastic crossover. With a bullish options put/call ratio of 0.004, sentiment is overwhelmingly positive. The volatility (ATR 7.8%) allows for the target >5% move rapidly.",
       "entry_price": 5.664999961853027,
       "discovery_date": "2026-02-12",
-      "status": "open"
+      "status": "open",
+      "pipeline": "insider_buying",
+      "company_name": "AVR",
+      "description": ""
     },
     {
       "ticker": "EIKN",
@@ -22,7 +25,10 @@
       "reason": "EIKN shows a highly significant cluster of insider buying on Feb 6 totaling over $43M, a massive vote of confidence in the company's pipeline. The stock is currently holding above its 20, 50, and 200 SMAs, indicating a confirmed uptrend with a recent 6.6% daily jump. While RSI is neutral, the sheer scale of insider participation serves as a potent leading indicator for potential upcoming catalysts. Risk is managed by a clear stop-loss level near the 1.5x ATR mark ($11.40).",
       "entry_price": 14.574999809265137,
       "discovery_date": "2026-02-12",
-      "status": "open"
+      "status": "open",
+      "pipeline": "insider_buying",
+      "company_name": "EIKN",
+      "description": ""
     },
     {
       "ticker": "CHTR",
@@ -33,7 +39,10 @@
       "reason": "Charter presents a classic short squeeze setup with high short interest of 27.5% and a very bullish options put/call volume ratio of 0.216. Technicals confirm momentum with the price above the 20 and 50 SMAs and a bullish MACD histogram. The stock has risen nearly 8% in the last 5 days, and the convergence of technical strength with bearish positioning creates fuel for an explosive move upside.",
       "entry_price": 239.93499755859375,
       "discovery_date": "2026-02-12",
-      "status": "open"
+      "status": "open",
+      "pipeline": "momentum",
+      "company_name": "CHTR",
+      "description": ""
     },
     {
       "ticker": "ALB",
@@ -44,7 +53,10 @@
       "reason": "Albemarle is exhibiting powerful momentum with a 12.1% gain over the last 5 days and is trading firmly above its 50 SMA. Technical indicators include a bullish stochastic crossover and rising On-Balance Volume (OBV), confirming accumulation. With 11.7% short interest, any continued strength could force shorts to cover, accelerating the uptrend. The volatility is high (ATR $8.86), supporting the thesis for a quick >5% move.",
       "entry_price": 178.55999755859375,
       "discovery_date": "2026-02-12",
-      "status": "open"
+      "status": "open",
+      "pipeline": "momentum",
+      "company_name": "ALB",
+      "description": ""
     },
     {
       "ticker": "WRB",
@@ -55,18 +67,24 @@
       "reason": "WRB benefits from consistent, large-scale insider accumulation by Mitsui Sumitomo throughout January and February, totaling over $315M. Technically, the stock has triggered a bullish MACD crossover and is trading above its 20, 50, and 200 SMAs. While near the upper Bollinger Band, the relentless insider buying suggests a fundamental re-rating is underway rather than a simple technical overextension.",
       "entry_price": 71.4800033569336,
       "discovery_date": "2026-02-12",
-      "status": "open"
+      "status": "open",
+      "pipeline": "insider_buying",
+      "company_name": "WRB",
+      "description": ""
     },
     {
       "ticker": "FLO",
       "rank": 6,
-      "strategy_match": "earnings_calendar",
+      "strategy_match": "earnings_play",
       "final_score": 84,
       "confidence": 8,
       "reason": "With earnings scheduled for today, FLO offers an immediate catalyst combined with a high short interest of 15.0%, creating a potential squeeze scenario on positive news. The stock is in an uptrend above the 20 and 50 SMAs, and options flow is bullish with a P/C ratio of 0.485. The risk is binary due to earnings, but the setup favors an upside surprise given the short positioning.",
       "entry_price": 11.569999694824219,
       "discovery_date": "2026-02-12",
-      "status": "open"
+      "status": "open",
+      "pipeline": "earnings_play",
+      "company_name": "FLO",
+      "description": ""
     },
     {
       "ticker": "AAPL",
@@ -77,40 +95,52 @@
       "reason": "Apple shows strong technical health, trading above all key moving averages with a bullish divergence in On-Balance Volume (OBV), suggesting accumulation. Unusual bullish options activity creates a confluence of positive signals. While a mega-cap, the volatility is sufficient for a 5% move over a week, especially with RSI at 63 leaving room before becoming overbought.",
       "entry_price": 273.30999755859375,
       "discovery_date": "2026-02-12",
-      "status": "open"
+      "status": "open",
+      "pipeline": "options_flow",
+      "company_name": "AAPL",
+      "description": ""
     },
     {
       "ticker": "PX",
       "rank": 8,
-      "strategy_match": "earnings_calendar",
+      "strategy_match": "earnings_play",
       "final_score": 81,
       "confidence": 7,
       "reason": "P10 is heading into earnings with a solid technical backdrop, trading above its 20 and 50 SMAs with a recent 5-day gain of 7.3%. The RSI is neutral at 51.9, allowing ample room for an earnings-driven rally. Analyst sentiment is overwhelmingly bullish (76.9% Buy/Strong Buy), providing fundamental support for the technical trend.",
       "entry_price": 10.579999923706055,
       "discovery_date": "2026-02-12",
-      "status": "open"
+      "status": "open",
+      "pipeline": "earnings_play",
+      "company_name": "PX",
+      "description": ""
     },
     {
       "ticker": "ALKS",
       "rank": 9,
-      "strategy_match": "earnings_calendar",
+      "strategy_match": "earnings_play",
       "final_score": 80,
       "confidence": 7,
       "reason": "Approaching earnings today, ALKS sits in a strong uptrend above its 50 and 200 SMAs. The stock has a high short interest of 16.7%, which could fuel a squeeze if earnings beat expectations. Despite some recent insider selling, the technical momentum and analyst buy ratings (82.6% Bullish) favor the upside.",
       "entry_price": 33.56999969482422,
       "discovery_date": "2026-02-12",
-      "status": "open"
+      "status": "open",
+      "pipeline": "earnings_play",
+      "company_name": "ALKS",
+      "description": ""
     },
     {
       "ticker": "TMC",
       "rank": 10,
-      "strategy_match": "reddit_dd",
+      "strategy_match": "social_dd",
       "final_score": 79,
       "confidence": 7,
       "reason": "TMC is a high-beta momentum play, up nearly 15% in the last 5 days, driven by retail interest and bullish options flow (P/C ratio 0.135). The stock recently crossed its 200 SMA, a significant bullish signal. While speculative, the combination of Reddit hype, rising OBV, and mining sector tailwinds creates an asymmetric risk/reward for a short-term trade.",
       "entry_price": 6.380000114440918,
       "discovery_date": "2026-02-12",
-      "status": "open"
+      "status": "open",
+      "pipeline": "social_dd",
+      "company_name": "TMC",
+      "description": ""
     },
     {
       "ticker": "RUM",
@@ -121,7 +151,10 @@
       "reason": "Rumble has shown explosive short-term momentum, up nearly 15% in 5 days, supported by a bullish MACD crossover. Options activity is bullish with a P/C ratio of 0.34. Although the long-term trend is down, the recent price action and rising OBV suggest a counter-trend rally is in effect, suitable for a 1-7 day swing trade.",
       "entry_price": 6.114999771118164,
       "discovery_date": "2026-02-12",
-      "status": "open"
+      "status": "open",
+      "pipeline": "momentum",
+      "company_name": "RUM",
+      "description": ""
     },
     {
       "ticker": "AMD",
@@ -132,7 +165,10 @@
       "reason": "AMD is staging a recovery, up nearly 11% in the past week despite a broader downtrend. A bullish stochastic crossover indicates short-term momentum is shifting. High options volume and analyst support (76.7% Bullish) suggest the bottom may be in for the near term, offering a good entry for a mean reversion trade.",
       "entry_price": 216.80999755859375,
       "discovery_date": "2026-02-12",
-      "status": "open"
+      "status": "open",
+      "pipeline": "options_flow",
+      "company_name": "AMD",
+      "description": ""
     },
     {
       "ticker": "CVNA",
@@ -143,7 +179,10 @@
       "reason": "Carvana is a high-volatility play currently trading at its lower Bollinger Band, often a signal for a technical bounce. With 12% short interest and unusual options activity, the stock is primed for a sharp move. The high ATR ($29.20) ensures that if the bounce occurs, it will likely exceed the 5% target quickly.",
       "entry_price": 366.2449951171875,
       "discovery_date": "2026-02-12",
-      "status": "open"
+      "status": "open",
+      "pipeline": "options_flow",
+      "company_name": "CVNA",
+      "description": ""
     },
     {
       "ticker": "KMB",
@@ -154,18 +193,24 @@
       "reason": "KMB combines momentum (bullish MACD) with insider buying support, a rare combination near highs. While RSI is overbought, the bullish options volume (P/C 0.479) suggests traders expect the breakout to continue. The stock is in a confirmed uptrend above all key moving averages.",
       "entry_price": 107.58000183105469,
       "discovery_date": "2026-02-12",
-      "status": "open"
+      "status": "open",
+      "pipeline": "insider_buying",
+      "company_name": "KMB",
+      "description": ""
     },
     {
       "ticker": "HOOD",
       "rank": 15,
-      "strategy_match": "reddit_trending",
+      "strategy_match": "social_hype",
       "final_score": 72,
       "confidence": 6,
       "reason": "HOOD is an aggressive contrarian play, currently oversold with an RSI of 29.9. The stock is seeing Reddit interest and bullish volume on the options side (P/C 0.589). An oversold bounce is highly probable in the short term, though the broader trend remains negative, requiring tight risk management.",
       "entry_price": 76.20999908447266,
       "discovery_date": "2026-02-12",
-      "status": "open"
+      "status": "open",
+      "pipeline": "social_hype",
+      "company_name": "HOOD",
+      "description": ""
     }
   ]
 }

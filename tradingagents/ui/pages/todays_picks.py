@@ -353,7 +353,7 @@ def render():
     with ctrl_cols[0]:
         pipelines = sorted(
             set(
-                (r.get("pipeline") or r.get("strategy_match") or "unknown") for r in recommendations
+                (r.get("strategy_match") or r.get("pipeline") or "unknown") for r in recommendations
             )
         )
         pipeline_filter = st.multiselect("Strategy", pipelines, default=pipelines)
@@ -368,7 +368,7 @@ def render():
     filtered = [
         r
         for r in recommendations
-        if (r.get("pipeline") or r.get("strategy_match") or "unknown") in pipeline_filter
+        if (r.get("strategy_match") or r.get("pipeline") or "unknown") in pipeline_filter
         and r.get("confidence", 0) >= min_confidence
         and r.get("final_score", 0) >= min_score
     ]
@@ -404,13 +404,27 @@ def render():
             rank = rec.get("rank", idx + 1)
             score = rec.get("final_score", 0)
             confidence = rec.get("confidence", 0)
-            strategy = (rec.get("pipeline") or rec.get("strategy_match") or "unknown").title()
+            strategy = (rec.get("strategy_match") or rec.get("pipeline") or "unknown").title()
             entry_price = rec.get("entry_price", 0)
             reason = rec.get("reason", "No thesis provided.")
+            company_name = rec.get("company_name", "")
+            description = rec.get("description", "")
+            risk_level = rec.get("risk_level", "")
 
             with col:
                 st.markdown(
-                    signal_card(rank, ticker, score, confidence, strategy, entry_price, reason),
+                    signal_card(
+                        rank,
+                        ticker,
+                        score,
+                        confidence,
+                        strategy,
+                        entry_price,
+                        reason,
+                        company_name,
+                        description,
+                        risk_level,
+                    ),
                     unsafe_allow_html=True,
                 )
 
