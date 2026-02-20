@@ -613,7 +613,7 @@ def signal_card(
         f'<div class="company-brief">'
         f'<div class="company-brief-label">Company</div>'
         f'<div class="company-brief-text">{description}</div>'
-        f'</div>'
+        f"</div>"
         if description
         else ""
     )

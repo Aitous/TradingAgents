@@ -335,10 +335,7 @@ class NewsSemanticScanner:
             detail_level: "full" for primary searches, "brief" for parsing raw feeds.
         """
         current_datetime = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
-        base = (
-            "For each item, extract:\n"
-            "- title: Headline\n"
-        )
+        base = "For each item, extract:\n" "- title: Headline\n"
         if detail_level == "full":
             base += "- summary: 2-3 sentence summary of key points\n"
         else:
