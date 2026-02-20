@@ -404,7 +404,11 @@ def render():
             rank = rec.get("rank", idx + 1)
             score = rec.get("final_score", 0)
             confidence = rec.get("confidence", 0)
-            strategy = (rec.get("strategy_match") or rec.get("pipeline") or "unknown").replace("_", " ").title()
+            strategy = (
+                (rec.get("strategy_match") or rec.get("pipeline") or "unknown")
+                .replace("_", " ")
+                .title()
+            )
             entry_price = rec.get("entry_price", 0)
             reason = rec.get("reason", "No thesis provided.")
             company_name = rec.get("company_name", "")

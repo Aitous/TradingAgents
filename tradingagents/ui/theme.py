@@ -5,6 +5,8 @@ Bloomberg/TradingView-inspired aesthetic with green/amber accents.
 Uses CSS variables for consistency and injects custom fonts.
 """
 
+import html as _html
+
 # -- Color Tokens --
 COLORS = {
     "bg_primary": "#0a0e17",
@@ -588,35 +590,44 @@ def signal_card(
         strat_badge = "badge-blue"
         strat_css = "strat-volume"
 
-    # Risk level badge
-    risk_badge_html = ""
-    if risk_level:
-        risk_lower = risk_level.lower()
-        if risk_lower == "low":
-            risk_badge_html = f'<span class="badge badge-green">{risk_level.title()}</span>'
-        elif risk_lower == "moderate":
-            risk_badge_html = f'<span class="badge badge-blue">{risk_level.title()}</span>'
-        elif risk_lower == "high":
-            risk_badge_html = f'<span class="badge badge-amber">{risk_level.title()}</span>'
-        elif risk_lower == "speculative":
-            risk_badge_html = f'<span class="badge badge-muted" style="border-color:{COLORS["red"]};">{risk_level.title()}</span>'
-
     entry_str = f"${entry_price:.2f}" if entry_price else "N/A"
     conf_pct = confidence * 10
 
+    # Escape all LLM-generated text to prevent HTML injection / rendering breaks
+    safe_reason = _html.escape(reason)
+    safe_company = _html.escape(company_name)
+    safe_desc = _html.escape(description)
+    safe_strategy = _html.escape(strategy)
+    safe_risk = _html.escape(risk_level)
+
+    # Risk level badge (built after escaping)
+    risk_badge_html = ""
+    if safe_risk:
+        risk_lower = safe_risk.lower()
+        if risk_lower == "low":
+            risk_badge_html = f'<span class="badge badge-green">{safe_risk.title()}</span>'
+        elif risk_lower == "moderate":
+            risk_badge_html = f'<span class="badge badge-blue">{safe_risk.title()}</span>'
+        elif risk_lower == "high":
+            risk_badge_html = f'<span class="badge badge-amber">{safe_risk.title()}</span>'
+        elif risk_lower == "speculative":
+            risk_badge_html = f'<span class="badge badge-muted" style="border-color:{COLORS["red"]};">{safe_risk.title()}</span>'
+
     name_html = (
-        f'<span style="font-size:0.8rem;color:{COLORS["text_muted"]};font-weight:400;">{company_name}</span>'
+        f'<span style="font-size:0.8rem;color:{COLORS["text_muted"]};font-weight:400;">{safe_company}</span>'
         if company_name and company_name != ticker
         else ""
     )
     desc_html = (
         f'<div class="company-brief">'
         f'<div class="company-brief-label">Company</div>'
-        f'<div class="company-brief-text">{description}</div>'
+        f'<div class="company-brief-text">{safe_desc}</div>'
         f"</div>"
         if description
         else ""
     )
+
+    safe_risk_title = safe_risk.title() if safe_risk else "—"
 
     return f"""
     <div class="signal-card {strat_css}">
@@ -629,7 +640,7 @@ def signal_card(
         </div>
         {desc_html}
         <div class="signal-badges">
-            <span class="badge {strat_badge}">{strategy}</span>
+            <span class="badge {strat_badge}">{safe_strategy}</span>
             <span class="badge {score_badge}">Score {score}</span>
             <span class="badge badge-muted">Conf {confidence}/10</span>
             {risk_badge_html}
@@ -649,10 +660,10 @@ def signal_card(
             </div>
             <div class="signal-metric">
                 <div class="signal-metric-label">Risk</div>
-                <div class="signal-metric-value" style="font-size:0.8rem;">{risk_level.title() if risk_level else "—"}</div>
+                <div class="signal-metric-value" style="font-size:0.8rem;">{safe_risk_title}</div>
             </div>
         </div>
-        <div class="signal-thesis">{reason}</div>
+        <div class="signal-thesis">{safe_reason}</div>
         <div class="conf-bar">
             <div class="conf-fill" style="width:{conf_pct}%;background:{bar_color};"></div>
         </div>
