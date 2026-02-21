@@ -58,7 +58,9 @@ class MLSignalScanner(BaseScanner):
     def __init__(self, config: Dict[str, Any]):
         super().__init__(config)
         self.min_win_prob = self.scanner_config.get("min_win_prob", 0.50)
-        self.lookback_period = self.scanner_config.get("lookback_period", "1y")
+        # "6mo" instead of "1y" — halves the yfinance payload for 500+ tickers,
+        # which prevents the batch download from hanging on slow connections.
+        self.lookback_period = self.scanner_config.get("lookback_period", "6mo")
         self.max_workers = self.scanner_config.get("max_workers", 8)
         self.fetch_market_cap = self.scanner_config.get("fetch_market_cap", False)
 
@@ -137,54 +139,57 @@ class MLSignalScanner(BaseScanner):
             return None
 
     def _fetch_universe_ohlcv(self) -> Dict[str, pd.DataFrame]:
-        """Batch-fetch OHLCV data for the entire ticker universe.
+        """Batch-fetch OHLCV data for the entire ticker universe in chunks.
 
-        Uses yfinance batch download — a single HTTP request regardless of
-        universe size. This is the key optimization for large universes.
+        Downloads in chunks of 150 tickers so a single slow/failed chunk doesn't
+        block the whole scanner.  This replaces the previous single-request approach
+        which would hang on large universes (500+ tickers × 1y of data).
         """
-        try:
-            from tradingagents.dataflows.y_finance import download_history
+        from tradingagents.dataflows.y_finance import download_history
 
-            logger.info(
-                f"Batch-downloading {len(self.universe)} tickers ({self.lookback_period})..."
-            )
+        chunk_size = 150
+        universe = self.universe
+        result: Dict[str, pd.DataFrame] = {}
 
-            # yfinance batch download — single HTTP request for all tickers
-            raw = download_history(
-                " ".join(self.universe),
-                period=self.lookback_period,
-                auto_adjust=True,
-                progress=False,
-            )
+        chunks = [universe[i : i + chunk_size] for i in range(0, len(universe), chunk_size)]
+        logger.info(
+            f"Batch-downloading {len(universe)} tickers ({self.lookback_period}) "
+            f"in {len(chunks)} chunks..."
+        )
 
-            if raw.empty:
-                return {}
+        for idx, chunk in enumerate(chunks):
+            try:
+                raw = download_history(
+                    " ".join(chunk),
+                    period=self.lookback_period,
+                    auto_adjust=True,
+                    progress=False,
+                )
 
-            # Handle multi-level columns from batch download
-            result = {}
-            if isinstance(raw.columns, pd.MultiIndex):
-                # Multi-ticker: columns are (Price, Ticker)
-                tickers_in_data = raw.columns.get_level_values(1).unique()
-                for ticker in tickers_in_data:
-                    try:
-                        ticker_df = raw.xs(ticker, level=1, axis=1).copy()
-                        ticker_df = ticker_df.reset_index()
-                        if len(ticker_df) > 0:
-                            result[ticker] = ticker_df
-                    except (KeyError, ValueError):
-                        continue
-            else:
-                # Single ticker fallback
-                raw = raw.reset_index()
-                if len(self.universe) == 1:
-                    result[self.universe[0]] = raw
+                if raw is None or raw.empty:
+                    continue
 
-            logger.info(f"Fetched OHLCV for {len(result)} tickers")
-            return result
+                if isinstance(raw.columns, pd.MultiIndex):
+                    tickers_in_data = raw.columns.get_level_values(1).unique()
+                    for ticker in tickers_in_data:
+                        try:
+                            ticker_df = raw.xs(ticker, level=1, axis=1).copy().reset_index()
+                            if len(ticker_df) > 0:
+                                result[ticker] = ticker_df
+                        except (KeyError, ValueError):
+                            continue
+                else:
+                    # Single-ticker fallback
+                    raw = raw.reset_index()
+                    if chunk:
+                        result[chunk[0]] = raw
 
-        except Exception as e:
-            logger.warning(f"OHLCV batch fetch failed: {e}")
-            return {}
+            except Exception as e:
+                logger.warning(f"Chunk {idx + 1}/{len(chunks)} download failed: {e}")
+                continue
+
+        logger.info(f"Fetched OHLCV for {len(result)} tickers")
+        return result
 
     def _predict_universe(
         self, predictor, ohlcv_by_ticker: Dict[str, pd.DataFrame]

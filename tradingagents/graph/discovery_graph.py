@@ -483,17 +483,22 @@ class DiscoveryGraph:
                 logger.error(f"Scanner {name} failed: {e}", exc_info=True)
                 return (name, pipeline, [], str(e), [])
 
-        # Submit all scanner tasks
-        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        # Submit all scanner tasks.
+        # NOTE: Do NOT use `with ThreadPoolExecutor() as executor` here — that
+        # form calls shutdown(wait=True) on exit, which blocks until every thread
+        # finishes even after as_completed() has already timed out.  We call
+        # shutdown(wait=False) explicitly so stuck threads are abandoned.
+        executor = ThreadPoolExecutor(max_workers=max_workers)
+        try:
             future_to_scanner = {
                 executor.submit(run_scanner, scanner_info): scanner_info[1]
                 for scanner_info in enabled_scanners
             }
 
             # Collect results as they complete.
-            # The global_timeout passed to as_completed() ensures that if any
-            # scanner thread blocks indefinitely (e.g. waiting on a hung network
-            # call), we raise TimeoutError and continue rather than hanging forever.
+            # global_timeout is the wall-clock budget for ALL scanners together.
+            # If any thread blocks indefinitely (e.g. a hung yfinance download),
+            # as_completed() raises TimeoutError so we continue immediately.
             completed_count = 0
             try:
                 for future in as_completed(future_to_scanner, timeout=global_timeout):
@@ -534,6 +539,12 @@ class DiscoveryGraph:
             # Log completion stats
             if completed_count < len(enabled_scanners):
                 logger.warning(f"Only {completed_count}/{len(enabled_scanners)} scanners completed")
+
+        finally:
+            # wait=False: don't block on threads that are still running (e.g. a
+            # hung ml_signal download).  The daemon threads will be cleaned up
+            # when the process exits.
+            executor.shutdown(wait=False)
 
         return pipeline_candidates
 

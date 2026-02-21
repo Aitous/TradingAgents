@@ -138,12 +138,13 @@ def validate_ticker_format(ticker: str) -> bool:
         ticker: Ticker symbol to validate
 
     Returns:
-        True if ticker matches expected format (2-5 uppercase letters)
+        True if ticker matches expected format (1-5 uppercase letters).
+        Single-letter tickers (C, A, F, T, X, M, etc.) are valid NYSE symbols.
     """
     if not ticker or not isinstance(ticker, str):
         return False
 
-    return bool(re.match(r"^[A-Z]{2,5}$", ticker.strip().upper()))
+    return bool(re.match(r"^[A-Z]{1,5}$", ticker.strip().upper()))
 
 
 def validate_candidate_structure(candidate: dict) -> bool:
