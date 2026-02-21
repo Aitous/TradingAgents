@@ -86,20 +86,57 @@ class SectorRotationScanner(BaseScanner):
         sector_names = [SECTOR_ETFS.get(etf, etf) for etf in accelerating_sectors]
         logger.info(f"Accelerating sectors: {', '.join(sector_names)}")
 
-        # Step 2: Find laggard stocks in those sectors
+        # Step 2: Batch-download 5-day close prices for all candidate tickers at once.
+        # This replaces the previous serial get_ticker_info() + download_history() loop
+        # which made up to max_tickers individual HTTP requests and would time out.
         tickers = _load_tickers_from_file(self.ticker_file)
         if not tickers:
             return []
 
         tickers = tickers[: self.max_tickers]
 
-        candidates = []
+        try:
+            batch_hist = download_history(
+                tickers, period="1mo", interval="1d", auto_adjust=True, progress=False
+            )
+        except Exception as e:
+            logger.warning(f"Batch history download failed: {e}")
+            return []
+
+        if batch_hist is None or batch_hist.empty:
+            return []
+
+        # Calculate 5-day return for each ticker from the batch data
+        ticker_returns: Dict[str, float] = {}
         for ticker in tickers:
-            result = self._check_sector_laggard(ticker, accelerating_sectors, get_ticker_info)
-            if result:
-                candidates.append(result)
+            try:
+                if isinstance(batch_hist.columns, pd.MultiIndex):
+                    if ticker not in batch_hist.columns.get_level_values(1):
+                        continue
+                    close = batch_hist.xs(ticker, axis=1, level=1)["Close"].dropna()
+                else:
+                    close = batch_hist["Close"].dropna()
+                if len(close) < 6:
+                    continue
+                ticker_returns[ticker] = (float(close.iloc[-1]) / float(close.iloc[-6]) - 1) * 100
+            except Exception:
+                continue
+
+        # Step 3: Only call get_ticker_info() for laggard tickers (< 2% 5d move).
+        # This dramatically reduces API calls from max_tickers down to ~20-30%.
+        candidates = []
+        for ticker, ret_5d in ticker_returns.items():
+            if ret_5d > 2.0:
+                continue  # Already moved — not a laggard
+
             if len(candidates) >= self.limit:
                 break
+
+            result = self._check_sector_laggard(ticker, accelerating_sectors, get_ticker_info)
+            if result:
+                # Overwrite ret_5d with the value we already computed
+                result["stock_5d_return"] = round(ret_5d, 2)
+                candidates.append(result)
 
         logger.info(f"Sector rotation: {len(candidates)} candidates")
         return candidates
@@ -148,7 +185,7 @@ class SectorRotationScanner(BaseScanner):
     def _check_sector_laggard(
         self, ticker: str, accelerating_sectors: List[str], get_info_fn
     ) -> Optional[Dict[str, Any]]:
-        """Check if stock is in an accelerating sector but hasn't moved yet."""
+        """Check if stock is in an accelerating sector (sector lookup only — no price download)."""
         try:
             info = get_info_fn(ticker)
             if not info:
@@ -163,32 +200,8 @@ class SectorRotationScanner(BaseScanner):
             if not sector_etf or sector_etf not in accelerating_sectors:
                 return None
 
-            # Check if stock is lagging its sector
-            from tradingagents.dataflows.y_finance import download_history
-
-            hist = download_history(
-                ticker, period="1mo", interval="1d", auto_adjust=True, progress=False
-            )
-            if hist is None or hist.empty or len(hist) < 6:
-                return None
-
-            # Handle MultiIndex
-            if isinstance(hist.columns, pd.MultiIndex):
-                tickers_in_data = hist.columns.get_level_values(1).unique()
-                target = ticker if ticker in tickers_in_data else tickers_in_data[0]
-                hist = hist.xs(target, level=1, axis=1)
-
-            close = hist["Close"] if "Close" in hist.columns else hist.iloc[:, 0]
-            ret_5d = (float(close.iloc[-1]) / float(close.iloc[-6]) - 1) * 100
-
-            # Stock is a laggard if it moved less than 2% while sector is accelerating
-            if ret_5d > 2.0:
-                return None  # Already moved, not a laggard
-
-            context = (
-                f"Sector rotation: {stock_sector} sector accelerating, "
-                f"{ticker} lagging at {ret_5d:+.1f}% (5d)"
-            )
+            # 5-day return is filled in by the caller (batch-computed)
+            context = f"Sector rotation: {stock_sector} sector accelerating, {ticker} lagging"
 
             return {
                 "ticker": ticker,
@@ -198,7 +211,7 @@ class SectorRotationScanner(BaseScanner):
                 "strategy": self.strategy,
                 "sector": stock_sector,
                 "sector_etf": sector_etf,
-                "stock_5d_return": round(ret_5d, 2),
+                "stock_5d_return": 0.0,  # overwritten by caller
             }
 
         except Exception as e:

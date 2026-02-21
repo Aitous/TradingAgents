@@ -452,8 +452,15 @@ class DiscoveryGraph:
 
         pipeline_candidates: Dict[str, List[Dict[str, Any]]] = {}
 
+        # Global wall-clock limit: all scanners must finish within this budget.
+        # Using timeout_seconds as per-scanner budget × number of scanners gives a
+        # reasonable upper bound, capped at 5 minutes so a single slow scanner can
+        # never block the whole run indefinitely.
+        global_timeout = min(timeout_seconds * len(enabled_scanners), 300)
+
         logger.info(
-            f"Running {len(enabled_scanners)} scanners concurrently (max {max_workers} workers)..."
+            f"Running {len(enabled_scanners)} scanners concurrently "
+            f"(max {max_workers} workers, global timeout {global_timeout}s)..."
         )
 
         def run_scanner(scanner_info: tuple) -> tuple:
@@ -483,40 +490,46 @@ class DiscoveryGraph:
                 for scanner_info in enabled_scanners
             }
 
-            # Collect results as they complete (no global timeout, handle per-scanner)
+            # Collect results as they complete.
+            # The global_timeout passed to as_completed() ensures that if any
+            # scanner thread blocks indefinitely (e.g. waiting on a hung network
+            # call), we raise TimeoutError and continue rather than hanging forever.
             completed_count = 0
-            for future in as_completed(future_to_scanner):
-                scanner_name = future_to_scanner[future]
+            try:
+                for future in as_completed(future_to_scanner, timeout=global_timeout):
+                    scanner_name = future_to_scanner[future]
 
-                try:
-                    # Get result with per-scanner timeout
-                    name, pipeline, candidates, error, scanner_logs = future.result(
-                        timeout=timeout_seconds
-                    )
+                    try:
+                        name, pipeline, candidates, error, scanner_logs = future.result()
 
-                    # Initialize pipeline list if needed
-                    if pipeline not in pipeline_candidates:
-                        pipeline_candidates[pipeline] = []
+                        # Initialize pipeline list if needed
+                        if pipeline not in pipeline_candidates:
+                            pipeline_candidates[pipeline] = []
 
-                    if error:
-                        logger.warning(f"⚠️ {name}: {error}")
-                    else:
-                        pipeline_candidates[pipeline].extend(candidates)
-                        logger.info(f"✓ {name}: {len(candidates)} candidates")
+                        if error:
+                            logger.warning(f"⚠️ {name}: {error}")
+                        else:
+                            pipeline_candidates[pipeline].extend(candidates)
+                            logger.info(f"✓ {name}: {len(candidates)} candidates")
 
-                    # Thread-safe log merging
-                    if scanner_logs:
-                        with self._tool_logs_lock:
-                            state.setdefault("tool_logs", []).extend(scanner_logs)
+                        # Thread-safe log merging
+                        if scanner_logs:
+                            with self._tool_logs_lock:
+                                state.setdefault("tool_logs", []).extend(scanner_logs)
 
-                except TimeoutError:
-                    logger.warning(f"⏱️ {scanner_name}: timeout after {timeout_seconds}s")
+                    except Exception as e:
+                        logger.error(f"⚠️ {scanner_name}: unexpected error - {e}", exc_info=True)
 
-                except Exception as e:
-                    logger.error(f"⚠️ {scanner_name}: unexpected error - {e}", exc_info=True)
+                    finally:
+                        completed_count += 1
 
-                finally:
-                    completed_count += 1
+            except TimeoutError:
+                # Identify which scanners did not finish in time
+                stuck = [name for fut, name in future_to_scanner.items() if not fut.done()]
+                logger.warning(
+                    f"⏱️ Global scanner timeout ({global_timeout}s) reached. "
+                    f"Timed-out scanners: {stuck}. Continuing with {completed_count} completed."
+                )
 
             # Log completion stats
             if completed_count < len(enabled_scanners):
