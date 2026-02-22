@@ -1,5 +1,5 @@
 {
-  "total_recommendations": 330,
+  "total_recommendations": 345,
   "by_strategy": {
     "momentum": {
       "count": 136,
@@ -16,7 +16,7 @@
       "win_rate_7d": 37.5
     },
     "early_accumulation": {
-      "count": 8,
+      "count": 9,
       "wins_1d": 3,
       "losses_1d": 5,
       "wins_7d": 3,
@@ -30,7 +30,7 @@
       "win_rate_7d": 50.0
     },
     "insider_buying": {
-      "count": 49,
+      "count": 56,
       "wins_1d": 28,
       "losses_1d": 21,
       "wins_7d": 21,
@@ -44,7 +44,7 @@
       "win_rate_7d": 72.4
     },
     "options_flow": {
-      "count": 42,
+      "count": 46,
       "wins_1d": 17,
       "losses_1d": 25,
       "wins_7d": 8,
@@ -58,7 +58,7 @@
       "win_rate_7d": 44.4
     },
     "earnings_play": {
-      "count": 39,
+      "count": 40,
       "wins_1d": 18,
       "losses_1d": 21,
       "wins_7d": 10,
@@ -86,7 +86,7 @@
       "win_rate_7d": 42.9
     },
     "news_catalyst": {
-      "count": 3,
+      "count": 4,
       "wins_1d": 0,
       "losses_1d": 3,
       "wins_7d": 0,
@@ -128,7 +128,7 @@
       "win_rate_7d": 28.6
     },
     "analyst_upgrade": {
-      "count": 8,
+      "count": 9,
       "wins_1d": 6,
       "losses_1d": 2,
       "wins_7d": 6,
