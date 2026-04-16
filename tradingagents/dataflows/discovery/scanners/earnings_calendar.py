@@ -23,6 +23,7 @@ class EarningsCalendarScanner(BaseScanner):
         self.max_candidates = self.scanner_config.get("max_candidates", 25)
         self.max_days_until_earnings = self.scanner_config.get("max_days_until_earnings", 7)
         self.min_market_cap = self.scanner_config.get("min_market_cap", 0)
+        self.min_short_interest_pct = self.scanner_config.get("min_short_interest_pct", 0)
 
     def scan(self, state: Dict[str, Any]) -> List[Dict[str, Any]]:
         if not self.is_enabled():
@@ -67,6 +68,9 @@ class EarningsCalendarScanner(BaseScanner):
                 if 2 <= days_until <= 7:
                     self._enrich_earnings_candidate(cand)
 
+            # Remove candidates dropped by short interest filter
+            candidates = [c for c in candidates if not c.get("_drop")]
+
             # Apply limit
             candidates = candidates[: self.limit]
 
@@ -78,8 +82,27 @@ class EarningsCalendarScanner(BaseScanner):
             return []
 
     def _enrich_earnings_candidate(self, cand: Dict[str, Any]) -> None:
-        """Enrich earnings candidate with accumulation signal and estimates (in-place)."""
+        """Enrich earnings candidate with accumulation signal and estimates (in-place).
+
+        Returns without modifying cand if short interest is below the threshold.
+        Sets cand["_drop"] = True to signal the caller to discard this candidate.
+        """
         ticker = cand["ticker"]
+
+        # Short interest filter — skip candidates below min_short_interest_pct
+        if self.min_short_interest_pct > 0:
+            try:
+                import yfinance as yf
+
+                info = yf.Ticker(ticker).info
+                si_pct = (info.get("shortPercentOfFloat") or 0) * 100
+                cand["short_interest_pct"] = round(si_pct, 1)
+                if si_pct < self.min_short_interest_pct:
+                    cand["_drop"] = True
+                    return
+                cand["context"] += f" | Short interest: {si_pct:.1f}%"
+            except Exception:
+                pass  # If SI fetch fails, let the candidate through
 
         # Check pre-earnings volume accumulation
         try:
