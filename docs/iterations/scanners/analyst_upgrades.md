@@ -16,6 +16,14 @@ an upgrade is a historically strong setup.
 - Confidence calibration: Good (cal_diff ≤ 0.5 across all recent instances).
 - Confidence: medium (36 samples, 7d win rate at breakeven)
 
+### 2026-04-17 — P&L update (n=39 total, statistics.json)
+- 7d win rate improved from 50.0% → 55.9%, avg_return_7d improved from -0.75% → +0.18%. First time this scanner shows positive average return at any horizon.
+- 30d win rate still poor: 30.4%, avg_return_30d -3.64%. Edge is firmly short-term only.
+- New picks: DLR (Apr 10, score=75, pre-earnings institutional accumulation), INTC (Apr 12, score=85, Terafab + Apple rumor catalyst). Both high-conviction entries.
+- INTC Apr 12 (score=85) is a strong-catalyst case — "buy the rumor" risk noted in reason. Will be a key data point.
+- The 7d improvement is meaningful: now above coin-flip with positive avg return. Previously marginal (50%, negative avg).
+- Confidence: medium (39 samples; 7d improvement may partly reflect April market recovery, not scanner quality alone)
+
 ## Pending Hypotheses
 - [ ] Does analyst tier (BB firm vs boutique) predict upgrade quality?
 - [ ] Does short interest >20% combined with an upgrade produce outsized moves?

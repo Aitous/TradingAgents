@@ -34,3 +34,12 @@ No evidence yet on whether confidence or score is a better predictor of outcomes
 - insider_buying staleness: 50% of insider_buying picks in Apr 3-9 were stale repeats (PAGS×4, ZBIO×4, HMH×3). Staleness suppression filter implemented in `insider_buying.py`.
 - Overall pipeline: 626 tracked recs, 41.9% 7d win rate, 34.7% 30d win rate, -2.79% avg 30d return.
 - Confidence: high
+
+### 2026-04-17 — P&L update (statistics.json, n=664 total)
+- Overall: 664 total recs, 39.2% 1d win rate, 44.4% 7d win rate, 36.7% 30d win rate, -0.71% avg 7d.
+- Headline improvement: analyst_upgrade 7d 55.9% (was 50%), insider_buying 30d 41.6% (was 32.8%), earnings_play 7d 47.6% (was 37.7%).
+- Earnings_play 7d improvement likely market-context-driven (April tariff-pause recovery), not structural.
+- Insider_buying 30d improvement consistent with staleness filter (suppress_days=2, implemented Apr 14).
+- Staleness filter gap found: suppress_days=2 missed FUL Apr 9 to Apr 12 (3-day gap). Fixed to suppress_days=3.
+- Minervini: 100% win rate persists (n=3 measured out of 15 total). +7.19% avg 7d. Extraordinary but tiny measured sample.
+- Confidence: high

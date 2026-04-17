@@ -1,15 +1,15 @@
 # Learnings Index
 
-**Last analyzed run:** 2026-04-14
+**Last analyzed run:** 2026-04-17
 
 | Domain | File | Last Updated | One-line Summary |
 |--------|------|--------------|-----------------|
 | options_flow | scanners/options_flow.md | 2026-04-12 | Premium filter confirmed applied; CSCO cross-scanner confluence detected; 45.1% 7d win rate (94 recs) |
-| insider_buying | scanners/insider_buying.md | 2026-04-14 | Staleness suppression filter added (PAGS/ZBIO/HMH 3-4 day repeats confirmed); 45.9% 7d, negative avg returns |
-| minervini | scanners/minervini.md | 2026-04-12 | Best performer: 100% 1d win rate (n=3), +3.68% avg; 7 candidates in Apr 6-12 week |
-| analyst_upgrades | scanners/analyst_upgrades.md | 2026-04-12 | 51.6% 7d win rate (marginal positive); cross-scanner confluence with options_flow is positive signal |
-| earnings_calendar | scanners/earnings_calendar.md | 2026-04-12 | Appears as earnings_play; 38.1% 1d, 37.7% 7d — poor; best setups require high short interest |
-| pipeline/scoring | pipeline/scoring.md | 2026-04-14 | news_catalyst 0% 7d now explicit in ranker criteria; insider staleness filter implemented; 41.9% overall 7d win rate |
+| insider_buying | scanners/insider_buying.md | 2026-04-17 | suppress_days raised 2→3 (FUL 3-day gap missed); 47.7% 7d / 41.6% 30d post-staleness-filter improvement |
+| minervini | scanners/minervini.md | 2026-04-17 | 100% win rate still holds (n=3 measured, 15 total); +7.19% avg 7d; AVGO persistence Apr 10-11; AA score=92 Apr 12 |
+| analyst_upgrades | scanners/analyst_upgrades.md | 2026-04-17 | 7d win rate improved 50% → 55.9%, avg_return_7d now +0.18%; first positive avg return at any horizon |
+| earnings_calendar | scanners/earnings_calendar.md | 2026-04-17 | 7d win rate 47.6% (was 37.7%); likely market-recovery effect; still lowest-scoring scanner |
+| pipeline/scoring | pipeline/scoring.md | 2026-04-17 | 664 total recs, 44.4% overall 7d; staleness filter gap fixed (suppress_days 2→3) |
 | early_accumulation | scanners/early_accumulation.md | 2026-04-12 | Sub-threshold (score=60); no catalyst → structurally score-capped by ranker |
 | social_dd | scanners/social_dd.md | 2026-04-14 | 57.1% 30d win rate (+1.41% avg 30d, n=26) — only scanner positive at 30d; eval horizon mismatch persists |
 | volume_accumulation | scanners/volume_accumulation.md | — | No data yet |
