@@ -64,6 +64,24 @@
       "scanner": "insider_buying",
       "return_7d": null,
       "win_7d": null
+    },
+    {
+      "date": "2026-04-17",
+      "ticker": "MNR",
+      "score": 82,
+      "confidence": 8,
+      "scanner": "insider_buying",
+      "return_7d": null,
+      "win_7d": null
+    },
+    {
+      "date": "2026-04-17",
+      "ticker": "VANI",
+      "score": 78,
+      "confidence": 8,
+      "scanner": "insider_buying",
+      "return_7d": null,
+      "win_7d": null
     }
   ]
 }
