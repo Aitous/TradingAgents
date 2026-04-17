@@ -33,16 +33,16 @@
     },
     "insider_buying": {
       "count": 190,
-      "wins_1d": 68,
+      "wins_1d": 69,
       "losses_1d": 108,
       "wins_7d": 84,
       "losses_7d": 92,
       "wins_30d": 57,
       "losses_30d": 80,
-      "avg_return_1d": 0.03,
+      "avg_return_1d": 0.05,
       "avg_return_7d": -0.1,
       "avg_return_30d": 0.04,
-      "win_rate_1d": 38.6,
+      "win_rate_1d": 39.0,
       "win_rate_7d": 47.7,
       "win_rate_30d": 41.6
     },
@@ -236,23 +236,23 @@
     },
     "volume_divergence": {
       "count": 9,
-      "wins_1d": 2,
-      "losses_1d": 1,
+      "wins_1d": 3,
+      "losses_1d": 2,
       "wins_7d": 0,
       "losses_7d": 0,
       "wins_30d": 0,
       "losses_30d": 0,
-      "avg_return_1d": 0.35,
+      "avg_return_1d": 0.21,
       "avg_return_7d": 0,
       "avg_return_30d": 0,
-      "win_rate_1d": 66.7
+      "win_rate_1d": 60.0
     }
   },
   "overall_1d": {
-    "count": 607,
-    "wins": 238,
-    "avg_return": -0.17,
-    "win_rate": 39.2
+    "count": 610,
+    "wins": 240,
+    "avg_return": -0.16,
+    "win_rate": 39.3
   },
   "overall_7d": {
     "count": 603,
