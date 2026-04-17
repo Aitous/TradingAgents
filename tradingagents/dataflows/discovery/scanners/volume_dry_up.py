@@ -62,8 +62,10 @@ class VolumeDryUpScanner(BaseScanner):
         self.sma_fast = self.scanner_config.get("sma_fast", 50)
         self.sma_mid = self.scanner_config.get("sma_mid", 150)
         self.sma_slow = self.scanner_config.get("sma_slow", 200)
-        self.vol_avg_days = self.scanner_config.get("vol_avg_days", 50)      # 50d volume baseline
-        self.vdu_vol_pct = self.scanner_config.get("vdu_vol_pct", 0.60)      # VDU: today < 60% of 50d avg
+        self.vol_avg_days = self.scanner_config.get("vol_avg_days", 50)  # 50d volume baseline
+        self.vdu_vol_pct = self.scanner_config.get(
+            "vdu_vol_pct", 0.60
+        )  # VDU: today < 60% of 50d avg
         self.pocket_pivot_lookback = self.scanner_config.get("pocket_pivot_lookback", 10)
         self.max_pct_from_52w_high = self.scanner_config.get("max_pct_from_52w_high", 25.0)
         self.min_pct_above_52w_low = self.scanner_config.get("min_pct_above_52w_low", 25.0)

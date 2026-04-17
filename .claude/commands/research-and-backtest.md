@@ -21,10 +21,12 @@ In CI (`CI=true`), stop before git operations — the workflow handles them.
 - Note which pipelines already have OHLCV-capable scanners:
   - `mean_reversion`: `rsi_oversold`
   - `momentum`: `high_52w_breakout`, `minervini`, `technical_breakout`, `obv_divergence`
+- **Check the QuantPedia backlog first:** If `docs/iterations/research/quantpedia_backlog.md` exists, read it and note the top strategies not yet researched or discarded. These are pre-vetted OHLCV-compatible candidates with documented Sharpe ratios — treat them as the primary candidate pool before doing any web searches. If the backlog file does not exist, run it: `python scripts/fetch_quantpedia_strategies.py --min-sharpe 0.3 --top 30`
 - Pick the highest-leverage uncovered OHLCV strategy class. Priority order:
-  1. A well-known academic class with no current scanner (e.g. volatility regime, Bollinger squeeze, ATR expansion, calendar seasonality)
-  2. A class mentioned in `LEARNINGS.md` as a gap
-  3. A class complementary to the weakest-performing scanner
+  1. Top unresearched strategy from the QuantPedia backlog (already filtered for OHLCV compatibility and Sharpe ≥ 0.3)
+  2. A well-known academic class with no current scanner (e.g. volatility regime, Bollinger squeeze, ATR expansion, calendar seasonality)
+  3. A class mentioned in `LEARNINGS.md` as a gap
+  4. A class complementary to the weakest-performing scanner
 - Print: `"Strategy class: <class> — Reason: <why>"`
 
 ---
@@ -35,13 +37,18 @@ The goal is to find strategies with **documented statistical edge** that aren't 
 
 **Always use Jina Reader** — prepend `https://r.jina.ai/` to every URL for clean extraction:
 
-### 2a. Academic / Quantitative Research
+### 2a. QuantPedia Backlog (Start Here)
+
+If `docs/iterations/research/quantpedia_backlog.md` exists, read the top 10 entries. For each strategy in the backlog that matches the target class and hasn't been researched yet, this counts as one confirmed source — you still need 7 more from below, but the QuantPedia entry gives you a precise signal spec and Sharpe to anchor the search.
+
+### 2b. Academic / Quantitative Research
 
 ```
 # arXiv — search for systematic strategy papers
-WebFetch("https://export.arxiv.org/api/query?search_query=ti:<topic>+cat:q-fin.TR&sortBy=relevance&max_results=8")
+# IMPORTANT: Prefer papers published after 2019 — pre-2015 strategies are often arbitraged away
+WebFetch("https://export.arxiv.org/api/query?search_query=ti:<topic>+cat:q-fin.TR&sortBy=submittedDate&max_results=8")
 WebFetch("https://export.arxiv.org/api/query?search_query=abs:<topic>+cat:q-fin&sortBy=submittedDate&max_results=8")
-# For each paper abstract that looks promising, fetch full text:
+# For each paper abstract that looks promising AND was submitted after 2019, fetch full text:
 WebFetch("https://r.jina.ai/https://arxiv.org/abs/<id>")
 
 # SSRN — working papers often predate published research by years
@@ -118,14 +125,20 @@ After searching 8+ sources, apply these filters before shortlisting:
 
 **Evidence gate** — must have at least *qualitative* evidence of edge (a backtest result, a paper with statistics, or a practitioner reporting consistent real-money results). Pure theory or "this makes intuitive sense" is not enough.
 
+**Literature decay filter** — for academic papers, prefer evidence published after 2019. Pre-2015 documented anomalies have often been partially or fully arbitraged away. If only pre-2019 evidence exists, note this in the research file and apply a lower expected-edge estimate.
+
 **Duplication gate** — skip anything already covered by an existing scanner in `tradingagents/dataflows/discovery/scanners/` or previously researched in `docs/iterations/research/`.
 
 **Novelty preference** — when two candidates have similar expected edge, prefer the one that's less obvious (e.g. a volume-price pattern from a 2019 arXiv paper over a basic moving average crossover). The pipeline already has basic momentum covered.
+
+**State + trigger structure check** — before shortlisting, ask: does this strategy have TWO independent components: (1) a persistent market state (e.g. uptrend, low volatility, compressed range) AND (2) a rare confirmation trigger (e.g. breakout bar, volume surge, pocket pivot)? Strategies with this dual-condition structure have empirically outperformed single-condition signals in this pipeline (`atr_compression`: ATR regime + price breakout; `volume_dry_up`: VDU state + pocket pivot bar). Single-condition signals tend to fire too frequently and fail the selectivity gate. If a candidate lacks this structure, either design one in during implementation or downgrade its priority.
 
 Shortlist **3–5 candidates**. For each, extract:
 - Exact entry signal (thresholds, indicator values, lookback period)
 - The source's reported win rate / avg return / Sharpe (even if approximate)
 - Minimum OHLCV history required (in trading days)
+- **State component** (what persistent condition must be true?)
+- **Trigger component** (what rare event fires the signal?)
 
 Print: `"Shortlisted: [A, B, C] — Sources: [list] — Pre-implementation discards: [X] (reason)"`
 
@@ -293,6 +306,40 @@ Add under `discovery.scanners` in `tradingagents/default_config.py`:
 
 ---
 
+## Step 4.5: Signal Frequency Gate (Pre-Backtest Selectivity Check)
+
+Before running the full walk-forward backtest, check that each scanner is selective enough to be worth testing. Full backtests take 5–15 minutes; catching unselective signals here saves that time.
+
+For each new scanner, run:
+```bash
+python scripts/estimate_signal_frequency.py --scanner <name> --days 20
+```
+
+**Decision rules based on avg picks/day:**
+
+| avg picks/day | Rating | Action |
+|---------------|--------|--------|
+| > 8 | 🔴 UNSELECTIVE | **STOP** — do not run full backtest. The signal fires daily and will almost certainly fail promotion. Fix the scanner first. |
+| 5–8 | 🟡 BORDERLINE | Add one more tightening condition or raise the primary threshold before proceeding. Re-run frequency check. |
+| 2–5 | 🟢 SELECTIVE | Proceed to full backtest. |
+| < 2 | 🟢🟢 VERY SELECTIVE | Proceed. Small-sample caveat will likely apply — note in classification. |
+
+**How to fix an unselective scanner (avg > 5/day):**
+1. Raise the primary threshold (e.g. tighter RSI, higher ATR ratio, larger price move required)
+2. Add a second independent rare condition (a "trigger" component on top of a "state" component)
+3. Add a trend filter (e.g. `price > SMA200` — this alone often halves pick count)
+4. Increase minimum lookback window (e.g. require state to persist for N days, not just today)
+
+**Empirical benchmark from this project:**
+- `volume_dry_up`: 0.09/day → WR-20d=80% ✅ PROMOTED
+- `atr_compression`: 3.3/day → WR-20d=59% ✅ PROMOTED
+- `macd_histogram_reversal`: 8.7/day → WR-20d=54% ❌ DISCARDED
+- `consecutive_down_days`: 9.5/day → WR-20d=54% ❌ DISCARDED
+
+Do not proceed to Step 5 for any scanner with avg > 8 picks/day. Fix it first or discard it at this stage (mark as DISCARD-CALIBRATION in the batch research file).
+
+---
+
 ## Step 5: Run Walk-Forward Backtest
 
 Check if `scripts/backtest_scanners.py` exists:
@@ -423,7 +470,25 @@ Add to `LEARNINGS.md`: `"Inconclusive backtest (N picks); live monitoring"`
 
 ---
 
-## Step 10: Print Final Report
+## Step 10: Post-Backtest Analysis
+
+For any promoted scanner with ≥30 picks, run the feature importance analysis to identify which numeric fields most predict success — this surfaces threshold tuning opportunities immediately:
+
+```bash
+python scripts/analyze_backtest_picks.py --scanner <name> --horizon 20
+```
+
+If 2+ scanners were promoted this run, check for confluence lift across the full picks dataset:
+
+```bash
+python scripts/confluence_analysis.py --horizon 20 --min-picks 5
+```
+
+Confluence pairs with positive WR lift indicate the two scanners are orthogonal signals — note in the domain files and `LEARNINGS.md` as a confirmed combination worth monitoring in the live pipeline.
+
+---
+
+## Step 11: Print Final Report
 
 ```
 =================================================================
@@ -434,6 +499,7 @@ Add to `LEARNINGS.md`: `"Inconclusive backtest (N picks); live monitoring"`
 RESEARCH
   Candidates shortlisted : N
   Discarded pre-impl     : N (OHLCV-incompatible / duplicate)
+  Frequency-gated (>8/day): N
 
 BACKTEST RESULTS
   Scanner            Picks  WR-1d  WR-5d  WR-10d  WR-20d  Avg-20d  Decision
@@ -458,12 +524,13 @@ NEXT STEPS
   - Monitor <name4> until 30 live picks, then re-classify
   - Run /backtest-hypothesis on <name2> to test threshold tuning
   - Run /research-and-backtest "<next class>" to continue coverage
+  - (If confluence analysis found positive lift pairs, note them in LEARNINGS.md)
 =================================================================
 ```
 
 ---
 
-## Step 11: Commit (skip if `CI=true`)
+## Step 12: Commit (skip if `CI=true`)
 
 ```bash
 git add \

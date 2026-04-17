@@ -142,11 +142,11 @@ DEFAULT_CONFIG = {
                 "sma_fast": 50,
                 "sma_mid": 150,
                 "sma_slow": 200,
-                "vol_avg_days": 50,                # 50d volume baseline for VDU
-                "vdu_vol_pct": 0.60,               # Today's vol < 60% of 50d avg
-                "pocket_pivot_lookback": 10,       # Compare to down-days in last 10 sessions
-                "max_pct_from_52w_high": 25.0,     # Within 25% of 52w high
-                "min_pct_above_52w_low": 25.0,     # At least 25% above 52w low
+                "vol_avg_days": 50,  # 50d volume baseline for VDU
+                "vdu_vol_pct": 0.60,  # Today's vol < 60% of 50d avg
+                "pocket_pivot_lookback": 10,  # Compare to down-days in last 10 sessions
+                "max_pct_from_52w_high": 25.0,  # Within 25% of 52w high
+                "min_pct_above_52w_low": 25.0,  # At least 25% above 52w low
                 "min_price": 5.0,
                 "min_avg_volume": 100_000,
             },
