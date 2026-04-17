@@ -122,13 +122,15 @@ class SellingClimaxReversalScanner(BaseScanner):
             logger.warning(f"⚠️  Selling climax reversal scan failed: {e}", exc_info=True)
             return []
 
-    def _check_ticker(
-        self, ticker: str, ohlcv: pd.DataFrame
-    ) -> Optional[Dict[str, Any]]:
+    def _check_ticker(self, ticker: str, ohlcv: pd.DataFrame) -> Optional[Dict[str, Any]]:
         """Return candidate dict if ticker meets selling climax reversal criteria, else None."""
         # Filter to this ticker
         if hasattr(ohlcv.index, "names") and "ticker" in (ohlcv.index.names or []):
-            df = ohlcv.xs(ticker, level="ticker") if ticker in ohlcv.index.get_level_values("ticker") else None
+            df = (
+                ohlcv.xs(ticker, level="ticker")
+                if ticker in ohlcv.index.get_level_values("ticker")
+                else None
+            )
         elif "ticker" in ohlcv.columns:
             df = ohlcv[ohlcv["ticker"] == ticker].copy()
         else:
@@ -161,7 +163,7 @@ class SellingClimaxReversalScanner(BaseScanner):
             return None
 
         # Condition 1: Volume climax — today's volume vs 50-day average
-        vol_avg_50 = df["volume"].iloc[-(self.vol_avg_days + 1):-1].mean()
+        vol_avg_50 = df["volume"].iloc[-(self.vol_avg_days + 1) : -1].mean()
         if vol_avg_50 <= 0:
             return None
         vol_ratio = last["volume"] / vol_avg_50
@@ -169,7 +171,7 @@ class SellingClimaxReversalScanner(BaseScanner):
             return None
 
         # Condition 2: New N-day closing low — today's close is the lowest close in N days
-        lookback_closes = df["close"].iloc[-(self.price_low_days + 1):-1]
+        lookback_closes = df["close"].iloc[-(self.price_low_days + 1) : -1]
         if last["close"] >= lookback_closes.min():
             return None
 
