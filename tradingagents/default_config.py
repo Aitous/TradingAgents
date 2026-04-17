@@ -184,6 +184,19 @@ DEFAULT_CONFIG = {
                 "lookback_days": 7,  # Days to look back for congressional trades
             },
             # Momentum - Price and volume signals
+            "gap_up_continuation": {
+                "enabled": True,
+                "pipeline": "momentum",
+                "limit": 10,
+                "max_tickers": 0,
+                "lookback_period": "1y",
+                "min_gap_pct": 2.0,          # Minimum gap size (%) above prior close
+                "min_vol_multiple": 1.5,      # Minimum volume vs 20d average
+                "max_intraday_reversal_pct": 3.0,  # Max reversal from open (gap must hold)
+                "require_above_sma200": False, # If True, reject gaps below 200d SMA
+                "sma200_days": 200,
+                "vol_avg_days": 20,
+            },
             "volume_accumulation": {
                 "enabled": True,
                 "pipeline": "momentum",
