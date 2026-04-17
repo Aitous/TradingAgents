@@ -7,6 +7,7 @@ from . import (
     dark_pool_flow,  # noqa: F401
     earnings_beat,  # noqa: F401
     earnings_calendar,  # noqa: F401
+    gap_up_continuation,  # noqa: F401
     high_52w_breakout,  # noqa: F401
     insider_buying,  # noqa: F401
     market_movers,  # noqa: F401
