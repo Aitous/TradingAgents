@@ -41,8 +41,6 @@ SCANNER_MODULES = {
     "high_52w_breakout": "tradingagents.dataflows.discovery.scanners.high_52w_breakout",
     "minervini": "tradingagents.dataflows.discovery.scanners.minervini",
     "technical_breakout": "tradingagents.dataflows.discovery.scanners.technical_breakout",
-    "nr7_breakout": "tradingagents.dataflows.discovery.scanners.nr7_breakout",
-    "bb_squeeze": "tradingagents.dataflows.discovery.scanners.bb_squeeze",
     "atr_compression": "tradingagents.dataflows.discovery.scanners.atr_compression",
 }
 
