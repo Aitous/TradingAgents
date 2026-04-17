@@ -23,7 +23,16 @@ Works best in bull market conditions; underperforms in choppy/bear markets.
 - Apr 12 AA thesis was highly specific: RS Rating 98, Morgan Stanley Overweight upgrade, earnings in 4 days, rising OBV. Good signal clarity.
 - Confidence: high
 
+### 2026-04-17 — P&L update (statistics.json, n=15 total picks, 3 measured)
+- Statistics now show 15 total minervini picks; 3 measured with 1d/7d outcomes.
+- Win rates still 100% at 1d and 7d (3/3). Avg returns: +5.16% 1d, +7.19% 7d. Outstanding.
+- Newly observed: AVGO appeared Apr 10 AND Apr 11 (score=85, conf=8 both days). Same thesis. Positive persistence signal.
+- AA Apr 12 scored 92/100 (highest score ever in pipeline) — RS 98/100, Morgan Stanley upgrade, earnings 4 days out. Extremely specific thesis.
+- BAC Apr 11 (score=65, conf=6): lower-conviction Minervini, sector-rotation driven. Represents the tail end of the score distribution for this scanner.
+- 12 picks from Apr 10-12 not yet measured (7d windows close Apr 17-19). Will be the first meaningful batch for 7d validation.
+- Confidence: high (100% win rate holds, but sample inflated by market recovery week; need more diverse market context)
+
 ## Pending Hypotheses
 - [ ] Does adding a market condition filter (S&P 500 above 200 SMA) improve hit rate? Early evidence (Apr 2026 volatile market, still producing top picks) suggests filtering by market condition may hurt recall.
-- [ ] Does a second appearance of the same ticker (persistence across days) predict higher returns than first-time appearances?
-- [ ] Do earnings-nearby Minervini setups (within 5 days) underperform? Apr 12 AA has earnings in 4 days — flag for tracking.
+- [ ] Does a second appearance of the same ticker (persistence across days) predict higher returns than first-time appearances? AVGO Apr 10+11 now a test case.
+- [ ] Do earnings-nearby Minervini setups (within 5 days) underperform? AA Apr 12 (earnings 4 days out, score=92) is a live test case — outcome due ~Apr 17-19.

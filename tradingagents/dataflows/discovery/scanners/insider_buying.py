@@ -119,8 +119,10 @@ class InsiderBuyingScanner(BaseScanner):
             candidates = candidates[: self.limit]
 
             # Staleness suppression: filter tickers already recommended as insider_buying
-            # in the past 2 days (same Form 4 filing appears daily within lookback_days window)
-            recently_seen = self._load_recent_insider_tickers(suppress_days=2)
+            # in the past 3 days (same Form 4 filing appears daily within lookback_days window).
+            # suppress_days=3 closes the gap found on Apr 12: FUL appeared Apr 9 and Apr 12
+            # (3-day spacing), which slipped past the prior suppress_days=2 window.
+            recently_seen = self._load_recent_insider_tickers(suppress_days=3)
             if recently_seen:
                 before_tickers = {c["ticker"] for c in candidates}
                 candidates = [c for c in candidates if c["ticker"] not in recently_seen]
@@ -128,7 +130,7 @@ class InsiderBuyingScanner(BaseScanner):
                 if suppressed:
                     logger.info(
                         f"Staleness filter: suppressed {len(suppressed)} ticker(s) already "
-                        f"recommended as insider_buying in the past 2 days: {suppressed}"
+                        f"recommended as insider_buying in the past 3 days: {suppressed}"
                     )
 
             logger.info(f"Insider buying: {len(candidates)} candidates")

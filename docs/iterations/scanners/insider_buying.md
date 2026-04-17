@@ -36,8 +36,17 @@ and included in candidate context — dropping them loses signal clarity.
 - Updated statistics: 184 recs total (+48 since last analysis). 7d win rate 45.9% (was 46.4%), 30d win rate 32.8%. Avg returns negative at all horizons: -0.01% 1d, -0.44% 7d, -1.62% 30d.
 - Confidence: high (staleness pattern now confirmed across 3 distinct tickers in a single week)
 
+### 2026-04-17 — P&L update + staleness filter gap found
+- n=190 total picks (was 184). 7d win rate 47.7% (was 45.9%), 30d win rate 41.6% (was 32.8%). Modest improvement consistent with staleness filter helping.
+- Avg returns: -0.1% 7d (was -0.44%), +0.04% 30d (was -1.62%). Direction improving.
+- **Staleness filter gap confirmed**: FUL appeared Apr 9 AND Apr 12 (3-day gap) with identical score (75) and same CEO purchase ($295,104 by Mastin Celeste Beeks). The suppress_days=2 window only blocks 1-2 day repeats; a 3-day gap slips through.
+- **Code fix applied 2026-04-17**: suppress_days raised from 2 → 3 in `insider_buying.py:123`.
+- New Apr 12 picks: FUL (score=75, staleness miss now fixed), GF (score=65, Saba Capital 10% owner $1.49M). Note: GF is an institutional activist (10% owner), not an operational insider — borderline signal quality.
+- Confidence: high (staleness gap confirmed by direct observation; fix is minimal and targeted)
+
 ## Pending Hypotheses
 - [x] Does cluster detection (2+ insiders in 14 days) outperform single-insider signals? → **Already implemented**: cluster detection assigns CRITICAL priority. Code verified at `insider_buying.py:73-74`. Cannot assess outcome vs single-insider yet (all statuses 'open').
-- [x] Does filtering out repeat appearances of the same ticker from the same scanner within 3 days improve precision? → **Implemented 2026-04-14**: staleness suppression added, uses 2-day lookback against recommendation history.
+- [x] Does filtering out repeat appearances of the same ticker from the same scanner within 3 days improve precision? → **Implemented 2026-04-14**: staleness suppression added; expanded to 3-day window 2026-04-17 after FUL gap found.
 - [ ] Is there a minimum transaction size below which signal quality degrades sharply? (current min: $100K raised from $25K as of 2026-04-07)
-- [ ] Does the staleness suppression (2-day lookback) measurably improve 7d win rate? Track over next 2 weeks.
+- [ ] Does the staleness suppression (3-day lookback) measurably improve 7d win rate vs 2-day lookback? Track over next 2 weeks.
+- [ ] Are 10%-owner purchases (activists like Saba Capital) lower quality signals than operational insiders (CEO/CFO)? GF Apr 12 is a test case.
