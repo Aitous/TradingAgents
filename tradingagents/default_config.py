@@ -290,14 +290,28 @@ DEFAULT_CONFIG = {
                 "pipeline": "momentum",
                 "limit": 10,
                 "max_tickers": 0,
-                "atr_short": 5,            # Short ATR period (1-week)
-                "atr_long": 20,            # Long ATR period (1-month baseline)
-                "atr_ratio_max": 0.75,     # Max ATR(short)/ATR(long) for compression
-                "breakout_lookback": 10,   # Days for N-day high breakout confirmation
-                "sma_trend": 50,           # Trend filter SMA period
+                "atr_short": 5,  # Short ATR period (1-week)
+                "atr_long": 20,  # Long ATR period (1-month baseline)
+                "atr_ratio_max": 0.75,  # Max ATR(short)/ATR(long) for compression
+                "breakout_lookback": 10,  # Days for N-day high breakout confirmation
+                "sma_trend": 50,  # Trend filter SMA period
                 "min_price": 5.0,
                 "min_avg_volume": 100_000,
                 "vol_avg_days": 20,
+            },
+            "selling_climax_reversal": {
+                "enabled": True,
+                "pipeline": "mean_reversion",
+                "limit": 5,  # Rare signal; >5/day = threshold too loose
+                "max_tickers": 0,  # 0 = no cap
+                "vol_avg_days": 50,  # Days for volume average baseline (O'Neil uses 50-day)
+                "min_volume_multiple": 3.0,  # Min volume vs 50d avg (150% above = 2.5x; 3x is conservative)
+                "price_low_days": 20,  # New N-day closing low required
+                "min_range_pct": 0.40,  # Close must be in upper 40% of day's High-Low range
+                "rsi_period": 14,  # RSI period for oversold confirmation
+                "rsi_critical_threshold": 35.0,  # RSI below this → CRITICAL priority
+                "min_price": 5.0,  # Filter penny stocks
+                "min_avg_volume": 100_000,  # Min avg daily volume for liquidity
             },
             "rsi_oversold": {
                 "enabled": True,
