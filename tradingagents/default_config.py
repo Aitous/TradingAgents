@@ -138,8 +138,8 @@ DEFAULT_CONFIG = {
                 "enabled": True,
                 "pipeline": "edge",
                 "limit": 8,
-                "min_z_score": 0.0,         # Meridian pre-filters; 0 = take all surfaced anomalies
-                "min_dark_pool_pct": 0.0,   # Meridian pre-filters; 0 = take all surfaced anomalies
+                "min_z_score": 0.0,  # Meridian pre-filters; 0 = take all surfaced anomalies
+                "min_dark_pool_pct": 0.0,  # Meridian pre-filters; 0 = take all surfaced anomalies
                 "source_url": "https://meridianfin.io/darkpool",
             },
             "insider_buying": {
@@ -284,6 +284,20 @@ DEFAULT_CONFIG = {
                 "freshness_threshold": 0.97,  # Price must be within X% of 52w high
                 "min_price": 5.0,  # Filter penny stocks
                 "min_avg_volume": 100_000,  # Min avg daily volume for liquidity
+            },
+            "atr_compression": {
+                "enabled": True,
+                "pipeline": "momentum",
+                "limit": 10,
+                "max_tickers": 0,
+                "atr_short": 5,            # Short ATR period (1-week)
+                "atr_long": 20,            # Long ATR period (1-month baseline)
+                "atr_ratio_max": 0.75,     # Max ATR(short)/ATR(long) for compression
+                "breakout_lookback": 10,   # Days for N-day high breakout confirmation
+                "sma_trend": 50,           # Trend filter SMA period
+                "min_price": 5.0,
+                "min_avg_volume": 100_000,
+                "vol_avg_days": 20,
             },
             "rsi_oversold": {
                 "enabled": True,
