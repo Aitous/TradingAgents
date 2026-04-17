@@ -43,11 +43,13 @@ class ATRCompressionScanner(BaseScanner):
 
     def __init__(self, config: Dict[str, Any]):
         super().__init__(config)
-        self.atr_short = self.scanner_config.get("atr_short", 5)           # Short ATR period
-        self.atr_long = self.scanner_config.get("atr_long", 20)            # Long ATR period (baseline)
-        self.atr_ratio_max = self.scanner_config.get("atr_ratio_max", 0.75)  # Max ATR ratio for compression
+        self.atr_short = self.scanner_config.get("atr_short", 5)  # Short ATR period
+        self.atr_long = self.scanner_config.get("atr_long", 20)  # Long ATR period (baseline)
+        self.atr_ratio_max = self.scanner_config.get(
+            "atr_ratio_max", 0.75
+        )  # Max ATR ratio for compression
         self.breakout_lookback = self.scanner_config.get("breakout_lookback", 10)  # Days for high
-        self.sma_trend = self.scanner_config.get("sma_trend", 50)          # Trend filter SMA
+        self.sma_trend = self.scanner_config.get("sma_trend", 50)  # Trend filter SMA
         self.min_price = self.scanner_config.get("min_price", 5.0)
         self.min_avg_volume = self.scanner_config.get("min_avg_volume", 100_000)
         self.vol_avg_days = self.scanner_config.get("vol_avg_days", 20)

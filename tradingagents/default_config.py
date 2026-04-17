@@ -133,6 +133,23 @@ DEFAULT_CONFIG = {
         # SCANNERS (each with scanner-specific settings)
         # ========================================
         "scanners": {
+            # Momentum — VDU Pocket Pivot
+            "volume_dry_up": {
+                "enabled": True,
+                "pipeline": "momentum",
+                "limit": 10,
+                "max_tickers": 0,
+                "sma_fast": 50,
+                "sma_mid": 150,
+                "sma_slow": 200,
+                "vol_avg_days": 50,                # 50d volume baseline for VDU
+                "vdu_vol_pct": 0.60,               # Today's vol < 60% of 50d avg
+                "pocket_pivot_lookback": 10,       # Compare to down-days in last 10 sessions
+                "max_pct_from_52w_high": 25.0,     # Within 25% of 52w high
+                "min_pct_above_52w_low": 25.0,     # At least 25% above 52w low
+                "min_price": 5.0,
+                "min_avg_volume": 100_000,
+            },
             # Edge signals - Early information advantages
             "dark_pool_flow": {
                 "enabled": True,
@@ -298,20 +315,6 @@ DEFAULT_CONFIG = {
                 "min_price": 5.0,
                 "min_avg_volume": 100_000,
                 "vol_avg_days": 20,
-            },
-            "selling_climax_reversal": {
-                "enabled": True,
-                "pipeline": "mean_reversion",
-                "limit": 5,  # Rare signal; >5/day = threshold too loose
-                "max_tickers": 0,  # 0 = no cap
-                "vol_avg_days": 50,  # Days for volume average baseline (O'Neil uses 50-day)
-                "min_volume_multiple": 3.0,  # Min volume vs 50d avg (150% above = 2.5x; 3x is conservative)
-                "price_low_days": 20,  # New N-day closing low required
-                "min_range_pct": 0.40,  # Close must be in upper 40% of day's High-Low range
-                "rsi_period": 14,  # RSI period for oversold confirmation
-                "rsi_critical_threshold": 35.0,  # RSI below this → CRITICAL priority
-                "min_price": 5.0,  # Filter penny stocks
-                "min_avg_volume": 100_000,  # Min avg daily volume for liquidity
             },
             "rsi_oversold": {
                 "enabled": True,

@@ -42,6 +42,7 @@ SCANNER_MODULES = {
     "minervini": "tradingagents.dataflows.discovery.scanners.minervini",
     "technical_breakout": "tradingagents.dataflows.discovery.scanners.technical_breakout",
     "atr_compression": "tradingagents.dataflows.discovery.scanners.atr_compression",
+    "volume_dry_up": "tradingagents.dataflows.discovery.scanners.volume_dry_up",
 }
 
 # Forward-return windows (trading days)

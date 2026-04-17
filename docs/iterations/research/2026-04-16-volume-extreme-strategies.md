@@ -81,3 +81,25 @@ Expected edge: +3–5% over 63d based on O'Neil data; win rate ~57–65% when vo
   - MEDIUM if climax vol + new low only (no reversal bar confirmation)
 - **Context format:** `"Selling climax: {vol_ratio:.1f}x volume on {N}-day low, closed in upper {pct_range:.0f}% of range. RSI(14)={rsi:.1f}. Potential exhaustion reversal."`
 - **Minimum OHLCV history:** 60 trading days (50d vol avg + 20d price lookback + RSI buffer)
+
+## Backtest Discard Notes
+
+Walk-forward backtest: 2025-04-15 → 2026-03-06 (224 sim days), 1003-ticker universe.
+
+### selling_climax_reversal — DISCARD
+- picks: 133 (0.6/day avg — selective ✓)  win_rate_20d: 44.4%  avg_return_20d: +1.57%
+- WR < 50% at the 20d horizon. The 1d WR (42%) is also below random.
+- Despite good selectivity, the signal itself appears to catch falling knives more than
+  reversals — extreme volume on a new low frequently continues lower before recovering.
+- Root cause: requiring close ≥ open (green bar) is insufficient for a reliable reversal
+  confirmation after a panic-volume climax. The bar pattern needs a stronger confirmation
+  (e.g., close above prior day's close, or engulfing candle structure).
+- Do not re-research in current form. Consider a rebuilt version using engulfing + volume.
+
+### macd_histogram_reversal — DISCARD
+- picks: 1940 (8.7/day avg — hits limit every day ✗)  win_rate_20d: 53.6%  avg_return_20d: +1.35%
+- Same selectivity failure as Run 2 (nr7, consecutive_down_days, etc.).
+- MACD histogram falling 4+ bars below zero fires hundreds of times daily in 1000 tickers.
+- Does not meet PROMOTE-MARGINAL threshold (needs avg ≥ 2.0%).
+- Potential fix: add a 2nd independent condition (e.g., volume spike on the falling bar, or
+  RSI also hitting oversold) to make the signal genuinely rare. Not worth pursuing in current form.
