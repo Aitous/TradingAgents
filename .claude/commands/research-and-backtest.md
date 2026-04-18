@@ -17,7 +17,7 @@ In CI (`CI=true`), stop before git operations — the workflow handles them.
 **Directed mode** (`$ARGUMENTS` is not empty): use the argument as the strategy class, skip to Step 2.
 
 **Autonomous mode** (no argument):
-- Read `docs/iterations/LEARNINGS.md` and list every file in `docs/iterations/research/` to build a do-not-repeat list.
+- Read `docs/iterations/LEARNINGS.md` in full. The `## Discarded Signals` table is the authoritative do-not-repeat list — extract every signal name from it and treat these as hard exclusions for the entire run. A signal in that table must not be proposed, shortlisted, or implemented unless the "Re-research Condition" column explicitly permits it and that condition is now met.
 - Note which pipelines already have OHLCV-capable scanners:
   - `mean_reversion`: `rsi_oversold`
   - `momentum`: `high_52w_breakout`, `minervini`, `technical_breakout`, `obv_divergence`
@@ -127,7 +127,10 @@ After searching 8+ sources, apply these filters before shortlisting:
 
 **Literature decay filter** — for academic papers, prefer evidence published after 2019. Pre-2015 documented anomalies have often been partially or fully arbitraged away. If only pre-2019 evidence exists, note this in the research file and apply a lower expected-edge estimate.
 
-**Duplication gate** — skip anything already covered by an existing scanner in `tradingagents/dataflows/discovery/scanners/` or previously researched in `docs/iterations/research/`.
+**Duplication gate** — skip anything:
+- Already covered by an existing scanner in `tradingagents/dataflows/discovery/scanners/`
+- Listed in the `## Discarded Signals` table in `docs/iterations/LEARNINGS.md` (check by exact signal name), unless its "Re-research Condition" is met
+- Previously researched in `docs/iterations/research/` batch files
 
 **Novelty preference** — when two candidates have similar expected edge, prefer the one that's less obvious (e.g. a volume-price pattern from a 2019 arXiv paper over a basic moving average crossover). The pipeline already has basic momentum covered.
 
@@ -437,6 +440,11 @@ Add row to `LEARNINGS.md` scanner table:
 - Delete: `tradingagents/dataflows/discovery/scanners/<name>.py`
 - Remove import from `tradingagents/dataflows/discovery/scanners/__init__.py`
 - Remove config block from `tradingagents/default_config.py`
+- Remove from `scripts/backtest_scanners.py` `SCANNER_MODULES`
+- **Append a row to the `## Discarded Signals` table in `docs/iterations/LEARNINGS.md`:**
+  ```
+  | `<name>` | DISCARD / DISCARD-CALIBRATION | YYYY-MM-DD | <one-line why> | <condition under which re-research is permitted, or "Never"> |
+  ```
 - Do NOT write a domain file. Append to the batch research file instead:
 
 ```markdown

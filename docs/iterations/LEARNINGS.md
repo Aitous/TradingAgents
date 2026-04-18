@@ -16,6 +16,23 @@
 | short_squeeze | scanners/short_squeeze.md | 2026-04-14 | 60% 7d win rate (n=11), best 7d performer; BUT 30% 30d — short-term signal only, degrades at 30d |
 | earnings_beat | scanners/earnings_beat.md | 2026-04-14 | New PEAD scanner: recent EPS beats ≥5% surprise; 15% annualized academic edge; distinct from earnings_calendar |
 
+## Discarded Signals
+
+Exact signal names that have been researched, implemented, and backtested — do not re-propose without a documented reason the prior failure no longer applies.
+
+| Signal Name | Discard Type | Date | Why Failed | Re-research Condition |
+|-------------|-------------|------|------------|-----------------------|
+| `nr7_breakout` | DISCARD | 2026-04-16 | Fires 8+/day (unselective); avg-20d=+1.15% below promotion threshold | Only if combined with a market-state filter that reduces picks to <3/day |
+| `bb_squeeze` | DISCARD | 2026-04-16 | Bollinger squeeze without directional trigger = noise; WR-20d insufficient | Add a directional trigger (e.g. momentum bar breaking squeeze high/low) |
+| `consecutive_down_days` | DISCARD | 2026-04-16 | 9.5/day (unselective); WR-20d=53.6% avg+0.83% below threshold | Only if pick rate drops to <3/day via additional filters |
+| `pullback_in_uptrend` | DISCARD | 2026-04-16 | 9.4/day (unselective); WR-20d=54.3% avg+1.02% below threshold | Only if pick rate drops to <3/day via additional filters |
+| `adx_trend_inception` | DISCARD | 2026-04-16 | 9.8/day (unselective); WR-20d=56.9% avg+1.64% near threshold but not selective | Only if pick rate drops to <3/day; promising edge, just too broad |
+| `selling_climax_reversal` | DISCARD | 2026-04-16 | WR-20d=44.4% (<50% = below random); volume climax without market-regime filter | Only with a VIX/breadth regime filter confirming macro capitulation |
+| `macd_histogram_reversal` | DISCARD | 2026-04-16 | 8.7/day (unselective); fires too frequently across all market conditions | Only if combined with a compression state (e.g. price range <2% for 5 days) |
+| `bollinger_band_mean_reversion` | DISCARD-CALIBRATION | 2026-04-17 | 0 picks in Apr 2025–Feb 2026 bull market; signal only fires in corrections; March 2026 correction in buffer cutoff | Re-run backtest after Sept 2026 (March correction enters measurable window) |
+| `inside_days_breakout` | DISCARD-CALIBRATION | 2026-04-17 | Only 2 picks in 11 months (too rare for evaluation); triple condition too strict in trending markets | Consider relaxing to 1 inside day, or revisit as part of a broader NR4/compression scanner |
+| `gap_down_reversal` | DISCARD | 2026-04-17 | WR-20d=16%, avg=-5.72%; all 25 picks in March 2026 correction where macro decline continued; SMA200 filter insufficient in early correction | Add market-breadth or VIX regime filter; do not re-research without macro context filter |
+
 ## Research
 
 | Title | File | Date | Summary |
