@@ -20,7 +20,7 @@ import argparse
 import importlib
 import logging
 import sys
-from datetime import date, timedelta
+from datetime import date
 from pathlib import Path
 from statistics import mean, median
 from typing import List
@@ -93,7 +93,6 @@ def run_scanner_on_day(scanner_name: str, module_path: str, snapshot: dict) -> i
 
 
 def estimate(scanner_name: str, days: int = 20) -> None:
-    import pandas as pd
 
     if scanner_name not in SCANNER_MODULES:
         # Try dynamic discovery
@@ -166,7 +165,9 @@ Benchmark (from empirical backtest results):
 def main():
     parser = argparse.ArgumentParser(description="Estimate scanner signal frequency")
     parser.add_argument("--scanner", required=True, help="Scanner name (e.g. volume_dry_up)")
-    parser.add_argument("--days", type=int, default=20, help="Number of recent trading days to test (default: 20)")
+    parser.add_argument(
+        "--days", type=int, default=20, help="Number of recent trading days to test (default: 20)"
+    )
     args = parser.parse_args()
     estimate(args.scanner, args.days)
 

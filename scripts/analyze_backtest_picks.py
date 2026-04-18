@@ -23,7 +23,6 @@ import sys
 from pathlib import Path
 
 import pandas as pd
-import numpy as np
 
 ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT))
@@ -46,13 +45,19 @@ def find_latest_picks(base_dir: str = "results/backtest") -> Path:
 def numeric_features(df: pd.DataFrame) -> list[str]:
     """Return scanner-emitted numeric columns (not forward returns, not metadata)."""
     exclude = {
-        "date", "scanner", "ticker", "priority", "context", "source", "strategy",
-        "fwd_1d", "fwd_5d", "fwd_10d", "fwd_20d",
+        "date",
+        "scanner",
+        "ticker",
+        "priority",
+        "context",
+        "source",
+        "strategy",
+        "fwd_1d",
+        "fwd_5d",
+        "fwd_10d",
+        "fwd_20d",
     }
-    return [
-        c for c in df.columns
-        if c not in exclude and pd.api.types.is_numeric_dtype(df[c])
-    ]
+    return [c for c in df.columns if c not in exclude and pd.api.types.is_numeric_dtype(df[c])]
 
 
 def correlation_table(sub: pd.DataFrame, horizon: int) -> pd.DataFrame:
@@ -72,13 +77,15 @@ def correlation_table(sub: pd.DataFrame, horizon: int) -> pd.DataFrame:
             continue
         pearson = col.corr(shared)
         spearman = col.rank().corr(shared.rank())
-        rows.append({
-            "feature": feat,
-            "n": len(col),
-            "pearson_r": round(pearson, 3),
-            "spearman_r": round(spearman, 3),
-            "abs_spearman": abs(spearman),
-        })
+        rows.append(
+            {
+                "feature": feat,
+                "n": len(col),
+                "pearson_r": round(pearson, 3),
+                "spearman_r": round(spearman, 3),
+                "abs_spearman": abs(spearman),
+            }
+        )
 
     if not rows:
         return pd.DataFrame()
@@ -86,7 +93,9 @@ def correlation_table(sub: pd.DataFrame, horizon: int) -> pd.DataFrame:
     return result.drop(columns=["abs_spearman"])
 
 
-def bucket_analysis(sub: pd.DataFrame, feature: str, horizon: int, n_buckets: int = 4) -> pd.DataFrame:
+def bucket_analysis(
+    sub: pd.DataFrame, feature: str, horizon: int, n_buckets: int = 4
+) -> pd.DataFrame:
     """Win rate and avg return by quartile of a feature."""
     fwd_col = f"fwd_{horizon}d"
     valid = sub[[feature, fwd_col]].dropna()
@@ -103,13 +112,15 @@ def bucket_analysis(sub: pd.DataFrame, feature: str, horizon: int, n_buckets: in
     rows = []
     for label, grp in valid.groupby("bucket", observed=True):
         rets = grp[fwd_col].dropna()
-        rows.append({
-            "bucket": label,
-            f"{feature}_range": f"{grp[feature].min():.2g}–{grp[feature].max():.2g}",
-            "n": len(rets),
-            f"win_rate_{horizon}d": round((rets > 0).mean() * 100, 1) if len(rets) else None,
-            f"avg_return_{horizon}d": round(rets.mean() * 100, 2) if len(rets) else None,
-        })
+        rows.append(
+            {
+                "bucket": label,
+                f"{feature}_range": f"{grp[feature].min():.2g}–{grp[feature].max():.2g}",
+                "n": len(rets),
+                f"win_rate_{horizon}d": round((rets > 0).mean() * 100, 1) if len(rets) else None,
+                f"avg_return_{horizon}d": round(rets.mean() * 100, 2) if len(rets) else None,
+            }
+        )
 
     return pd.DataFrame(rows)
 
@@ -142,7 +153,9 @@ def suggest_threshold(sub: pd.DataFrame, feature: str, horizon: int) -> str:
     elif direction == "lower":
         return f"  → Lower {feature} threshold to ≤{p25:.2g} (Q1 WR={low_wr:.0f}% vs Q4 WR={high_wr:.0f}%)"
     else:
-        return f"  → {feature} has low predictive value (Q1 WR={low_wr:.0f}% ≈ Q4 WR={high_wr:.0f}%)"
+        return (
+            f"  → {feature} has low predictive value (Q1 WR={low_wr:.0f}% ≈ Q4 WR={high_wr:.0f}%)"
+        )
 
 
 def analyze(picks_path: str, scanner_filter: str | None, horizon: int) -> None:
@@ -168,7 +181,9 @@ def analyze(picks_path: str, scanner_filter: str | None, horizon: int) -> None:
 
         print(f"\n{'='*64}")
         print(f"  Scanner: {scanner}")
-        print(f"  Picks with {horizon}d return data: {len(valid)}  |  WR={wr:.1f}%  avg={avg_ret:+.2f}%")
+        print(
+            f"  Picks with {horizon}d return data: {len(valid)}  |  WR={wr:.1f}%  avg={avg_ret:+.2f}%"
+        )
         print(f"{'='*64}")
 
         # Feature correlations
@@ -186,17 +201,19 @@ def analyze(picks_path: str, scanner_filter: str | None, horizon: int) -> None:
                     print(buckets.to_string(index=False))
                     print(suggest_threshold(sub, feat, horizon))
         else:
-            print(f"\n  No numeric features found with sufficient data.")
+            print("\n  No numeric features found with sufficient data.")
 
         # Priority breakdown
         if "priority" in sub.columns:
-            print(f"\n  Win rate by priority:")
+            print("\n  Win rate by priority:")
             for priority, grp in sub.groupby("priority"):
                 g_valid = grp.dropna(subset=[fwd_col])
                 if len(g_valid) >= 3:
                     g_wr = (g_valid[fwd_col] > 0).mean() * 100
                     g_avg = g_valid[fwd_col].mean() * 100
-                    print(f"    {priority:10s}: n={len(g_valid):4d}  WR={g_wr:.1f}%  avg={g_avg:+.2f}%")
+                    print(
+                        f"    {priority:10s}: n={len(g_valid):4d}  WR={g_wr:.1f}%  avg={g_avg:+.2f}%"
+                    )
 
     print()
 
@@ -204,13 +221,14 @@ def analyze(picks_path: str, scanner_filter: str | None, horizon: int) -> None:
 def main():
     parser = argparse.ArgumentParser(description="Analyze backtest picks for feature importance")
     parser.add_argument(
-        "--path", default=None,
-        help="Path to picks.csv (default: latest in results/backtest/)"
+        "--path", default=None, help="Path to picks.csv (default: latest in results/backtest/)"
     )
     parser.add_argument("--scanner", default=None, help="Filter to a specific scanner")
     parser.add_argument(
-        "--horizon", type=int, default=20,
-        help="Forward return horizon in trading days (default: 20)"
+        "--horizon",
+        type=int,
+        default=20,
+        help="Forward return horizon in trading days (default: 20)",
     )
     args = parser.parse_args()
 

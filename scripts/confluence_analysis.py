@@ -74,8 +74,7 @@ def confluence_pairs(df: pd.DataFrame, horizon: int, min_picks: int) -> pd.DataF
 
         # Get forward returns for the overlap picks (use s1's row — same fwd return)
         overlap_df = df[
-            (df["scanner"] == s1) &
-            df.apply(lambda r: (r["date"], r["ticker"]) in overlap, axis=1)
+            (df["scanner"] == s1) & df.apply(lambda r: (r["date"], r["ticker"]) in overlap, axis=1)
         ].dropna(subset=[fwd_col])
 
         if len(overlap_df) < min_picks:
@@ -90,15 +89,17 @@ def confluence_pairs(df: pd.DataFrame, horizon: int, min_picks: int) -> pd.DataF
         best_individual = max(s1_wr, s2_wr)
         lift = wr - best_individual
 
-        rows.append({
-            "scanner_a": s1,
-            "scanner_b": s2,
-            "confluence_picks": len(overlap_df),
-            f"confluence_wr_{horizon}d": round(wr, 1),
-            f"confluence_avg_{horizon}d": round(avg, 2),
-            f"best_individual_wr": round(best_individual, 1),
-            "wr_lift": round(lift, 1),
-        })
+        rows.append(
+            {
+                "scanner_a": s1,
+                "scanner_b": s2,
+                "confluence_picks": len(overlap_df),
+                f"confluence_wr_{horizon}d": round(wr, 1),
+                f"confluence_avg_{horizon}d": round(avg, 2),
+                "best_individual_wr": round(best_individual, 1),
+                "wr_lift": round(lift, 1),
+            }
+        )
 
     if not rows:
         return pd.DataFrame()
@@ -122,10 +123,17 @@ def analyze(picks_path: str, horizon: int, min_picks: int) -> None:
     print(f"\n{'='*64}")
     print(f"  Single-scanner baseline at {horizon}d horizon")
     print(f"{'='*64}")
-    base_df = pd.DataFrame([
-        {"scanner": k, "picks": v["picks"], f"wr_{horizon}d": v["wr"], f"avg_{horizon}d": v["avg"]}
-        for k, v in sorted(baseline.items(), key=lambda x: -x[1]["wr"])
-    ])
+    base_df = pd.DataFrame(
+        [
+            {
+                "scanner": k,
+                "picks": v["picks"],
+                f"wr_{horizon}d": v["wr"],
+                f"avg_{horizon}d": v["avg"],
+            }
+            for k, v in sorted(baseline.items(), key=lambda x: -x[1]["wr"])
+        ]
+    )
     print(base_df.to_string(index=False))
 
     # Confluence pairs
@@ -143,7 +151,7 @@ def analyze(picks_path: str, horizon: int, min_picks: int) -> None:
         # Highlight pairs with positive lift
         positive_lift = pairs[pairs["wr_lift"] > 0]
         if not positive_lift.empty:
-            print(f"\n  ⭐ Pairs with positive WR lift (confluence > best individual):")
+            print("\n  ⭐ Pairs with positive WR lift (confluence > best individual):")
             for _, row in positive_lift.iterrows():
                 print(
                     f"    {row['scanner_a']} + {row['scanner_b']}: "
@@ -158,12 +166,16 @@ def main():
     parser = argparse.ArgumentParser(description="Cross-scanner confluence analysis")
     parser.add_argument("--path", default=None, help="Path to picks.csv (default: latest)")
     parser.add_argument(
-        "--horizon", type=int, default=20,
-        help="Forward return horizon in trading days (default: 20)"
+        "--horizon",
+        type=int,
+        default=20,
+        help="Forward return horizon in trading days (default: 20)",
     )
     parser.add_argument(
-        "--min-picks", type=int, default=5,
-        help="Minimum overlapping picks to report a pair (default: 5)"
+        "--min-picks",
+        type=int,
+        default=5,
+        help="Minimum overlapping picks to report a pair (default: 5)",
     )
     args = parser.parse_args()
 

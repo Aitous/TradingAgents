@@ -20,7 +20,6 @@ Output:
 
 import argparse
 import json
-import re
 import sys
 import time
 from datetime import date
@@ -38,33 +37,77 @@ except ImportError:
 
 # ── Keywords that indicate a strategy needs non-OHLCV data ──────────────────
 NON_OHLCV_KEYWORDS = [
-    "earnings", "eps", "fundamental", "balance sheet", "p/e", "pe ratio",
-    "short interest", "short selling", "short ratio",
-    "options", "implied volatility", "iv rank", "put/call",
-    "insider", "13f", "institutional",
-    "sentiment", "news", "twitter", "reddit", "social",
-    "macro", "economic", "gdp", "inflation", "fed",
-    "dividend", "yield", "payout",
-    "analyst", "rating", "upgrade",
-    "dark pool", "tape reading",
-    "crypto", "bitcoin", "forex",
+    "earnings",
+    "eps",
+    "fundamental",
+    "balance sheet",
+    "p/e",
+    "pe ratio",
+    "short interest",
+    "short selling",
+    "short ratio",
+    "options",
+    "implied volatility",
+    "iv rank",
+    "put/call",
+    "insider",
+    "13f",
+    "institutional",
+    "sentiment",
+    "news",
+    "twitter",
+    "reddit",
+    "social",
+    "macro",
+    "economic",
+    "gdp",
+    "inflation",
+    "fed",
+    "dividend",
+    "yield",
+    "payout",
+    "analyst",
+    "rating",
+    "upgrade",
+    "dark pool",
+    "tape reading",
+    "crypto",
+    "bitcoin",
+    "forex",
 ]
 
 # ── Already implemented scanners (do-not-duplicate) ─────────────────────────
 EXISTING_SCANNERS = {
-    "rsi_oversold", "high_52w_breakout", "minervini", "technical_breakout",
-    "atr_compression", "obv_divergence", "volume_dry_up",
-    "earnings_beat", "earnings_calendar", "insider_buying", "options_flow",
-    "short_squeeze", "dark_pool_flow", "analyst_upgrades",
-    "volume_accumulation", "market_movers", "sector_rotation",
+    "rsi_oversold",
+    "high_52w_breakout",
+    "minervini",
+    "technical_breakout",
+    "atr_compression",
+    "obv_divergence",
+    "volume_dry_up",
+    "earnings_beat",
+    "earnings_calendar",
+    "insider_buying",
+    "options_flow",
+    "short_squeeze",
+    "dark_pool_flow",
+    "analyst_upgrades",
+    "volume_accumulation",
+    "market_movers",
+    "sector_rotation",
 }
 
 # ── Strategies known to be already researched/discarded ─────────────────────
 DISCARDED = {
-    "nr7 breakout", "bollinger squeeze", "consecutive down days",
-    "pullback in uptrend", "adx trend inception",
-    "selling climax reversal", "macd histogram reversal",
-    "gap fill", "gap up continuation",
+    "nr7 breakout",
+    "bollinger squeeze",
+    "consecutive down days",
+    "pullback in uptrend",
+    "adx trend inception",
+    "selling climax reversal",
+    "macd histogram reversal",
+    "gap fill",
+    "gap up continuation",
 }
 
 
@@ -108,7 +151,10 @@ def is_ohlcv_compatible(strategy: dict) -> tuple[bool, str]:
     text = f"{name} {desc} {' '.join(instruments)} {' '.join(factors)}"
 
     # Must be equity-based
-    if any(kw in text for kw in ["forex", "currency", "fx", "bitcoin", "crypto", "commodity", "futures", "bond"]):
+    if any(
+        kw in text
+        for kw in ["forex", "currency", "fx", "bitcoin", "crypto", "commodity", "futures", "bond"]
+    ):
         if "equity" not in text and "stock" not in text:
             return False, "non-equity instrument"
 
@@ -161,17 +207,17 @@ def extract_sharpe(strategy: dict) -> float | None:
 
 def format_markdown(strategies: list[dict], min_sharpe: float, top: int) -> str:
     lines = [
-        f"# QuantPedia Strategy Backlog",
-        f"",
+        "# QuantPedia Strategy Backlog",
+        "",
         f"**Generated:** {date.today().isoformat()}  ",
         f"**Filters:** OHLCV-compatible, equity, not already covered, Sharpe ≥ {min_sharpe}  ",
-        f"**Source:** quantpedia.com/api/strategies/",
-        f"",
-        f"Use this as the research backlog for `/research-and-backtest` runs.  ",
-        f"Strategies are sorted by Sharpe ratio (highest first).",
-        f"",
-        f"---",
-        f"",
+        "**Source:** quantpedia.com/api/strategies/",
+        "",
+        "Use this as the research backlog for `/research-and-backtest` runs.  ",
+        "Strategies are sorted by Sharpe ratio (highest first).",
+        "",
+        "---",
+        "",
     ]
 
     if not strategies:
@@ -189,13 +235,13 @@ def format_markdown(strategies: list[dict], min_sharpe: float, top: int) -> str:
 
         lines += [
             f"### {i}. {s.get('name', 'Unknown')}",
-            f"",
+            "",
             f"**Sharpe:** {sharpe_str}  **Annual Return:** {ar_str}  **Holding Period:** {holding}",
-            f"",
+            "",
             f"{(s.get('description') or '')[:300].strip()}{'...' if len(s.get('description') or '') > 300 else ''}",
-            f"",
+            "",
             f"**Source:** {url}",
-            f"",
+            "",
         ]
 
     return "\n".join(lines)
@@ -204,20 +250,21 @@ def format_markdown(strategies: list[dict], min_sharpe: float, top: int) -> str:
 def main():
     parser = argparse.ArgumentParser(description="Fetch QuantPedia OHLCV strategy backlog")
     parser.add_argument(
-        "--output", default="docs/iterations/research/quantpedia_backlog.md",
-        help="Output markdown file (default: docs/iterations/research/quantpedia_backlog.md)"
+        "--output",
+        default="docs/iterations/research/quantpedia_backlog.md",
+        help="Output markdown file (default: docs/iterations/research/quantpedia_backlog.md)",
     )
     parser.add_argument(
-        "--min-sharpe", type=float, default=0.3,
-        help="Minimum Sharpe ratio filter (default: 0.3)"
+        "--min-sharpe", type=float, default=0.3, help="Minimum Sharpe ratio filter (default: 0.3)"
     )
     parser.add_argument(
-        "--top", type=int, default=30,
-        help="Number of strategies to include in output (default: 30)"
+        "--top",
+        type=int,
+        default=30,
+        help="Number of strategies to include in output (default: 30)",
     )
     parser.add_argument(
-        "--json", action="store_true",
-        help="Also dump raw filtered strategies to a .json file"
+        "--json", action="store_true", help="Also dump raw filtered strategies to a .json file"
     )
     args = parser.parse_args()
 
@@ -238,7 +285,9 @@ def main():
             continue
         sharpe = extract_sharpe(s)
         if sharpe is not None and sharpe < args.min_sharpe:
-            skip_counts[f"sharpe < {args.min_sharpe}"] = skip_counts.get(f"sharpe < {args.min_sharpe}", 0) + 1
+            skip_counts[f"sharpe < {args.min_sharpe}"] = (
+                skip_counts.get(f"sharpe < {args.min_sharpe}", 0) + 1
+            )
             continue
         compatible.append(s)
 
