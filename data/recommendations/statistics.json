@@ -1,5 +1,5 @@
 {
-  "total_recommendations": 684,
+  "total_recommendations": 690,
   "by_strategy": {
     "momentum": {
       "count": 136,
@@ -32,7 +32,7 @@
       "win_rate_30d": 31.2
     },
     "insider_buying": {
-      "count": 190,
+      "count": 191,
       "wins_1d": 69,
       "losses_1d": 108,
       "wins_7d": 84,
@@ -47,7 +47,7 @@
       "win_rate_30d": 44.2
     },
     "options_flow": {
-      "count": 98,
+      "count": 100,
       "wins_1d": 33,
       "losses_1d": 62,
       "wins_7d": 44,
@@ -107,7 +107,7 @@
       "win_rate_30d": 33.3
     },
     "short_squeeze": {
-      "count": 19,
+      "count": 21,
       "wins_1d": 5,
       "losses_1d": 7,
       "wins_7d": 6,
@@ -260,7 +260,7 @@
       "avg_return_30d": 0
     },
     "volatility_contraction_breakout": {
-      "count": 5,
+      "count": 6,
       "wins_1d": 3,
       "losses_1d": 1,
       "wins_7d": 0,
