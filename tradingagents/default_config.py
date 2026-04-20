@@ -190,10 +190,10 @@ DEFAULT_CONFIG = {
                 "limit": 10,
                 "max_tickers": 0,
                 "lookback_period": "1y",
-                "min_gap_pct": 2.0,          # Minimum gap size (%) above prior close
-                "min_vol_multiple": 1.5,      # Minimum volume vs 20d average
+                "min_gap_pct": 2.0,  # Minimum gap size (%) above prior close
+                "min_vol_multiple": 1.5,  # Minimum volume vs 20d average
                 "max_intraday_reversal_pct": 3.0,  # Max reversal from open (gap must hold)
-                "require_above_sma200": False, # If True, reject gaps below 200d SMA
+                "require_above_sma200": False,  # If True, reject gaps below 200d SMA
                 "sma200_days": 200,
                 "vol_avg_days": 20,
             },

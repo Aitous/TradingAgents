@@ -410,6 +410,95 @@ class DiscoveryAnalytics:
 
         return "\n".join(lines) if lines else "No historical data available yet"
 
+    def save_scanner_picks(
+        self,
+        pipeline_candidates: Dict[str, List[Dict[str, Any]]],
+        trade_date: str,
+        scanner_version: str = "unknown",
+    ):
+        """Persist raw scanner picks (attribution only, no prices) after scanner_node.
+
+        One row per (ticker, scanner) pair. Prices are backfilled later by
+        track_recommendation_performance.py using the OHLCV cache.
+        """
+        picks_dir = self.data_dir / "scanner_picks"
+        picks_dir.mkdir(parents=True, exist_ok=True)
+        output_file = picks_dir / f"{trade_date}.json"
+
+        rows = []
+        for scanner_name, candidates in pipeline_candidates.items():
+            for cand in candidates:
+                ticker = cand.get("ticker")
+                if not ticker:
+                    continue
+                rows.append(
+                    {
+                        "ticker": ticker,
+                        "scanner": scanner_name,
+                        "pipeline": cand.get("pipeline", "unknown"),
+                        "priority": cand.get("priority", "UNKNOWN"),
+                        "strategy": cand.get("strategy", "unknown"),
+                        "context": cand.get("context", ""),
+                        "scanner_version": scanner_version,
+                        "discovery_date": trade_date,
+                        # Filled by tracker: entry_price, return_1d/7d/30d, win_*, was_ranked, rank_position
+                    }
+                )
+
+        # Idempotent: overwrite same-day file on re-run
+        tmp = output_file.with_suffix(".tmp")
+        with open(tmp, "w") as f:
+            json.dump({"date": trade_date, "picks": rows}, f, indent=2)
+        tmp.rename(output_file)
+        logger.info(f"📋 Saved {len(rows)} raw scanner picks to {output_file}")
+
+    def save_discovery_events(
+        self,
+        candidates: List[Dict[str, Any]],
+        ranked_tickers: List[str],
+        trade_date: str,
+    ):
+        """Persist the ranker's input set (one row per unique ticker).
+
+        Captures what the ranker *saw*, enabling ranker-lift measurement:
+        compare avg forward return of all events vs. only ranked ones.
+        """
+        events_dir = self.data_dir / "discovery_events"
+        events_dir.mkdir(parents=True, exist_ok=True)
+        output_file = events_dir / f"{trade_date}.json"
+
+        ranked_set = set(ranked_tickers)
+        rows = []
+        for cand in candidates:
+            ticker = cand.get("ticker")
+            if not ticker:
+                continue
+            rank_position = None
+            if ticker in ranked_set:
+                try:
+                    rank_position = ranked_tickers.index(ticker) + 1
+                except ValueError:
+                    pass
+            rows.append(
+                {
+                    "ticker": ticker,
+                    "all_sources": cand.get("all_sources", [cand.get("source", "unknown")]),
+                    "confluence_count": len(cand.get("all_sources", [cand.get("source")])),
+                    "priority": cand.get("priority", "UNKNOWN"),
+                    "strategy": cand.get("strategy", "unknown"),
+                    "discovery_date": trade_date,
+                    "was_ranked": ticker in ranked_set,
+                    "rank_position": rank_position,
+                    # Filled by tracker: entry_price, return_1d/7d/30d, win_*, market_return_*
+                }
+            )
+
+        tmp = output_file.with_suffix(".tmp")
+        with open(tmp, "w") as f:
+            json.dump({"date": trade_date, "events": rows}, f, indent=2)
+        tmp.rename(output_file)
+        logger.info(f"📋 Saved {len(rows)} discovery events to {output_file}")
+
     def save_recommendations(self, rankings: list, trade_date: str, llm_provider: str):
         """Save recommendations for tracking."""
         from tradingagents.dataflows.y_finance import get_stock_price
@@ -433,6 +522,7 @@ class DiscoveryAnalytics:
                     "company_name": rank.get("company_name", ticker),
                     "description": rank.get("description", ""),
                     "strategy_match": rank.get("strategy_match"),
+                    "scanners": rank.get("scanners", []),
                     "pipeline": rank.get("strategy_match", rank.get("strategy", "unknown")),
                     "final_score": rank.get("final_score"),
                     "confidence": rank.get("confidence"),

@@ -410,11 +410,19 @@ IMPORTANT: Return ONLY valid JSON. No markdown wrapping, no commentary outside t
                 f"{[r['ticker'] for r in final_ranking_list]}"
             )
 
+            # Augment final_ranking_list with scanner attribution from original candidates
+            # (all_sources = real scanner names; LLM only returns strategy_match which is inferred)
+            for rank_dict in final_ranking_list:
+                ticker = rank_dict["ticker"].upper()
+                meta = next((c for c in candidates if c.get("ticker") == ticker), {})
+                rank_dict["scanners"] = meta.get(
+                    "all_sources", [meta.get("source", "unknown")]
+                )
+
             # Update state with opportunities for downstream use (deep dive)
             state_opportunities = []
             for rank_dict in final_ranking_list:
                 ticker = rank_dict["ticker"].upper()
-                # Find original candidate metadata
                 meta = next((c for c in candidates if c.get("ticker") == ticker), {})
 
                 state_opportunities.append(

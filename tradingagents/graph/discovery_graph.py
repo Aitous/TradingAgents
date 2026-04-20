@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import datetime
 from threading import Lock
 from typing import TYPE_CHECKING, Any, Dict, List
 
@@ -383,6 +384,17 @@ class DiscoveryGraph:
 
         logger.info(f"Found {len(final_candidates)} unique candidates from all scanners.")
 
+        # Build scanner-keyed dict for raw pick persistence (one entry per scanner, not pipeline)
+        scanner_candidates: Dict[str, List[Dict[str, Any]]] = {}
+        for candidates in pipeline_candidates.values():
+            for cand in candidates:
+                sname = cand.get("source", "unknown")
+                scanner_candidates.setdefault(sname, []).append(cand)
+
+        # Persist raw scanner picks (attribution only — prices backfilled by tracker)
+        trade_date = state.get("trade_date", datetime.now().strftime("%Y-%m-%d"))
+        self.analytics.save_scanner_picks(scanner_candidates, trade_date)
+
         # Return state with tickers, candidate_metadata, tool_logs, status
         return {
             "tickers": final_tickers,
@@ -637,6 +649,12 @@ class DiscoveryGraph:
             self.analytics.save_recommendations(
                 rankings_list, trade_date, self.config.get("llm_provider", "unknown")
             )
+
+        # Save discovery events (ranker input set) for lift measurement
+        candidates = final_state.get("candidate_metadata", [])
+        ranked_tickers = [r.get("ticker") for r in rankings_list if r.get("ticker")]
+        if candidates:
+            self.analytics.save_discovery_events(candidates, ranked_tickers, trade_date)
 
         return final_state
 

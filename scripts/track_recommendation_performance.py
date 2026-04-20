@@ -237,6 +237,145 @@ def print_statistics(stats: Dict[str, Any]):
                 )
 
 
+def _get_price_on_date(ticker: str, date_str: str) -> float | None:
+    """Fetch closing price for ticker on a given date using yfinance."""
+    try:
+        return _parse_price(get_stock_price(ticker, curr_date=date_str))
+    except Exception:
+        return None
+
+
+def _compute_forward_returns(entry_price: float, discovery_date: str, ticker: str, today: str) -> dict:
+    """Compute 1d/7d/30d return milestones that are now reachable."""
+    from datetime import datetime as dt
+    results = {}
+    discovery_dt = dt.strptime(discovery_date, "%Y-%m-%d")
+    today_dt = dt.strptime(today, "%Y-%m-%d")
+    days_held = (today_dt - discovery_dt).days
+
+    for horizon, key in [(1, "1d"), (7, "7d"), (30, "30d")]:
+        if days_held >= horizon:
+            target = (discovery_dt + __import__("datetime").timedelta(days=horizon)).strftime("%Y-%m-%d")
+            price = _get_price_on_date(ticker, target)
+            if price:
+                ret = round((price - entry_price) / entry_price * 100, 2)
+                results[f"return_{key}"] = ret
+                results[f"win_{key}"] = ret > 0
+    return results
+
+
+def _load_json_file(path: str) -> dict:
+    try:
+        with open(path) as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+
+def _save_json_atomic(path: str, data: dict):
+    tmp = path + ".tmp"
+    with open(tmp, "w") as f:
+        json.dump(data, f, indent=2)
+    os.rename(tmp, path)
+
+
+def update_scanner_picks():
+    """Backfill entry prices and forward returns for raw scanner picks."""
+    today = datetime.now().strftime("%Y-%m-%d")
+    picks_dir = "data/scanner_picks"
+    if not os.path.exists(picks_dir):
+        return
+
+    for filepath in sorted(glob.glob(os.path.join(picks_dir, "*.json"))):
+        data = _load_json_file(filepath)
+        picks = data.get("picks", [])
+        changed = False
+
+        for pick in picks:
+            if pick.get("status") == "closed":
+                continue
+            ticker = pick.get("ticker")
+            discovery_date = pick.get("discovery_date")
+            if not ticker or not discovery_date:
+                continue
+
+            # Backfill entry price (T+1 open approximated as T+1 close)
+            if not pick.get("entry_price"):
+                from datetime import datetime as dt, timedelta
+                t1 = (dt.strptime(discovery_date, "%Y-%m-%d") + timedelta(days=1)).strftime("%Y-%m-%d")
+                price = _get_price_on_date(ticker, t1)
+                if price:
+                    pick["entry_price"] = price
+                    changed = True
+
+            entry_price = pick.get("entry_price")
+            if not entry_price:
+                continue
+
+            milestones = _compute_forward_returns(entry_price, discovery_date, ticker, today)
+            for k, v in milestones.items():
+                if k not in pick:
+                    pick[k] = v
+                    changed = True
+
+            if pick.get("return_30d") is not None and pick.get("status") != "closed":
+                pick["status"] = "closed"
+                changed = True
+
+        if changed:
+            data["picks"] = picks
+            _save_json_atomic(filepath, data)
+            logger.info(f"Updated scanner picks: {filepath}")
+
+
+def update_discovery_events():
+    """Backfill entry prices and forward returns for discovery events (ranker input set)."""
+    today = datetime.now().strftime("%Y-%m-%d")
+    events_dir = "data/discovery_events"
+    if not os.path.exists(events_dir):
+        return
+
+    for filepath in sorted(glob.glob(os.path.join(events_dir, "*.json"))):
+        data = _load_json_file(filepath)
+        events = data.get("events", [])
+        changed = False
+
+        for event in events:
+            if event.get("status") == "closed":
+                continue
+            ticker = event.get("ticker")
+            discovery_date = event.get("discovery_date")
+            if not ticker or not discovery_date:
+                continue
+
+            if not event.get("entry_price"):
+                from datetime import datetime as dt, timedelta
+                t1 = (dt.strptime(discovery_date, "%Y-%m-%d") + timedelta(days=1)).strftime("%Y-%m-%d")
+                price = _get_price_on_date(ticker, t1)
+                if price:
+                    event["entry_price"] = price
+                    changed = True
+
+            entry_price = event.get("entry_price")
+            if not entry_price:
+                continue
+
+            milestones = _compute_forward_returns(entry_price, discovery_date, ticker, today)
+            for k, v in milestones.items():
+                if k not in event:
+                    event[k] = v
+                    changed = True
+
+            if event.get("return_30d") is not None and event.get("status") != "closed":
+                event["status"] = "closed"
+                changed = True
+
+        if changed:
+            data["events"] = events
+            _save_json_atomic(filepath, data)
+            logger.info(f"Updated discovery events: {filepath}")
+
+
 def main():
     """Main execution function."""
     logger.info("🔍 Loading historical recommendations...")
@@ -267,6 +406,12 @@ def main():
     with open(stats_path, "w") as f:
         json.dump(stats, f, indent=2)
     logger.info(f"💾 Saved statistics to {stats_path}")
+
+    logger.info("\n📋 Updating raw scanner picks...")
+    update_scanner_picks()
+
+    logger.info("\n📋 Updating discovery events (ranker input set)...")
+    update_discovery_events()
 
     logger.info("\n✅ Performance tracking complete!")
 
