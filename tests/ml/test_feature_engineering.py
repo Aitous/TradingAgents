@@ -43,3 +43,11 @@ def test_regime_placeholders_are_nan():
     features = compute_features_bulk(df)
     for col in ("spy_return_20d", "vix_level", "vix_ma20_ratio", "stock_vs_spy_20d", "sector_return_20d"):
         assert features[col].isna().all(), f"{col} should be all NaN (placeholder)"
+
+def test_ema14_ratio_near_zero_for_flat_price():
+    # For a constant-price series, EMA14 == close, so ratio should be ~0
+    df = _make_ohlcv(n=250)
+    df["Open"] = df["Close"] = df["High"] = df["Low"] = 100.0
+    features = compute_features_bulk(df)
+    vals = features["ema14_ratio"].dropna()
+    assert (vals.abs() < 1e-10).all(), "ema14_ratio should be ~0 for flat price series"

@@ -67,7 +67,7 @@ MIN_HISTORY_ROWS = 210
 
 
 def compute_features_bulk(ohlcv: pd.DataFrame, market_cap: Optional[float] = None) -> pd.DataFrame:
-    """Compute all 20 ML features for every row in an OHLCV DataFrame.
+    """Compute all 37 ML features for every row in an OHLCV DataFrame.
 
     Args:
         ohlcv: DataFrame with columns: Date, Open, High, Low, Close, Volume.
