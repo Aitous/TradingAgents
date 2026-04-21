@@ -1,6 +1,6 @@
 {
-  "last_updated": "2026-04-21 14:16:35",
-  "total_recommendations": 690,
+  "last_updated": "2026-04-21 14:21:40",
+  "total_recommendations": 694,
   "recommendations_by_date": {
     "2026-02-10": [
       {
@@ -15852,6 +15852,80 @@
         "last_updated": "2026-04-21",
         "return_1d": -2.83,
         "win_1d": false
+      }
+    ],
+    "2026-04-21": [
+      {
+        "ticker": "FIVE",
+        "rank": 1,
+        "company_name": "Five Below",
+        "description": "Five Below is a retailer that recently reported a significant surge in comparable store sales and confirmed 2026 expansion plans.",
+        "strategy_match": "high_52w_breakout",
+        "scanners": [
+          "high_52w_breakout"
+        ],
+        "pipeline": "high_52w_breakout",
+        "final_score": 88,
+        "confidence": 8,
+        "risk_level": "moderate",
+        "reason": "Five Below hit an all-time high following a fundamental edge driven by a 15.4% surge in Q4 comparable store sales and confirmation of 2026 expansion plans. The timing is urgent as the stock just broke out to $247.71 on 1.6x average volume, definitively clearing its prior 52-week high of $238.40. The risk/reward profile is highly supportive with the RSI at a bullish 67.4 (leaving room to run before becoming overbought) alongside a MACD bullish crossover. The primary risk is a short-term momentum fade following its +12.6% 5-day run, making the $233.82 level (1.5x ATR) a crucial stop-loss.",
+        "entry_price": null,
+        "discovery_date": "2026-04-21",
+        "status": "open"
+      },
+      {
+        "ticker": "STLD",
+        "rank": 2,
+        "company_name": "Steel Dynamics",
+        "description": "Steel Dynamics is a steel producer that recently reported record quarterly shipments and increased its dividend.",
+        "strategy_match": "high_52w_breakout",
+        "scanners": [
+          "high_52w_breakout"
+        ],
+        "pipeline": "high_52w_breakout",
+        "final_score": 85,
+        "confidence": 8,
+        "risk_level": "moderate",
+        "reason": "Steel Dynamics benefits from a clear fundamental catalyst after reporting record Q1 steel shipments of 3.6 million tons, $5.2 billion in net sales, and a 6% quarterly dividend increase. The breakout is immediately actionable as the price surged +4.5% intraday to form a new 52-week high on 2.0x average volume. The setup offers an attractive risk/reward ratio with the uptrend supported by rising OBV (+21.6M) and price action sitting comfortably above the 50 SMA of $186.07. However, with the RSI currently at 74.4, momentum is nearing overbought territory, necessitating tight risk management with a stop-loss near $200.05.",
+        "entry_price": null,
+        "discovery_date": "2026-04-21",
+        "status": "open"
+      },
+      {
+        "ticker": "CB",
+        "rank": 3,
+        "company_name": "Chubb",
+        "description": "Chubb is an insurance provider that generates substantial revenue through net premiums and investment income.",
+        "strategy_match": "volume_divergence",
+        "scanners": [
+          "obv_divergence"
+        ],
+        "pipeline": "volume_divergence",
+        "final_score": 78,
+        "confidence": 7,
+        "risk_level": "low",
+        "reason": "Chubb's catalyst is rooted in strong Q1 earnings, driven by an 8.6% rise in net premiums to $14.85 billion and $1.84 billion in adjusted net investment income. The timing is supported by a powerful OBV divergence, revealing that +21.6% of average volume was stealthily accumulated over the 20 days prior to the earnings release. The setup offers an excellent low-volatility entry (ATR of just 1.7% of price) with the stock remaining constructively above its 50 SMA ($328.78) alongside a bullish MACD crossover. The main risk to the thesis is a sluggish continuation, as indicated by a weak ADX of 8.8, which could limit immediate upside velocity.",
+        "entry_price": null,
+        "discovery_date": "2026-04-21",
+        "status": "open"
+      },
+      {
+        "ticker": "WAL",
+        "rank": 4,
+        "company_name": "Western Alliance",
+        "description": "Western Alliance is a banking institution characterized by stable deposits and strong capital ratios.",
+        "strategy_match": "earnings_play",
+        "scanners": [
+          "earnings_calendar"
+        ],
+        "pipeline": "earnings_play",
+        "final_score": 68,
+        "confidence": 6,
+        "risk_level": "moderate",
+        "reason": "Western Alliance cleared its Q1 earnings binary risk by meeting EPS estimates at $1.94 and proving deposit stability with a strong 11% CET1 capital ratio. Now is the time to act as the stock absorbs the event while holding a bullish technical structure, trading 8.7% above its 20-period VWAP with rising OBV (+7.4M). The risk/reward profile is favorable, offering well-defined downside support near the 50 SMA ($78.63) while institutional buying maintains the uptrend. The primary risk is that simply meeting expectations may not ignite a massive short-term squeeze, capping potential upside compared to a blowout beat.",
+        "entry_price": null,
+        "discovery_date": "2026-04-21",
+        "status": "open"
       }
     ]
   }
