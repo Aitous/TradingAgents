@@ -51,3 +51,42 @@ def test_ema14_ratio_near_zero_for_flat_price():
     features = compute_features_bulk(df)
     vals = features["ema14_ratio"].dropna()
     assert (vals.abs() < 1e-10).all(), "ema14_ratio should be ~0 for flat price series"
+
+
+from tradingagents.ml.feature_engineering import SECTOR_ETF_MAP, _DEFAULT_SECTOR_ETF
+
+def test_sector_etf_map_known_tickers():
+    assert SECTOR_ETF_MAP.get("AAPL") == "XLK"
+    assert SECTOR_ETF_MAP.get("JPM") == "XLF"
+    assert SECTOR_ETF_MAP.get("XOM") == "XLE"
+
+def test_sector_etf_map_default_for_unknown():
+    assert _DEFAULT_SECTOR_ETF == "SPY"
+    # Unknown ticker should not be in map (caller uses get() with default)
+    assert SECTOR_ETF_MAP.get("UNKNOWN_TICKER", _DEFAULT_SECTOR_ETF) == "SPY"
+
+def test_fetch_market_context_returns_correct_columns():
+    # Test the return structure without network (mock yfinance)
+    from unittest.mock import patch
+    import pandas as pd
+    import numpy as np
+    from tradingagents.ml.feature_engineering import fetch_market_context
+
+    dates = pd.date_range("2024-01-01", periods=50, freq="B")
+    spy = pd.Series(100 + np.cumsum(np.random.randn(50) * 0.5), index=dates)
+    vix = pd.Series(15 + np.random.randn(50), index=dates)
+
+    # Build MultiIndex DataFrame like yfinance returns
+    cols = pd.MultiIndex.from_tuples([("Close", "SPY"), ("Close", "^VIX")])
+    mock_df = pd.DataFrame(
+        np.column_stack([spy.values, vix.values]),
+        index=dates,
+        columns=cols,
+    )
+
+    with patch("yfinance.download", return_value=mock_df):
+        ctx = fetch_market_context("2024-01-01", "2024-03-01")
+
+    assert "spy_return_20d" in ctx.columns
+    assert "vix_level" in ctx.columns
+    assert "vix_ma20_ratio" in ctx.columns
