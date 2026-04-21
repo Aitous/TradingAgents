@@ -150,7 +150,7 @@ def fetch_market_context(start: str, end: str) -> pd.DataFrame:
     vix_ma20 = vix_close.rolling(20).mean()
     ctx["vix_ma20_ratio"] = vix_close / vix_ma20.replace(0, np.nan)
 
-    return ctx.dropna(how="all")
+    return ctx.dropna(how="any")
 
 
 def fetch_sector_context(sector_etf: str, start: str, end: str) -> pd.Series:

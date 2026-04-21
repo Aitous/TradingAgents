@@ -90,3 +90,35 @@ def test_fetch_market_context_returns_correct_columns():
     assert "spy_return_20d" in ctx.columns
     assert "vix_level" in ctx.columns
     assert "vix_ma20_ratio" in ctx.columns
+
+
+def test_fetch_market_context_flat_column_fallback():
+    # Simulates yfinance returning flat columns (single-ticker collapse edge case)
+    from unittest.mock import patch, call
+    import pandas as pd
+    import numpy as np
+    from tradingagents.ml.feature_engineering import fetch_market_context
+
+    dates = pd.date_range("2024-01-01", periods=50, freq="B")
+    spy_vals = 100 + np.cumsum(np.random.default_rng(1).standard_normal(50) * 0.5)
+    vix_vals = 15 + np.random.default_rng(2).standard_normal(50)
+
+    # First call returns flat columns (triggers fallback)
+    flat_df = pd.DataFrame({"Close": spy_vals, "Open": spy_vals}, index=dates)
+    spy_df = pd.DataFrame({"Close": spy_vals}, index=dates)
+    vix_df = pd.DataFrame({"Close": vix_vals}, index=dates)
+
+    def side_effect(*args, **kwargs):
+        tickers = args[0] if args else kwargs.get("tickers", [])
+        if isinstance(tickers, list):
+            return flat_df  # batch call → flat (triggers fallback)
+        if tickers == "SPY":
+            return spy_df
+        return vix_df
+
+    with patch("yfinance.download", side_effect=side_effect):
+        ctx = fetch_market_context("2024-01-01", "2024-03-01")
+
+    assert "spy_return_20d" in ctx.columns
+    assert "vix_level" in ctx.columns
+    assert len(ctx) > 0
