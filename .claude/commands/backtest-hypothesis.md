@@ -106,12 +106,20 @@ Assign a `priority` score (1–9) using these factors:
 | Supported by external research (arXiv, Alpha Architect, etc.) | +1 |
 | Contradictory evidence or unclear direction | −2 |
 
-### 3b-iii: Determine min_days
+### 3b-iii: Determine min_days and early-stop threshold
 
 Set `min_days` based on the scanner's typical picks-per-day rate:
 - ≥2 picks/day → 10 days
 - 1 pick/day → 14 days
 - <1 pick/day → 21 days
+
+**Early-stop kill condition:** The `/iterate` run checks this automatically. If after reaching 50% of `min_days` the hypothesis branch has accumulated ≥10 picks AND its WR is ≥10 percentage points *worse* than the baseline scanner's WR over the same period, the hypothesis is killed early:
+1. Close the draft PR with label "hypothesis-killed-early"
+2. Set `status: "killed-early"` in active.json with `conclusion: "Early stop: WR X% vs baseline Y% after N picks at 50% of min_days"`
+3. Revert the code change on the hypothesis branch (or close without merging)
+4. Note in the baseline scanner domain file: `- [ ] Hypothesis <id> killed early — change made things worse`
+
+This prevents bad experiments from occupying a runner slot for their full duration. When in doubt, kill early and free the slot for a better hypothesis.
 
 ### 3b-iv: Create the branch and implement the code change
 

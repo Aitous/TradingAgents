@@ -117,9 +117,34 @@ WebSearch("site:systematicinvestor.wordpress.com <topic>")
 WebSearch("<topic> strategy \"annualized return\" \"win rate\" site:clenow.com OR site:following-the-trend.com")
 ```
 
-### 2e. Strategy Discovery Rules
+### 2e. Under-Trafficked High-Signal Sources (Check These Before Shortlisting)
 
-After searching 8+ sources, apply these filters before shortlisting:
+These sources are less frequently cited but produce higher-quality, less-arbitraged signals:
+
+```
+# EPChan — practitioner-level mean reversion and stat arb, specific parameters
+WebFetch("https://r.jina.ai/https://epchan.blogspot.com/search?q=<topic>")
+WebSearch("site:epchan.com <topic> strategy")
+
+# Newfound Research — regime-aware strategies with full backtest statistics
+WebFetch("https://r.jina.ai/https://www.thinknewfound.com/?s=<topic>")
+
+# Flirting with Models (Corey Hoffstein) — factor investing, momentum, trend
+WebFetch("https://r.jina.ai/https://blog.thinknewfound.com/?s=<topic>")
+WebSearch("site:blog.thinknewfound.com <topic>")
+
+# Robot Wealth — ML + systematic trading with reproducible code
+WebFetch("https://r.jina.ai/https://robotwealth.com/?s=<topic>")
+
+# Composer / QuantConnect leaderboard — live-traded strategies filtered by Sharpe
+WebSearch("site:quantconnect.com <topic> strategy sharpe")
+# For QuantConnect results with Sharpe > 0.5 and >1 year live:
+WebFetch("https://r.jina.ai/https://www.quantconnect.com/terminal/#open/<id>")
+```
+
+### 2f. Strategy Discovery Rules
+
+After searching 8+ sources (including at least 2 from Section 2e), apply these filters before shortlisting:
 
 **OHLCV-only gate** — only strategies computable from Open/High/Low/Close/Volume + derived indicators (SMA, EMA, RSI, MACD, Bollinger Bands, ATR, OBV, ADX, Stochastic, VWAP approximation). Skip anything requiring earnings, short interest, options, fundamental data, or external APIs.
 
@@ -133,6 +158,10 @@ After searching 8+ sources, apply these filters before shortlisting:
 - Previously researched in `docs/iterations/research/` batch files
 
 **Novelty preference** — when two candidates have similar expected edge, prefer the one that's less obvious (e.g. a volume-price pattern from a 2019 arXiv paper over a basic moving average crossover). The pipeline already has basic momentum covered.
+
+**Independent cross-source confirmation** — a candidate qualifies for shortlisting only if the edge is reported by ≥2 *independent* sources (different authors, different venues). Two blog posts that both cite the same underlying paper count as ONE source. Two papers from the same research group count as ONE source. Explicitly note the distinct sources for each shortlisted candidate.
+
+**Regime-conditional dimension** — every shortlisted candidate must specify in which market regime the signal is expected to work: trending / ranging / high-volatility / low-volatility / any. If the source doesn't specify, make an educated assessment and note it. Strategies with no regime specification tend to fail when the regime shifts; this annotation forces awareness before implementation.
 
 **State + trigger structure check** — before shortlisting, ask: does this strategy have TWO independent components: (1) a persistent market state (e.g. uptrend, low volatility, compressed range) AND (2) a rare confirmation trigger (e.g. breakout bar, volume surge, pocket pivot)? Strategies with this dual-condition structure have empirically outperformed single-condition signals in this pipeline (`atr_compression`: ATR regime + price breakout; `volume_dry_up`: VDU state + pocket pivot bar). Single-condition signals tend to fire too frequently and fail the selectivity gate. If a candidate lacks this structure, either design one in during implementation or downgrade its priority.
 
@@ -382,14 +411,36 @@ Zero API calls — uses only the local parquet cache.
 
 ## Step 6: Classify Each Scanner
 
-Read `results/backtest/<date>/summary.json`. Apply this decision matrix:
+Read `results/backtest/<date>/summary.json`.
+
+**Pre-classification: cost adjustment**
+
+Before applying the decision matrix, subtract realistic transaction costs from `avg_return_20d`:
+- Round-trip commission + spread: **10 bps** (0.10%)
+- Slippage (entry + exit): **5 bps** (0.05%)
+- Total cost deduction: **15 bps** (0.15%)
+
+`adj_return_20d = avg_return_20d - 0.15%`
+
+Use `adj_return_20d` (not raw `avg_return_20d`) in the decision matrix below.
+
+**Pre-classification: regime-split check**
+
+Split the walk-forward period into 4 equal sub-periods. Count how many sub-periods have `win_rate_20d ≥ 50%`:
+- ≥ 3 of 4 sub-periods pass → **regime-stable** (no annotation needed)
+- 2 of 4 sub-periods pass → annotate "**regime-dependent** — monitor for regime changes"
+- ≤ 1 of 4 sub-periods pass → **DISCARD** regardless of overall WR (strategy only worked in one market regime)
+
+This check runs before the decision matrix. A scanner that fails the regime-split goes straight to DISCARD even if its overall WR passes.
+
+**Decision matrix** (apply after both pre-classification checks):
 
 | Condition | Decision |
 |-----------|----------|
-| `win_rate_20d ≥ 55%` AND `avg_return_20d ≥ 3.0%` | **PROMOTE** |
-| `win_rate_20d ≥ 52%` AND `avg_return_20d ≥ 2.0%` | **PROMOTE-MARGINAL** |
+| `win_rate_20d ≥ 55%` AND `adj_return_20d ≥ 2.85%` | **PROMOTE** |
+| `win_rate_20d ≥ 52%` AND `adj_return_20d ≥ 1.85%` | **PROMOTE-MARGINAL** |
 | `win_rate_20d ≥ 50%` AND `picks < 30` | **INCONCLUSIVE** |
-| `win_rate_20d < 50%` | **DISCARD** |
+| `win_rate_20d < 50%` OR regime-split ≤ 1/4 | **DISCARD** |
 | `picks == 0` after threshold relaxation | **DISCARD-CALIBRATION** |
 
 Secondary check: if 20d passes but `win_rate_5d < 45%`, annotate "slow signal — hold ≥10d" but still promote.
@@ -417,10 +468,20 @@ Write `docs/iterations/scanners/<name>.md`:
 | Total picks | N |
 | Unique tickers | N |
 | Win rate 1d / 5d / 10d / 20d | X% / X% / X% / X% |
-| Avg return 20d | X% |
+| Avg return 20d (raw) | X% |
+| Avg return 20d (cost-adj, -15bps) | X% |
 | Median return 20d | X% |
+| Regime stability | X/4 sub-periods ≥ 50% WR |
+| Top sector concentration | X% in <sector> |
+| Avg picks/day | X |
+| Est. concurrent positions (picks/day × 20d hold) | X |
 
 **Classification:** PROMOTE | PROMOTE-MARGINAL
+**Regime:** trending / ranging / high-vol / low-vol / any
+
+> **Capacity note:** At X picks/day with 20d avg hold = ~X concurrent positions. At 1% position sizing this strategy saturates a portfolio at ~$Xk AUM. Monitor if pick rate increases significantly.
+
+> **Sector note:** <mention if top sector >40% of picks — flag as sector-risk or confirm sector-agnostic>
 
 ## Current Understanding
 <2–3 sentences on what the backtest reveals>

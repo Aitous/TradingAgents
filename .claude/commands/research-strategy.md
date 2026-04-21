@@ -1,6 +1,10 @@
 # /research-strategy
 
-Research new trading strategies or scanner improvements, evaluate fit against
+> **Scope:** This skill is for **non-OHLCV data sources only** — options flow, earnings catalysts, institutional filings (13F), short interest, sentiment (social/news), dark pool data, and macroeconomic signals. For OHLCV-based strategy research (momentum, mean reversion, volatility, volume patterns), use `/research-and-backtest` instead — it includes a walk-forward backtest, cost modeling, and a regime-split promotion gate that this skill lacks.
+>
+> Using `/research-strategy` for OHLCV strategies risks shipping scanners with no backtest validation. When in doubt, use `/research-and-backtest`.
+
+Research new trading strategies or scanner improvements using non-OHLCV data sources, evaluate fit against
 the existing pipeline, write findings to `docs/iterations/research/`, and
 implement the top-ranked finding as a new scanner if it qualifies.
 

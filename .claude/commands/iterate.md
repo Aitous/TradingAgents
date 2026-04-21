@@ -85,6 +85,20 @@ Update `docs/iterations/LEARNINGS.md` (write to disk):
 - Set **Last analyzed run** to today's date
 - Update the one-line summary and Last Updated date for each scanner you touched
 
+## Step 4.5: Scanner Autopsy Check
+
+Before writing learnings, check the health of every scanner that appeared in the analysis.
+
+For each scanner with ≥30 mature recommendations, compute its win rate over those picks (using `status` field as the outcome signal). Apply this autopsy rule:
+
+| Condition | Action |
+|-----------|--------|
+| WR < 45% across last 30 mature picks | **Revise-or-retire**: mark the scanner domain file with `> ⚠️ AUTOPSY TRIGGERED: WR < 45% over 30 picks. Must revise thresholds or disable within 14 days.` — add a 14-day clock entry to `docs/iterations/LEARNINGS.md` |
+| WR 45–50% across last 30 mature picks | Flag as "underperforming" in domain file. Register a hypothesis to investigate root cause. |
+| WR > 50% | Healthy — no action required. |
+
+If an autopsy was triggered on a prior run (look for the ⚠️ marker in domain files) and the 14-day deadline has passed without a code change, disable the scanner by setting `"enabled": False` in `tradingagents/default_config.py` and note the retirement in `LEARNINGS.md`.
+
 ## Step 5: Implement Code Changes
 
 Based on your learnings, identify concrete improvements. For each improvement:
@@ -110,13 +124,33 @@ For each change, the subagent prompt should include:
 
 Implement all changes before proceeding to Step 5.5.
 
-## Step 5.5: Register Hypotheses for Actionable Learnings
+## Step 5.5: Cross-Scanner Confluence Analysis
 
-After implementing direct code changes, check if any learnings require
-**forward-testing validation** — i.e. a code change was made but its effect
-can only be confirmed with live data over multiple days.
+Before registering hypotheses, check for scanner combinations that predicted outperformance together. This surfaces emergent signal from scanners that look mediocre individually.
 
-For each such learning (max 1 new hypothesis per run to avoid flooding the queue):
+For any ticker that appeared in picks from 2+ scanners within a 3-day window:
+1. Group by scanner pair (e.g. `rsi_oversold` + `volume_dry_up`).
+2. Compare avg outcome for tickers flagged by both vs. tickers flagged by either alone.
+3. If a combination shows ≥5 pts lift in WR over either scanner alone (minimum 5 shared picks), note it in both scanner domain files as a **Confluence Signal** and add to `LEARNINGS.md`:
+   ```
+   | <scanner_a> + <scanner_b> | Confluence: WR lift +Xpts vs. individual (N picks) |
+   ```
+
+If no combinations pass the threshold, note "No confluence lift found this run" in `LEARNINGS.md` and move on.
+
+## Step 5.6: Register Hypotheses for Actionable Learnings
+
+After implementing direct code changes, this step is **mandatory** — every `/iterate` run must register ≥1 hypothesis unless the active.json `max_active` cap is already fully occupied by implementation hypotheses.
+
+Check if any learnings require **forward-testing validation** — i.e. a code change was made but its effect can only be confirmed with live data over multiple days.
+
+If no code change hypothesis exists, derive one from the worst-performing scanner or an unresolved pending hypothesis in any domain file. You must register something — "no learnings require testing" is not an acceptable outcome unless active.json is already at `max_active` implementation slots.
+
+**What changed my mind this run:** Before adding the hypothesis to active.json, write one sentence at the bottom of the `LEARNINGS.md` update in the format:
+> `What changed this run: <statement> — e.g. "Revised belief that rsi_oversold is weak: it performs well in ranging markets but poorly in trending ones."`
+If nothing changed, write: `What changed this run: No belief update — observations consistent with prior understanding.`
+
+For each such learning (one minimum per run, max 3 to avoid flooding the queue):
 
 1. Read `docs/iterations/hypotheses/active.json`.
 2. Skip if a hypothesis for this scanner+change already exists (status: running or pending).
