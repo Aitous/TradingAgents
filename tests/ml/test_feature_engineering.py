@@ -122,3 +122,61 @@ def test_fetch_market_context_flat_column_fallback():
     assert "spy_return_20d" in ctx.columns
     assert "vix_level" in ctx.columns
     assert len(ctx) > 0
+
+
+# --- apply_triple_barrier_labels tests ---
+
+from tradingagents.ml.feature_engineering import apply_triple_barrier_labels
+
+def _make_synthetic_prices(sequence):
+    """Build a close price Series from a list of floats."""
+    dates = pd.date_range("2023-01-01", periods=len(sequence), freq="B")
+    return pd.Series(sequence, index=dates, dtype=float)
+
+
+def test_binary_labels_win_case():
+    # Entry at 100, upper barrier at 105 (+5%), lower at 97 (-3%), 20d window
+    # Day 5 price = 106 → hits upper → WIN=1
+    prices = [100.0] + [101.0] * 4 + [106.0] + [100.0] * 20
+    close = _make_synthetic_prices(prices)
+    labels = apply_triple_barrier_labels(close, profit_target=0.05, stop_loss=0.03,
+                                          max_holding_days=20, binary=True)
+    assert labels.iloc[0] == 1.0, "Should be WIN (1)"
+
+
+def test_binary_labels_loss_mapped_to_zero():
+    # Day 3 price = 96 → hits lower barrier (-4%) → LOSS → in binary mode = 0
+    prices = [100.0, 100.0, 100.0, 96.0] + [100.0] * 20
+    close = _make_synthetic_prices(prices)
+    labels = apply_triple_barrier_labels(close, profit_target=0.05, stop_loss=0.03,
+                                          max_holding_days=20, binary=True)
+    assert labels.iloc[0] == 0.0, "LOSS should map to NOT-WIN (0) in binary mode"
+
+
+def test_binary_labels_timeout_is_zero():
+    # Price drifts +2% but never hits +5% or -3% in 5 days → TIMEOUT → 0
+    prices = [100.0, 101.0, 101.5, 102.0, 102.5, 102.0] + [100.0] * 5
+    close = _make_synthetic_prices(prices)
+    labels = apply_triple_barrier_labels(close, profit_target=0.05, stop_loss=0.03,
+                                          max_holding_days=5, binary=True)
+    assert labels.iloc[0] == 0.0, "Partial gain (timeout) should be NOT-WIN (0)"
+
+
+def test_triclass_labels_loss_is_minus_one():
+    # Same setup as loss test but binary=False → should be -1
+    prices = [100.0, 100.0, 100.0, 96.0] + [100.0] * 20
+    close = _make_synthetic_prices(prices)
+    labels = apply_triple_barrier_labels(close, profit_target=0.05, stop_loss=0.03,
+                                          max_holding_days=20, binary=False)
+    assert labels.iloc[0] == -1.0, "LOSS should be -1 in 3-class mode"
+
+
+def test_binary_only_zero_and_one():
+    import numpy as np
+    rng = np.random.default_rng(99)
+    prices = 100 + np.cumsum(rng.standard_normal(150) * 0.5)
+    close = _make_synthetic_prices(list(prices))
+    labels = apply_triple_barrier_labels(close, profit_target=0.05, stop_loss=0.03,
+                                          max_holding_days=20, binary=True)
+    unique = set(labels.dropna().unique())
+    assert unique.issubset({0.0, 1.0}), f"Binary labels should only be 0/1, got {unique}"

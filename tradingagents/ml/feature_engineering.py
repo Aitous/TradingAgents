@@ -436,22 +436,27 @@ def apply_triple_barrier_labels(
     profit_target: float = 0.05,
     stop_loss: float = 0.03,
     max_holding_days: int = 7,
+    binary: bool = False,
 ) -> pd.Series:
     """Apply triple-barrier labeling to a series of close prices.
 
     For each day, looks forward up to `max_holding_days` trading days:
       +1 (WIN):     Price hits +profit_target first
-      -1 (LOSS):    Price hits -stop_loss first
-       0 (TIMEOUT): Neither barrier hit within the window
+      -1 (LOSS):    Price hits -stop_loss first (only when binary=False)
+       0 (TIMEOUT or NOT-WIN): Neither barrier hit, or stop hit when binary=True
+
+    When binary=True, TIMEOUT and LOSS are both mapped to 0 (NOT-WIN),
+    producing a clean WIN=1 / NOT-WIN=0 binary classification target.
 
     Args:
         close_prices: Series of daily close prices, indexed by date.
         profit_target: Upside target as fraction (0.05 = 5%).
         stop_loss: Downside limit as fraction (0.03 = 3%).
         max_holding_days: Maximum forward-looking trading days.
+        binary: If True, collapse LOSS and TIMEOUT into NOT-WIN=0.
 
     Returns:
-        Series of labels (+1, -1, 0) aligned with close_prices index.
+        Series of labels aligned with close_prices index.
         Last `max_holding_days` rows will be NaN (can't look forward).
     """
     prices = close_prices.values
@@ -463,14 +468,14 @@ def apply_triple_barrier_labels(
         upper = entry * (1 + profit_target)
         lower = entry * (1 - stop_loss)
 
-        label = 0  # default: timeout
+        label = 0  # default: timeout / not-win
         for j in range(1, max_holding_days + 1):
             future_price = prices[i + j]
             if future_price >= upper:
                 label = 1  # hit profit target
                 break
             elif future_price <= lower:
-                label = -1  # hit stop loss
+                label = -1 if not binary else 0  # stop loss
                 break
 
         labels[i] = label
