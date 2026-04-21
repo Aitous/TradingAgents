@@ -1,19 +1,19 @@
 # Learnings Index
 
-**Last analyzed run:** 2026-04-17
+**Last analyzed run:** 2026-04-20
 
 | Domain | File | Last Updated | One-line Summary |
 |--------|------|--------------|-----------------|
 | options_flow | scanners/options_flow.md | 2026-04-12 | Premium filter confirmed applied; CSCO cross-scanner confluence detected; 45.1% 7d win rate (94 recs) |
 | insider_buying | scanners/insider_buying.md | 2026-04-17 | suppress_days raised 2→3 (FUL 3-day gap missed); 47.7% 7d / 41.6% 30d post-staleness-filter improvement |
 | minervini | scanners/minervini.md | 2026-04-17 | 100% win rate still holds (n=3 measured, 15 total); +7.19% avg 7d; AVGO persistence Apr 10-11; AA score=92 Apr 12 |
-| analyst_upgrades | scanners/analyst_upgrades.md | 2026-04-17 | 7d win rate improved 50% → 55.9%, avg_return_7d now +0.18%; first positive avg return at any horizon |
+| analyst_upgrades | scanners/analyst_upgrades.md | 2026-04-20 | 55.9% 7d, +0.18% avg; NI (AI infrastructure re-rating) and PLD (buyback+FFO beat) strong Apr 18 picks |
 | earnings_calendar | scanners/earnings_calendar.md | 2026-04-17 | 7d win rate 47.6% (was 37.7%); likely market-recovery effect; still lowest-scoring scanner |
-| pipeline/scoring | pipeline/scoring.md | 2026-04-17 | 664 total recs, 44.4% overall 7d; staleness filter gap fixed (suppress_days 2→3) |
-| early_accumulation | scanners/early_accumulation.md | 2026-04-12 | Sub-threshold (score=60); no catalyst → structurally score-capped by ranker |
+| pipeline/scoring | pipeline/scoring.md | 2026-04-20 | 684 total recs, 44.4% overall 7d; volatility_contraction_breakout 50% of output on Apr 19 |
+| early_accumulation | scanners/early_accumulation.md | 2026-04-20 | 43.8% 7d, -7.6% avg 30d (worst); sustained-accumulation filter (high_vol_days_5d≥2) added to code |
 | social_dd | scanners/social_dd.md | 2026-04-14 | 57.1% 30d win rate (+1.41% avg 30d, n=26) — only scanner positive at 30d; eval horizon mismatch persists |
 | volume_accumulation | scanners/volume_accumulation.md | — | No data yet |
-| short_squeeze | scanners/short_squeeze.md | 2026-04-14 | 60% 7d win rate (n=11), best 7d performer; BUT 30% 30d — short-term signal only, degrades at 30d |
+| short_squeeze | scanners/short_squeeze.md | 2026-04-20 | 60% 7d, +2.15% avg (n=19); ACHC 4-day persistence pre-earnings is valid urgency, not staleness |
 | earnings_beat | scanners/earnings_beat.md | 2026-04-14 | New PEAD scanner: recent EPS beats ≥5% surprise; 15% annualized academic edge; distinct from earnings_calendar |
 
 ## Discarded Signals
@@ -50,6 +50,9 @@ Exact signal names that have been researched, implemented, and backtested — do
 | Gap-Up Continuation (Breakaway Gap) | research/2026-04-17-gap-up-continuation.md | 2026-04-17 | PMC study: 54-60% win rate, +0.30-0.58% avg daily gain; large gaps (>0.4%) fill <50% of time; implemented as gap_up_continuation scanner using OHLCV cache |
 | Mean Reversion Batch | research/2026-04-17-mean-reversion-batch.md | 2026-04-17 | 3 candidates backtested: all DISCARDED — bollinger_band_mean_reversion DISCARD-CALIBRATION (0 picks, bull-market window), inside_days_breakout DISCARD-CALIBRATION (2 picks, too rare), gap_down_reversal DISCARD (WR-20d=16%, avg=-5.72%, all picks in March 2026 correction) |
 | atr_compression | scanners/atr_compression.md | 2026-04-16 | Walk-forward backtest: WR-20d=59.3%, avg-20d=+1.88%, 738 picks — PROMOTE-MARGINAL |
+| volatility_contraction_breakout | scanners/volatility_contraction_breakout.md | 2026-04-20 | 5 appearances in 2 days; 4/8 picks on Apr 19; specific theses; PSTG cross-day persistence observed; no outcome data yet |
+| high_52w_breakout | scanners/high_52w_breakout.md | 2026-04-20 | First live appearances: JBHT (score=92, EPS+27%) and BK (score=80, buyback) on Apr 18; no outcome data yet |
+| volume_divergence | scanners/volume_divergence.md | 2026-04-20 | obv_divergence scanner; EA (OBV+24.2%, ATR $0.98) on Apr 18; 60% 1d win rate (n=5), no 7d data yet |
 | reddit_dd | scanners/reddit_dd.md | — | No data yet |
 | reddit_trending | scanners/reddit_trending.md | — | No data yet |
 | semantic_news | scanners/semantic_news.md | — | No data yet |

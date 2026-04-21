@@ -24,6 +24,15 @@ an upgrade is a historically strong setup.
 - The 7d improvement is meaningful: now above coin-flip with positive avg return. Previously marginal (50%, negative avg).
 - Confidence: medium (39 samples; 7d improvement may partly reflect April market recovery, not scanner quality alone)
 
+### 2026-04-18 — Fast-loop (2026-04-18 run)
+- 2 appearances: NI (rank 3, score=85, conf=8) and PLD (rank 4, score=83, conf=8).
+- NI: Google data center energy agreement catalyst — fundamentally reprices utility as AI infrastructure play. Specific, mechanistic catalyst with clear price event (+1.24% intraday, MACD bullish crossover). Excellent quality.
+- PLD: Core FFO beat + record 64M sq ft leasing + $10B buyback. RSI=74.6 noted as slight extension. Thesis is specific but RSI proximity to overbought reduces near-term upside.
+- Both picks are high-quality with concrete catalysts. Calibration: NI 8.5/8 (Δ=0.5), PLD 8.3/8 (Δ=0.3) — good.
+- Overall statistics (n=44): 55.9% 7d win rate, avg_return_7d=+0.18%. Scanner continues its upward trend.
+- Pattern confirmed: NI is a strong example of analyst_upgrade's thesis — a non-obvious re-rating event (utility → AI play) that institutional algos may not fully price within 1-3 days.
+- Confidence: medium (Apr 18 picks look high quality; outcomes will confirm or deny)
+
 ## Pending Hypotheses
 - [ ] Does analyst tier (BB firm vs boutique) predict upgrade quality?
 - [ ] Does short interest >20% combined with an upgrade produce outsized moves?

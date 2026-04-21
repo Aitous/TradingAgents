@@ -36,6 +36,13 @@ alone and is the primary confluence hypothesis under test.
 - Pattern: WTI and TSLA appeared in Apr 3-9 mature recs as short_squeeze plays — high SI but no clear catalyst timing to trigger covering.
 - Confidence: medium (n=11 still small; 30d degradation pattern is consistent with academic squeeze literature)
 
+### 2026-04-18/19 — Fast-loop (multi-day ACHC persistence)
+- ACHC (Acadia Healthcare) appeared in 4 consecutive trading days: Apr 14 (score=85), Apr 15 (score=85), Apr 18 (score=88), Apr 19 (score=80). Short interest unchanged at 37.1% / 7.1 DTC.
+- This is NOT staleness — it is valid urgency escalation. Earnings on Apr 29 (11 days from Apr 18). The squeeze pressure is building as the binary event approaches. High SI × approaching earnings = two converging catalysts.
+- Score increased Apr 18 (88 vs 85) likely reflecting price moved higher (+22.5% above 50-day SMA) and OBV rising (85.8M). Apr 19 score dropped to 80 — consistent with diminishing upside room as price extends.
+- Pattern: cross-day persistence for squeeze candidates near earnings is a signal of urgency, not staleness. Contrasts with insider_buying staleness where the thesis doesn't change.
+- Confidence: medium (pattern is logical; whether it predicts better outcomes vs single-appearance squeeze plays is untested)
+
 ## Pending Hypotheses
 - [ ] Does short_squeeze + options_flow confluence produce better 7d win rate than either scanner alone?
 - [ ] Does short_squeeze + earnings_calendar (SI>20%) produce better outcomes than earnings alone? (See earnings_calendar.md pending hypothesis)

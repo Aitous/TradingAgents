@@ -15,6 +15,13 @@ No evidence yet on whether confidence or score is a better predictor of outcomes
 - insider_buying has 136 recs — only 1 below score 60 (score 50-59 bucket had 1 entry). Raising to 65 would trim ~15% of insider picks (the 20 in 60-69 range).
 - Confidence: medium
 
+### 2026-04-20 — New scanner output volume + cross-day persistence
+- volatility_contraction_breakout produced 4 of 8 final picks (50%) on Apr 19. This is not a noise concern per se (all theses are specific), but it indicates the ATR ≤ 0.75 threshold may be catching many stocks simultaneously during low-volatility regimes.
+- PSTG appeared in both Apr 18 and Apr 19 from volatility_contraction_breakout with the same ATR ratio (0.74). Identical thesis, same score range (76-77). This is the cross-day persistence issue — unlike short_squeeze where urgency builds, a breakout that didn't trigger overnight is either still valid (slow resolution) or a stale detection.
+- Overall statistics (n=684): 39.3% 1d win rate, 44.4% 7d win rate. No change from prior iteration.
+- early_accumulation confirmed poor: 43.8% 7d, -7.6% avg 30d. Code change implemented to raise bar.
+- Confidence: high (statistics stable; new scanner observations noted for tracking)
+
 ## Pending Hypotheses
 - [ ] Is confidence a better outcome predictor than final_score?
 - [x] Does score threshold >65 improve hit rate? → Evidence supports it: low-score candidates are weak (social sentiment without data, speculative momentum). Implement threshold raise to 65.

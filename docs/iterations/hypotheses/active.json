@@ -68,6 +68,24 @@
       ],
       "baseline_scanner": "minervini",
       "conclusion": null
+    },
+    {
+      "id": "early_accumulation-sustained-filter",
+      "scanner": "volume_accumulation",
+      "title": "Require 2+ days of elevated volume for early_accumulation signals",
+      "description": "Hypothesis: volume_accumulation scanner with single-day spike detection produces 43.8% 7d win rate and -7.6% avg 30d return (n=19) — below coin-flip and worst 30d performer. Requiring high_vol_days_5d >= 2 (at least 2 of last 5 days above 1.5x avg volume) filters out distributional selling disguised as accumulation. Genuine institutional accumulation leaves a multi-day footprint; single-day spikes do not.",
+      "branch": null,
+      "pr_number": null,
+      "status": "pending",
+      "priority": 7,
+      "expected_impact": "medium",
+      "hypothesis_type": "implementation",
+      "created_at": "2026-04-20",
+      "min_days": 14,
+      "days_elapsed": 0,
+      "picks_log": [],
+      "baseline_scanner": "volume_accumulation",
+      "conclusion": null
     }
   ]
 }
