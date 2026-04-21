@@ -166,6 +166,15 @@ DEFAULT_CONFIG = {
                 "lookback_days": 7,  # Days to look back for insider purchases
                 "min_transaction_value": 25000,  # Minimum transaction value ($) to consider
             },
+            "insider_cluster_buying": {
+                "enabled": True,
+                "pipeline": "fundamental",
+                "limit": 10,
+                "cluster_window_days": 14,  # Rolling window to aggregate insider purchases
+                "min_insiders": 3,  # Minimum distinct insiders required for a cluster signal
+                "executive_titles": ["ceo", "cfo", "chairman", "president"],
+                "director_titles": ["director", "officer"],
+            },
             "options_flow": {
                 "enabled": True,
                 "pipeline": "edge",

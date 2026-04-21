@@ -53,6 +53,7 @@ Exact signal names that have been researched, implemented, and backtested — do
 | volatility_contraction_breakout | scanners/volatility_contraction_breakout.md | 2026-04-20 | 5 appearances in 2 days; 4/8 picks on Apr 19; specific theses; PSTG cross-day persistence observed; no outcome data yet |
 | high_52w_breakout | scanners/high_52w_breakout.md | 2026-04-20 | First live appearances: JBHT (score=92, EPS+27%) and BK (score=80, buyback) on Apr 18; no outcome data yet |
 | volume_divergence | scanners/volume_divergence.md | 2026-04-20 | obv_divergence scanner; EA (OBV+24.2%, ATR $0.98) on Apr 18; 60% 1d win rate (n=5), no 7d data yet |
+| Insider Cluster Buying Detection | research/2026-04-21-insider-cluster-buying.md | 2026-04-21 | 3+ insiders buying within 14d = 2.1-3.8% abnormal returns (2× vs solo buys); Alldredge 2019, Kang 2018 backing; implement as insider_cluster_buying scanner |
 | reddit_dd | scanners/reddit_dd.md | — | No data yet |
 | reddit_trending | scanners/reddit_trending.md | — | No data yet |
 | semantic_news | scanners/semantic_news.md | — | No data yet |
