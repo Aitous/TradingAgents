@@ -66,6 +66,9 @@ class MLSignalScanner(BaseScanner):
             logger.warning("No ML model available — skipping ml_signal scanner")
             return []
 
+        # Pre-fetch SPY/VIX market context once for all predictions this run
+        predictor.load_market_context()
+
         # 2. Batch-fetch OHLCV data (single HTTP request)
         ohlcv_by_ticker = self._fetch_universe_ohlcv()
         if not ohlcv_by_ticker:
