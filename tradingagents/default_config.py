@@ -278,7 +278,7 @@ DEFAULT_CONFIG = {
                 "enabled": True,
                 "pipeline": "momentum",
                 "limit": 15,
-                "min_win_prob": 0.35,  # Minimum P(WIN) to surface as candidate
+                "min_win_prob": 0.50,  # Minimum P(WIN) to surface as candidate
                 "lookback_period": "6mo",  # OHLCV history to fetch (needs ~130 trading days)
                 # ticker_universe: explicit list overrides the shared universe (data/tickers.txt)
                 "fetch_market_cap": False,  # Skip for speed (1 NaN out of 30 features)

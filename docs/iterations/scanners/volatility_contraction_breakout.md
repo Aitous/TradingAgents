@@ -28,6 +28,13 @@ No mature outcome data yet (count=5 in statistics.json, no 7d wins/losses measur
 - Pattern: In low-volatility regimes, many stocks simultaneously satisfy ATR < 0.75 → scanner produces high-volume output. Need to watch whether this continues.
 - Confidence: low (no outcome data; pattern observed over 2 runs only)
 
+### 2026-04-20 — Fast-loop (4 runs)
+- Appeared across all 4 runs: CORT (run_10, score=72), MTSI (run_14, score=68), Q (run_15_19, score=68), FDS (run_15_27, score=81), PWR (run_15_27, score=80).
+- FDS (ratio=0.67) and PWR (ratio=0.70) in run_15_27: specific ATR ratios, appropriate scores (80-81) — quality setups.
+- Q (score=68, conf=6) and MTSI (score=68, conf=7): both borderline — consistent with prior observation that score ≥ 75 separates quality from marginal.
+- Scanner pick rate is healthy (1-2 per run), not dominating like ml_signal. Volume pattern has stabilized.
+- Confidence: medium
+
 ## Pending Hypotheses
 - [ ] Does PSTG cross-day persistence (same ATR ratio day 2) represent a valid continuing signal or stale detection? Check if breakout price was actually broken on Apr 18.
 - [ ] Does LSCC-style "already-rallied 15%+ before detection" produce worse outcomes than stocks at compression inflection point?

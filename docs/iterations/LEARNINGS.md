@@ -1,11 +1,13 @@
 # Learnings Index
 
-**Last analyzed run:** 2026-04-20
+**Last analyzed run:** 2026-04-21
+
+> **What changed this run:** Revised belief about momentum scanner — it's not simply a bad scanner to disable; its 39.7% standalone WR masks a 74.3% confluence WR with insider_buying (n=35), suggesting it should be kept as a confirming signal rather than retired. Also confirmed ml_signal config bug (0.35 threshold) as the root cause of sub-coin-flip picks dominating rankings.
 
 | Domain | File | Last Updated | One-line Summary |
 |--------|------|--------------|-----------------|
 | options_flow | scanners/options_flow.md | 2026-04-12 | Premium filter confirmed applied; CSCO cross-scanner confluence detected; 45.1% 7d win rate (94 recs) |
-| insider_buying | scanners/insider_buying.md | 2026-04-17 | suppress_days raised 2→3 (FUL 3-day gap missed); 47.7% 7d / 41.6% 30d post-staleness-filter improvement |
+| insider_buying | scanners/insider_buying.md | 2026-04-21 | Same-day multi-run staleness: NKE appeared 3/4 runs, BORR in 2/4; suppress_days only blocks cross-day, not intraday |
 | minervini | scanners/minervini.md | 2026-04-17 | 100% win rate still holds (n=3 measured, 15 total); +7.19% avg 7d; AVGO persistence Apr 10-11; AA score=92 Apr 12 |
 | analyst_upgrades | scanners/analyst_upgrades.md | 2026-04-20 | 55.9% 7d, +0.18% avg; NI (AI infrastructure re-rating) and PLD (buyback+FFO beat) strong Apr 18 picks |
 | earnings_calendar | scanners/earnings_calendar.md | 2026-04-17 | 7d win rate 47.6% (was 37.7%); likely market-recovery effect; still lowest-scoring scanner |
@@ -15,6 +17,19 @@
 | volume_accumulation | scanners/volume_accumulation.md | — | No data yet |
 | short_squeeze | scanners/short_squeeze.md | 2026-04-20 | 60% 7d, +2.15% avg (n=19); ACHC 4-day persistence pre-earnings is valid urgency, not staleness |
 | earnings_beat | scanners/earnings_beat.md | 2026-04-14 | New PEAD scanner: recent EPS beats ≥5% surprise; 15% annualized academic edge; distinct from earnings_calendar |
+
+## Confluence Signals
+
+| Pair | n | WR Lift | Notes |
+|------|---|---------|-------|
+| insider_buying + momentum | 35 | +26.6 pts (74.3% vs 47.7% IB alone) | Strongest confluence in pipeline; momentum as confirmer despite 39.7% standalone WR |
+| momentum + options_flow | 22 | +12.3 pts (59.1% vs 46.8% OF alone) | Significant lift; momentum confirming options flow signal |
+
+## Autopsy Clock
+
+| Scanner | Triggered | Deadline | Condition | Status |
+|---------|-----------|----------|-----------|--------|
+| momentum | 2026-04-21 | 2026-05-05 | WR-7d=39.7%, n=136 | ⚠️ Active — root cause investigation needed |
 
 ## Discarded Signals
 
@@ -50,7 +65,7 @@ Exact signal names that have been researched, implemented, and backtested — do
 | Gap-Up Continuation (Breakaway Gap) | research/2026-04-17-gap-up-continuation.md | 2026-04-17 | PMC study: 54-60% win rate, +0.30-0.58% avg daily gain; large gaps (>0.4%) fill <50% of time; implemented as gap_up_continuation scanner using OHLCV cache |
 | Mean Reversion Batch | research/2026-04-17-mean-reversion-batch.md | 2026-04-17 | 3 candidates backtested: all DISCARDED — bollinger_band_mean_reversion DISCARD-CALIBRATION (0 picks, bull-market window), inside_days_breakout DISCARD-CALIBRATION (2 picks, too rare), gap_down_reversal DISCARD (WR-20d=16%, avg=-5.72%, all picks in March 2026 correction) |
 | atr_compression | scanners/atr_compression.md | 2026-04-16 | Walk-forward backtest: WR-20d=59.3%, avg-20d=+1.88%, 738 picks — PROMOTE-MARGINAL |
-| volatility_contraction_breakout | scanners/volatility_contraction_breakout.md | 2026-04-20 | 5 appearances in 2 days; 4/8 picks on Apr 19; specific theses; PSTG cross-day persistence observed; no outcome data yet |
+| volatility_contraction_breakout | scanners/volatility_contraction_breakout.md | 2026-04-21 | Present in all 4 runs Apr 20; pick rate stable (1-2/run); FDS (0.67) and PWR (0.70) quality picks; score<75 picks marginal |
 | high_52w_breakout | scanners/high_52w_breakout.md | 2026-04-20 | First live appearances: JBHT (score=92, EPS+27%) and BK (score=80, buyback) on Apr 18; no outcome data yet |
 | volume_divergence | scanners/volume_divergence.md | 2026-04-20 | obv_divergence scanner; EA (OBV+24.2%, ATR $0.98) on Apr 18; 60% 1d win rate (n=5), no 7d data yet |
 | reddit_dd | scanners/reddit_dd.md | — | No data yet |
@@ -59,4 +74,5 @@ Exact signal names that have been researched, implemented, and backtested — do
 | market_movers | scanners/market_movers.md | — | No data yet |
 | technical_breakout | scanners/technical_breakout.md | — | No data yet |
 | sector_rotation | scanners/sector_rotation.md | — | No data yet |
-| ml_signal | scanners/ml_signal.md | — | No data yet |
+| ml_signal | scanners/ml_signal.md | 2026-04-21 | min_win_prob=0.35 config override causes 44-49% (sub-coin-flip) picks to dominate runs; fix: raise to 0.50 |
+| momentum | scanners/momentum.md | 2026-04-21 | ⚠️ AUTOPSY: 39.7% WR-7d (n=136), -0.80% avg — worst large-sample performer; deadline 2026-05-05 |

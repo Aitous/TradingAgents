@@ -44,6 +44,13 @@ and included in candidate context — dropping them loses signal clarity.
 - New Apr 12 picks: FUL (score=75, staleness miss now fixed), GF (score=65, Saba Capital 10% owner $1.49M). Note: GF is an institutional activist (10% owner), not an operational insider — borderline signal quality.
 - Confidence: high (staleness gap confirmed by direct observation; fix is minimal and targeted)
 
+### 2026-04-20 — Fast-loop (same-day multi-run staleness)
+- NKE appeared in 3 of 4 runs today: run_10_59 (score=75), run_14_20 (score=82), run_15_42_19 (score=85). Same insider purchase surfaced across 3 intraday runs.
+- BORR appeared in 2 runs: run_15_42_19 (score=80) and run_15_42_27 (score=92). Same $2.79M Director Troim purchase.
+- The 3-day suppress_days window blocks cross-day repeats but NOT same-day repeats across multiple runs. When the system runs multiple discovery passes in one day, the staleness filter doesn't deduplicate within the day.
+- This is a distinct failure mode from the cross-day staleness: NKE's thesis escalated slightly (75→82→85) as the run was re-enriched, but it's still the same underlying SEC filing being re-discovered 3 times in one day.
+- Confidence: high (3/4 runs = direct observation; same filing confirmed by identical context)
+
 ## Pending Hypotheses
 - [x] Does cluster detection (2+ insiders in 14 days) outperform single-insider signals? → **Already implemented**: cluster detection assigns CRITICAL priority. Code verified at `insider_buying.py:73-74`. Cannot assess outcome vs single-insider yet (all statuses 'open').
 - [x] Does filtering out repeat appearances of the same ticker from the same scanner within 3 days improve precision? → **Implemented 2026-04-14**: staleness suppression added; expanded to 3-day window 2026-04-17 after FUL gap found.
