@@ -52,7 +52,7 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           CI: "true"
         run: |
-          claude -p "/iterate" --dangerously-skip-permissions
+          claude -p "/iterate" --dangerously-skip-permissions --model claude-haiku-4-5-20251001
 
       - name: Check for changes
         id: changes

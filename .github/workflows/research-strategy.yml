@@ -51,9 +51,9 @@ jobs:
           TOPIC: ${{ inputs.topic }}
         run: |
           if [ -n "$TOPIC" ]; then
-            claude -p "/research-strategy \"$TOPIC\"" --dangerously-skip-permissions
+            claude -p "/research-strategy \"$TOPIC\"" --dangerously-skip-permissions --model claude-haiku-4-5-20251001
           else
-            claude -p "/research-strategy" --dangerously-skip-permissions
+            claude -p "/research-strategy" --dangerously-skip-permissions --model claude-haiku-4-5-20251001
           fi
 
       - name: Check for changes
