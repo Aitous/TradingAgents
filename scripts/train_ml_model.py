@@ -39,7 +39,7 @@ from tradingagents.utils.logger import get_logger
 logger = get_logger(__name__)
 
 DATA_DIR = Path("data/ml")
-LABEL_NAMES = {-1: "LOSS", 0: "TIMEOUT", 1: "WIN"}
+LABEL_NAMES = {0: "NOT-WIN", 1: "WIN"}
 
 
 def load_dataset(path: str) -> pd.DataFrame:
@@ -57,10 +57,12 @@ def load_dataset(path: str) -> pd.DataFrame:
         raise ValueError("Missing 'date' column")
 
     # Show label distribution
-    for label, name in LABEL_NAMES.items():
+    unique_labels = sorted(df["label"].dropna().unique())
+    for label in unique_labels:
+        name = LABEL_NAMES.get(int(label), str(int(label)))
         count = (df["label"] == label).sum()
         pct = count / len(df) * 100
-        logger.info(f"  {name:>7} ({label:+d}): {count:>7} ({pct:.1f}%)")
+        logger.info(f"  {name:>8} ({int(label):+d}): {count:>7} ({pct:.1f}%)")
 
     return df
 
@@ -91,10 +93,11 @@ def time_split(
         f"  Val:   {len(val)} samples ({val['date'].min().date()} to {val['date'].max().date()})"
     )
 
-    X_train = train[FEATURE_COLUMNS].values
-    y_train = train["label"].values.astype(int)
-    X_val = val[FEATURE_COLUMNS].values
-    y_val = val["label"].values.astype(int)
+    # Return DataFrames (not numpy) so LGBMClassifier preserves feature names
+    X_train = train[FEATURE_COLUMNS]
+    y_train = train["label"].astype(int)
+    X_val = val[FEATURE_COLUMNS]
+    y_val = val["label"].astype(int)
 
     return X_train, y_train, X_val, y_val
 
@@ -133,207 +136,151 @@ def train_tabpfn(X_train, y_train, X_val, y_val):
 
 
 def train_lightgbm(X_train, y_train, X_val, y_val):
-    """Train using LightGBM (fallback when TabPFN unavailable)."""
+    """Train binary LightGBM + apply isotonic calibration on held-out val set."""
     try:
         import lightgbm as lgb
     except ImportError:
         logger.error("LightGBM not installed. Install with: pip install lightgbm")
         sys.exit(1)
 
-    logger.info("Training LightGBM classifier...")
+    from sklearn.calibration import CalibratedClassifierCV
+    from sklearn.frozen import FrozenEstimator  # sklearn ≥ 1.2
 
-    # Remap labels: {-1, 0, 1} → {0, 1, 2} for LightGBM
-    y_train_mapped = y_train + 1  # -1→0, 0→1, 1→2
-    y_val_mapped = y_val + 1
+    logger.info("Training binary LightGBM classifier...")
 
-    # Compute class weights to handle imbalanced labels
-    from collections import Counter
-
-    class_counts = Counter(y_train_mapped)
-    total = len(y_train_mapped)
-    n_classes = len(class_counts)
-    class_weight = {c: total / (n_classes * count) for c, count in class_counts.items()}
-    sample_weights = np.array([class_weight[y] for y in y_train_mapped])
-
-    train_data = lgb.Dataset(
-        X_train, label=y_train_mapped, weight=sample_weights, feature_name=FEATURE_COLUMNS
+    booster = lgb.LGBMClassifier(
+        objective="binary",
+        metric="binary_logloss",
+        n_estimators=2000,
+        learning_rate=0.01,
+        num_leaves=63,
+        max_depth=8,
+        min_child_samples=100,
+        subsample=0.7,
+        subsample_freq=1,
+        colsample_bytree=0.7,
+        reg_alpha=1.0,
+        reg_lambda=1.0,
+        min_gain_to_split=0.01,
+        verbose=-1,
+        random_state=42,
+        n_jobs=-1,
     )
-    val_data = lgb.Dataset(
-        X_val, label=y_val_mapped, feature_name=FEATURE_COLUMNS, reference=train_data
-    )
-
-    params = {
-        "objective": "multiclass",
-        "num_class": 3,
-        "metric": "multi_logloss",
-        # Lower LR + more rounds = smoother learning on noisy data
-        "learning_rate": 0.01,
-        # More capacity to find feature interactions
-        "num_leaves": 63,
-        "max_depth": 8,
-        "min_child_samples": 100,
-        # Aggressive subsampling to reduce overfitting on noise
-        "subsample": 0.7,
-        "subsample_freq": 1,
-        "colsample_bytree": 0.7,
-        # Stronger regularization for financial data
-        "reg_alpha": 1.0,
-        "reg_lambda": 1.0,
-        "min_gain_to_split": 0.01,
-        "path_smooth": 1.0,
-        "verbose": -1,
-        "seed": 42,
-    }
-
-    callbacks = [
-        lgb.log_evaluation(period=100),
-        lgb.early_stopping(stopping_rounds=100),
-    ]
-
-    booster = lgb.train(
-        params,
-        train_data,
-        num_boost_round=2000,
-        valid_sets=[val_data],
-        callbacks=callbacks,
+    booster.fit(
+        X_train,
+        y_train,
+        eval_set=[(X_val, y_val)],
+        callbacks=[
+            lgb.log_evaluation(period=100),
+            lgb.early_stopping(stopping_rounds=100),
+        ],
     )
 
-    # Wrap in sklearn-compatible interface
-    clf = LGBMWrapper(booster, y_train)
+    logger.info(f"Best iteration: {booster.best_iteration_}")
 
-    return clf, "lightgbm"
+    # Isotonic calibration (≥1000 val samples) or Platt scaling (<1000)
+    method = "isotonic" if len(X_val) >= 1000 else "sigmoid"
+    logger.info(f"Applying {method} calibration on {len(X_val)} val samples...")
+    calibrated = CalibratedClassifierCV(FrozenEstimator(booster), method=method)
+    calibrated.fit(X_val, y_val)
+
+    return calibrated, "lightgbm_binary_calibrated"
 
 
 def evaluate(model, X_val, y_val, model_type: str) -> dict:
-    """Evaluate model and return metrics dict."""
+    """Evaluate binary model and return metrics dict."""
+    from sklearn.metrics import roc_auc_score
+
     if isinstance(X_val, np.ndarray):
         X_df = pd.DataFrame(X_val, columns=FEATURE_COLUMNS)
     else:
         X_df = X_val
 
+    y_val_arr = np.array(y_val)
     y_pred = model.predict(X_df)
     probas = model.predict_proba(X_df)
 
-    accuracy = accuracy_score(y_val, y_pred)
+    # Binary model: col 1 = P(WIN)
+    win_col_idx = 1
+    win_probs_all = probas[:, win_col_idx]
+
+    accuracy = accuracy_score(y_val_arr, y_pred)
     report = classification_report(
-        y_val,
+        y_val_arr,
         y_pred,
-        target_names=["LOSS (-1)", "TIMEOUT (0)", "WIN (+1)"],
+        target_names=["NOT-WIN (0)", "WIN (+1)"],
         output_dict=True,
     )
-    cm = confusion_matrix(y_val, y_pred)
+    cm = confusion_matrix(y_val_arr, y_pred)
+    roc_auc = roc_auc_score(y_val_arr, win_probs_all)
 
-    # Win-class specific metrics
-    win_mask = y_val == 1
-    if win_mask.sum() > 0:
-        win_probs = probas[win_mask]
-        win_col_idx = list(model.classes_).index(1)
-        avg_win_prob_for_actual_wins = float(win_probs[:, win_col_idx].mean())
-    else:
-        avg_win_prob_for_actual_wins = 0.0
+    # Avg P(WIN) for actual winners
+    win_mask = y_val_arr == 1
+    avg_win_prob_for_actual_wins = float(win_probs_all[win_mask].mean()) if win_mask.sum() > 0 else 0.0
 
-    # High-confidence win precision
-    win_col_idx = list(model.classes_).index(1)
-    high_conf_mask = probas[:, win_col_idx] >= 0.6
-    if high_conf_mask.sum() > 0:
-        high_conf_precision = float((y_val[high_conf_mask] == 1).mean())
-        high_conf_count = int(high_conf_mask.sum())
-    else:
-        high_conf_precision = 0.0
-        high_conf_count = 0
+    # High-confidence win precision (threshold 0.55 — above coin flip after calibration)
+    high_conf_mask = win_probs_all >= 0.55
+    high_conf_precision = float((y_val_arr[high_conf_mask] == 1).mean()) if high_conf_mask.sum() > 0 else 0.0
+    high_conf_count = int(high_conf_mask.sum())
 
-    # Calibration analysis: do higher P(WIN) quintiles actually win more?
-    win_probs_all = probas[:, win_col_idx]
+    # Quintile calibration
     quintile_labels = pd.qcut(win_probs_all, q=5, labels=False, duplicates="drop")
     calibration = {}
     for q in sorted(set(quintile_labels)):
         mask = quintile_labels == q
         q_probs = win_probs_all[mask]
-        q_actual_win_rate = float((y_val[mask] == 1).mean())
-        q_actual_loss_rate = float((y_val[mask] == -1).mean())
         calibration[f"Q{q+1}"] = {
             "mean_predicted_win_prob": round(float(q_probs.mean()), 4),
-            "actual_win_rate": round(q_actual_win_rate, 4),
-            "actual_loss_rate": round(q_actual_loss_rate, 4),
+            "actual_win_rate": round(float((y_val_arr[mask] == 1).mean()), 4),
             "count": int(mask.sum()),
         }
 
-    # Top decile (top 10% by P(WIN)) — most actionable metric
+    # Top decile
     top_decile_threshold = np.percentile(win_probs_all, 90)
     top_decile_mask = win_probs_all >= top_decile_threshold
-    top_decile_win_rate = (
-        float((y_val[top_decile_mask] == 1).mean()) if top_decile_mask.sum() > 0 else 0.0
-    )
-    top_decile_loss_rate = (
-        float((y_val[top_decile_mask] == -1).mean()) if top_decile_mask.sum() > 0 else 0.0
-    )
+    top_decile_win_rate = float((y_val_arr[top_decile_mask] == 1).mean()) if top_decile_mask.sum() > 0 else 0.0
 
     metrics = {
         "model_type": model_type,
         "accuracy": round(accuracy, 4),
-        "per_class": {
-            k: {kk: round(vv, 4) for kk, vv in v.items()}
-            for k, v in report.items()
-            if isinstance(v, dict)
-        },
+        "roc_auc": round(roc_auc, 4),
+        "win_precision": round(report["WIN (+1)"]["precision"], 4),
+        "win_recall": round(report["WIN (+1)"]["recall"], 4),
+        "win_f1": round(report["WIN (+1)"]["f1-score"], 4),
+        "win_class_prevalence": round(float(win_mask.mean()), 4),
         "confusion_matrix": cm.tolist(),
         "avg_win_prob_for_actual_wins": round(avg_win_prob_for_actual_wins, 4),
         "high_confidence_win_precision": round(high_conf_precision, 4),
         "high_confidence_win_count": high_conf_count,
         "calibration_quintiles": calibration,
         "top_decile_win_rate": round(top_decile_win_rate, 4),
-        "top_decile_loss_rate": round(top_decile_loss_rate, 4),
         "top_decile_threshold": round(float(top_decile_threshold), 4),
         "top_decile_count": int(top_decile_mask.sum()),
-        "val_samples": len(y_val),
+        "val_samples": len(y_val_arr),
+        "training_date": pd.Timestamp.today().strftime("%Y-%m-%d"),
     }
 
     # Print summary
     logger.info(f"\n{'='*60}")
     logger.info(f"Model: {model_type}")
-    logger.info(f"Overall Accuracy: {accuracy:.1%}")
-    logger.info("\nPer-class metrics:")
-    logger.info(f"{'':>15} {'Precision':>10} {'Recall':>10} {'F1':>10} {'Support':>10}")
-    for label, name in [(-1, "LOSS"), (0, "TIMEOUT"), (1, "WIN")]:
-        key = f"{name} ({label:+d})"
-        if key in report:
-            r = report[key]
-            logger.info(
-                f"{name:>15} {r['precision']:>10.3f} {r['recall']:>10.3f} {r['f1-score']:>10.3f} {r['support']:>10.0f}"
-            )
-
-    logger.info("\nConfusion Matrix (rows=actual, cols=predicted):")
-    logger.info(f"{'':>10} {'LOSS':>8} {'TIMEOUT':>8} {'WIN':>8}")
-    for i, name in enumerate(["LOSS", "TIMEOUT", "WIN"]):
-        logger.info(f"{name:>10} {cm[i][0]:>8} {cm[i][1]:>8} {cm[i][2]:>8}")
-
-    logger.info("\nWin-class insights:")
-    logger.info(f"  Avg P(WIN) for actual winners: {avg_win_prob_for_actual_wins:.1%}")
-    logger.info(
-        f"  High-confidence (>60%) precision: {high_conf_precision:.1%} ({high_conf_count} samples)"
-    )
+    logger.info(f"Accuracy:      {accuracy:.1%}")
+    logger.info(f"ROC-AUC:       {roc_auc:.3f}")
+    logger.info(f"WIN Precision: {metrics['win_precision']:.3f}  Recall: {metrics['win_recall']:.3f}  F1: {metrics['win_f1']:.3f}")
+    logger.info(f"WIN prevalence in val: {float(win_mask.mean()):.1%}")
+    logger.info(f"\nAvg P(WIN) for actual winners: {avg_win_prob_for_actual_wins:.1%}")
+    logger.info(f"High-confidence (≥55%) precision: {high_conf_precision:.1%} ({high_conf_count} samples)")
 
     logger.info("\nCalibration (does higher P(WIN) = more actual wins?):")
-    logger.info(
-        f"{'Quintile':>10} {'Avg P(WIN)':>12} {'Actual WIN%':>12} {'Actual LOSS%':>13} {'Count':>8}"
-    )
+    logger.info(f"{'Quintile':>10} {'Avg P(WIN)':>12} {'Actual WIN%':>12} {'Count':>8}")
     for q_name, q_data in calibration.items():
         logger.info(
             f"{q_name:>10} {q_data['mean_predicted_win_prob']:>12.1%} "
-            f"{q_data['actual_win_rate']:>12.1%} {q_data['actual_loss_rate']:>13.1%} "
-            f"{q_data['count']:>8}"
+            f"{q_data['actual_win_rate']:>12.1%} {q_data['count']:>8}"
         )
 
-    logger.info("\nTop decile (top 10% by P(WIN)):")
-    logger.info(f"  Threshold: P(WIN) >= {top_decile_threshold:.1%}")
-    logger.info(
-        f"  Actual win rate: {top_decile_win_rate:.1%} ({int(top_decile_mask.sum())} samples)"
-    )
-    logger.info(f"  Actual loss rate: {top_decile_loss_rate:.1%}")
-    baseline_win = float((y_val == 1).mean())
-    logger.info(f"  Baseline win rate: {baseline_win:.1%}")
-    if baseline_win > 0:
-        logger.info(f"  Lift over baseline: {top_decile_win_rate / baseline_win:.2f}x")
+    baseline_win = float(win_mask.mean())
+    logger.info(f"\nTop decile: P(WIN) >= {top_decile_threshold:.1%}, actual WR = {top_decile_win_rate:.1%} "
+                f"({int(top_decile_mask.sum())} samples, {top_decile_win_rate/baseline_win:.2f}x lift)")
     logger.info(f"{'='*60}")
 
     return metrics
