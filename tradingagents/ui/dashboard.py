@@ -52,7 +52,7 @@ def render_sidebar():
         # Navigation
         page = st.radio(
             "Navigation",
-            options=["Overview", "Signals", "Portfolio", "Performance", "Hypotheses", "Config"],
+            options=["Overview", "Signals", "Portfolio", "Performance", "Scanners", "Hypotheses", "Config"],
             label_visibility="collapsed",
         )
 
@@ -116,6 +116,7 @@ def route_page(page):
         "Signals": pages.todays_picks,
         "Portfolio": pages.portfolio,
         "Performance": pages.performance,
+        "Scanners": pages.scanners,
         "Hypotheses": pages.hypotheses,
         "Config": pages.settings,
     }
