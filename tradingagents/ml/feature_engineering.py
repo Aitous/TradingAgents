@@ -50,6 +50,15 @@ FEATURE_COLUMNS: List[str] = [
     "macd_strength",  # MACD histogram normalized by ATR
     "return_volatility_ratio",  # Sharpe-like: return_5d / atr_pct
     "trend_momentum_score",  # combined trend + momentum z-score
+    # EMA ratio features (2) — arXiv 2501.07580: highest feature importance
+    "ema14_ratio",   # (close - EMA14) / EMA14
+    "ema14_slope",   # EMA14_today / EMA14_5d_ago - 1
+    # Market regime features (5) — filled by build/inference pipeline, NaN placeholders here
+    "spy_return_20d",
+    "vix_level",
+    "vix_ma20_ratio",
+    "stock_vs_spy_20d",
+    "sector_return_20d",
 ]
 
 # Minimum rows of OHLCV history needed before features are valid
@@ -225,6 +234,15 @@ def compute_features_bulk(ohlcv: pd.DataFrame, market_cap: Optional[float] = Non
         + features["rsi_14"].sub(50) * 0.3  # RSI centered at 50
         + features["macd_hist"] * 0.3
     )
+
+    # EMA ratio features
+    ema14 = close.ewm(span=14, adjust=False).mean()
+    features["ema14_ratio"] = (close - ema14) / ema14.replace(0, np.nan)
+    features["ema14_slope"] = ema14 / ema14.shift(5).replace(0, np.nan) - 1
+
+    # Market regime placeholders (filled externally by build/predictor pipeline)
+    for col in ("spy_return_20d", "vix_level", "vix_ma20_ratio", "stock_vs_spy_20d", "sector_return_20d"):
+        features[col] = np.nan
 
     return features[FEATURE_COLUMNS]
 
