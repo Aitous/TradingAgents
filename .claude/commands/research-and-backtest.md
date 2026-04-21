@@ -191,6 +191,13 @@ Append a row to `docs/iterations/LEARNINGS.md` under `## Research`:
 
 ## Step 4: Implement All Scanners (before running any backtest)
 
+**Model selection:** Spawn one Sonnet subagent per scanner (Agent tool,
+`model="sonnet"`) to write the scanner file, `__init__.py` import, and
+`default_config.py` entry. Pass each subagent: the full signal spec from Step
+3, the content of `rsi_oversold.py` as the canonical template, and the
+relevant `default_config.py` section. All other steps (research, classification,
+markdown, commit) run at the current model level.
+
 Read `tradingagents/dataflows/discovery/scanners/rsi_oversold.py` as the canonical template. For each shortlisted candidate, do all four sub-steps:
 
 ### 4a. Create scanner file

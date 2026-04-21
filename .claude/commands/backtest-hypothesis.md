@@ -120,7 +120,12 @@ BRANCH="hypothesis/<scanner>-<slug>"
 git checkout -b "$BRANCH"
 ```
 
-Make the minimal code change that implements the hypothesis. Read the scanner file first.
+**Model selection:** Spawn a Sonnet subagent (Agent tool, `model="sonnet"`) to
+implement the code change. Pass it: the hypothesis description, the current
+scanner file content, and the exact parameter or logic to change. The subagent
+makes the edit and returns. All surrounding steps (scoring, branch creation,
+PR, active.json updates) stay at the current model level.
+
 Only change what the hypothesis requires — do not refactor surrounding code.
 
 ```bash

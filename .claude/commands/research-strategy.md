@@ -147,6 +147,13 @@ Add an entry to `docs/iterations/LEARNINGS.md` under a `## Research` section
 
 If the finding meets the auto-implement threshold from Step 4:
 
+**Model selection:** Spawn a Sonnet subagent (Agent tool, `model="sonnet"`) to
+write the scanner file. Pass it: the full scanner spec from Step 5, the content
+of `rsi_oversold.py` as the canonical template, and the config block format
+from `default_config.py`. The subagent should write the scanner file, add the
+`__init__.py` import, and add the config entry. Research, evaluation, and
+markdown writing stay at the current model level.
+
 1. Read `tradingagents/dataflows/discovery/scanner_registry.py` to understand
    the `@SCANNER_REGISTRY.register()` registration pattern.
 2. Read an existing simple scanner for the code pattern:

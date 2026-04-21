@@ -95,10 +95,18 @@ Based on your learnings, identify concrete improvements. For each improvement:
 - "Options flow premium filter is configured but not applied" → add the check
 - "Reddit DD LLM score computed but unused" → use it for priority assignment
 
-For each change:
-1. Read the relevant scanner file to understand current implementation
-2. Make the minimal change that encodes the learning
-3. Do not refactor surrounding code — change only what the learning motivates
+**Model selection:** Spawn a Sonnet subagent for each code change using the
+Agent tool with `subagent_type="general-purpose"` and `model="sonnet"`. Pass
+it the exact file path, the learning that motivates the change, and the current
+file content. Do not implement code changes yourself at the Haiku level —
+delegate all edits to Sonnet subagents. Analysis and file writes (markdown)
+stay at the current model level.
+
+For each change, the subagent prompt should include:
+- The file to edit (full path)
+- The current implementation (paste relevant section)
+- The exact change required (one learning → one change)
+- The constraint: minimal change only, no surrounding refactoring
 
 Implement all changes before proceeding to Step 5.5.
 
