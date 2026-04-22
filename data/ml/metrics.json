@@ -1,49 +1,49 @@
 {
   "model_type": "lightgbm_binary_calibrated",
-  "accuracy": 0.6072,
-  "roc_auc": 0.5421,
-  "win_precision": 0.5296,
-  "win_recall": 0.0181,
-  "win_f1": 0.035,
+  "accuracy": 0.608,
+  "roc_auc": 0.5561,
+  "win_precision": 0.5096,
+  "win_recall": 0.1054,
+  "win_f1": 0.1747,
   "win_class_prevalence": 0.3936,
   "confusion_matrix": [
     [
-      40705,
-      429
+      38424,
+      2709
     ],
     [
-      26213,
-      483
+      23882,
+      2815
     ]
   ],
-  "avg_win_prob_for_actual_wins": 0.3977,
-  "high_confidence_win_precision": 0.5871,
-  "high_confidence_win_count": 155,
+  "avg_win_prob_for_actual_wins": 0.4005,
+  "high_confidence_win_precision": 0.5882,
+  "high_confidence_win_count": 51,
   "calibration_quintiles": {
     "Q1": {
-      "mean_predicted_win_prob": 0.332,
-      "actual_win_rate": 0.332,
-      "count": 14224
+      "mean_predicted_win_prob": 0.3185,
+      "actual_win_rate": 0.3185,
+      "count": 13653
     },
     "Q2": {
-      "mean_predicted_win_prob": 0.3748,
-      "actual_win_rate": 0.3748,
-      "count": 13163
+      "mean_predicted_win_prob": 0.3823,
+      "actual_win_rate": 0.3823,
+      "count": 18020
     },
     "Q3": {
-      "mean_predicted_win_prob": 0.4175,
-      "actual_win_rate": 0.4175,
-      "count": 30261
+      "mean_predicted_win_prob": 0.4104,
+      "actual_win_rate": 0.4104,
+      "count": 29222
     },
     "Q4": {
-      "mean_predicted_win_prob": 0.4329,
-      "actual_win_rate": 0.4329,
-      "count": 10182
+      "mean_predicted_win_prob": 0.5001,
+      "actual_win_rate": 0.5001,
+      "count": 6935
     }
   },
-  "top_decile_win_rate": 0.4329,
-  "top_decile_threshold": 0.4182,
-  "top_decile_count": 10182,
+  "top_decile_win_rate": 0.5012,
+  "top_decile_threshold": 0.4303,
+  "top_decile_count": 6839,
   "val_samples": 67830,
   "training_date": "2026-04-21"
 }

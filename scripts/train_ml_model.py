@@ -128,9 +128,12 @@ def train_tabpfn(X_train, y_train, X_val, y_val):
     try:
         clf = TabPFNClassifier()
         clf.fit(X_train_sub, y_train_sub)
+        # Smoke-test predict on a tiny slice — TabPFN OOMs at inference on CPU
+        # when train+test rows exceed ~3K due to O(n²) attention
+        clf.predict_proba(X_train_sub.iloc[:10])
         return clf, "tabpfn"
     except Exception as e:
-        logger.error(f"TabPFN training failed: {e}")
+        logger.error(f"TabPFN training/inference failed: {e}")
         logger.error("Falling back to LightGBM...")
         return train_lightgbm(X_train, y_train, X_val, y_val)
 
@@ -155,13 +158,14 @@ def train_lightgbm(X_train, y_train, X_val, y_val):
         learning_rate=0.01,
         num_leaves=63,
         max_depth=8,
-        min_child_samples=100,
+        min_child_samples=50,
         subsample=0.7,
         subsample_freq=1,
         colsample_bytree=0.7,
-        reg_alpha=1.0,
-        reg_lambda=1.0,
-        min_gain_to_split=0.01,
+        reg_alpha=0.5,
+        reg_lambda=0.5,
+        min_gain_to_split=0.005,
+        is_unbalance=True,  # up-weights minority (WIN) class automatically
         verbose=-1,
         random_state=42,
         n_jobs=-1,
@@ -197,6 +201,13 @@ def evaluate(model, X_val, y_val, model_type: str) -> dict:
         X_df = X_val
 
     y_val_arr = np.array(y_val)
+
+    # TabPFN attention is O(n²) in val set size — cap at 5K rows to stay in RAM
+    if "tabpfn" in model_type and len(X_df) > 5000:
+        logger.info(f"Subsampling val set for TabPFN evaluation: {len(X_df)} → 5000")
+        idx = np.random.RandomState(42).choice(len(X_df), 5000, replace=False)
+        X_df = X_df.iloc[idx]
+        y_val_arr = y_val_arr[idx]
     y_pred = model.predict(X_df)
     probas = model.predict_proba(X_df)
 
