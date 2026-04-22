@@ -53,7 +53,7 @@ def test_ema14_ratio_near_zero_for_flat_price():
     assert (vals.abs() < 1e-10).all(), "ema14_ratio should be ~0 for flat price series"
 
 
-from tradingagents.ml.feature_engineering import SECTOR_ETF_MAP, _DEFAULT_SECTOR_ETF
+from tradingagents.ml.feature_engineering import SECTOR_ETF_MAP, _DEFAULT_SECTOR_ETF, YFINANCE_SECTOR_TO_ETF
 
 def test_sector_etf_map_known_tickers():
     assert SECTOR_ETF_MAP.get("AAPL") == "XLK"
@@ -64,6 +64,39 @@ def test_sector_etf_map_default_for_unknown():
     assert _DEFAULT_SECTOR_ETF == "SPY"
     # Unknown ticker should not be in map (caller uses get() with default)
     assert SECTOR_ETF_MAP.get("UNKNOWN_TICKER", _DEFAULT_SECTOR_ETF) == "SPY"
+
+def test_yfinance_sector_to_etf_covers_all_spdr_sectors():
+    expected = {"XLK", "XLF", "XLV", "XLY", "XLP", "XLI", "XLE", "XLU", "XLRE", "XLB", "XLC"}
+    assert set(YFINANCE_SECTOR_TO_ETF.values()) == expected
+
+def test_get_ticker_meta_uses_static_map_first():
+    from unittest.mock import patch
+    from scripts.build_ml_dataset import get_ticker_meta
+
+    # AAPL is in SECTOR_ETF_MAP → should return XLK without consulting yfinance sector string
+    with patch("tradingagents.dataflows.y_finance.get_ticker_info", return_value={"marketCap": 3e12, "sector": "Consumer Electronics"}):
+        cap, etf = get_ticker_meta("AAPL")
+    assert etf == "XLK"
+    assert cap == 3e12
+
+def test_get_ticker_meta_falls_back_to_yfinance_sector():
+    from unittest.mock import patch
+    from scripts.build_ml_dataset import get_ticker_meta
+
+    # UNKNOWN_TICKER not in SECTOR_ETF_MAP → sector resolved from yfinance
+    with patch("tradingagents.dataflows.y_finance.get_ticker_info", return_value={"marketCap": 1e9, "sector": "Healthcare"}):
+        cap, etf = get_ticker_meta("UNKNOWN_TICKER_XYZ")
+    assert etf == "XLV"
+    assert cap == 1e9
+
+def test_get_ticker_meta_unknown_sector_uses_default():
+    from unittest.mock import patch
+    from scripts.build_ml_dataset import get_ticker_meta
+
+    with patch("tradingagents.dataflows.y_finance.get_ticker_info", return_value={}):
+        cap, etf = get_ticker_meta("UNKNOWN_TICKER_XYZ")
+    assert etf == "SPY"
+    assert cap is None
 
 def test_fetch_market_context_returns_correct_columns():
     # Test the return structure without network (mock yfinance)

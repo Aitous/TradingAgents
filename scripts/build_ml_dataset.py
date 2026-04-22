@@ -269,15 +269,30 @@ def fetch_ohlcv(ticker: str, start: str, end: str) -> pd.DataFrame:
     return df
 
 
-def get_market_cap(ticker: str) -> float | None:
-    """Get current market cap for a ticker (snapshot — used as static feature)."""
-    try:
-        import yfinance as yf
+def get_ticker_meta(ticker: str) -> tuple[float | None, str]:
+    """Return (market_cap, sector_etf) in a single yfinance info call.
 
-        info = yf.Ticker(ticker).info
-        return info.get("marketCap")
-    except Exception:
-        return None
+    Combining both lookups halves the number of HTTP requests during dataset build.
+    sector_etf falls back to _DEFAULT_SECTOR_ETF when the sector is unknown.
+    """
+    from tradingagents.ml.feature_engineering import (
+        YFINANCE_SECTOR_TO_ETF,
+        _DEFAULT_SECTOR_ETF,
+        SECTOR_ETF_MAP,
+    )
+    from tradingagents.dataflows.y_finance import get_ticker_info
+
+    info = get_ticker_info(ticker)
+    market_cap = info.get("marketCap")
+
+    # Priority: static map (curated) > yfinance sector string > default
+    if ticker in SECTOR_ETF_MAP:
+        sector_etf = SECTOR_ETF_MAP[ticker]
+    else:
+        yf_sector = info.get("sector", "")
+        sector_etf = YFINANCE_SECTOR_TO_ETF.get(yf_sector, _DEFAULT_SECTOR_ETF)
+
+    return market_cap, sector_etf
 
 
 def process_ticker(
@@ -344,10 +359,18 @@ def process_ticker(
         else:
             combined["sector_return_20d"] = np.nan
 
-        regime_cols = ["spy_return_20d", "vix_level", "vix_ma20_ratio", "stock_vs_spy_20d", "sector_return_20d"]
+        regime_cols = [
+            "spy_return_20d",
+            "vix_level",
+            "vix_ma20_ratio",
+            "stock_vs_spy_20d",
+            "sector_return_20d",
+        ]
         coverage = combined[regime_cols].notna().all(axis=1).mean()
         if coverage < 0.95 and market_ctx is not None:
-            logger.warning(f"{ticker}: regime feature coverage only {coverage:.1%} — possible index mismatch")
+            logger.warning(
+                f"{ticker}: regime feature coverage only {coverage:.1%} — possible index mismatch"
+            )
 
         combined = combined.dropna(subset=FEATURE_COLUMNS)
 
@@ -402,8 +425,6 @@ def build_dataset(
     from tradingagents.ml.feature_engineering import (
         fetch_market_context,
         fetch_sector_context,
-        SECTOR_ETF_MAP,
-        _DEFAULT_SECTOR_ETF,
     )
 
     # Pre-fetch market-wide context once for all tickers
@@ -411,23 +432,26 @@ def build_dataset(
     market_ctx = fetch_market_context(start, end)
     logger.info(f"  Market context: {len(market_ctx)} trading days")
 
-    # Pre-fetch unique sector ETFs
-    unique_etfs = set(SECTOR_ETF_MAP.get(t, _DEFAULT_SECTOR_ETF) for t in tickers)
+    # Resolve sector ETF + market cap for every ticker in one yfinance call each.
+    # get_ticker_meta() uses static SECTOR_ETF_MAP first, then falls back to
+    # yfinance info["sector"] — giving full universe coverage instead of ~100 tickers.
+    logger.info("Fetching ticker metadata (market cap + sector)...")
+    ticker_meta: dict[str, tuple] = {}
+    for ticker in tickers:
+        ticker_meta[ticker] = get_ticker_meta(ticker)
+        time.sleep(0.05)  # rate limit courtesy
+
+    # Pre-fetch sector ETF time-series for every unique ETF that was resolved
+    unique_etfs = set(meta[1] for meta in ticker_meta.values())
     sector_data: dict[str, pd.Series] = {}
     for etf in unique_etfs:
         logger.info(f"  Fetching sector ETF {etf}...")
         sector_data[etf] = fetch_sector_context(etf, start, end)
         time.sleep(0.2)
 
-    # Batch-fetch market caps
-    logger.info("Fetching market caps...")
-    market_caps = {}
-    for ticker in tickers:
-        market_caps[ticker] = get_market_cap(ticker)
-        time.sleep(0.05)  # rate limit courtesy
-
     for i, ticker in enumerate(tickers):
         logger.info(f"[{i+1}/{total}] Processing {ticker}...")
+        market_cap, sector_etf = ticker_meta.get(ticker, (None, "SPY"))
         result = process_ticker(
             ticker=ticker,
             start=start,
@@ -435,12 +459,10 @@ def build_dataset(
             profit_target=profit_target,
             stop_loss=stop_loss,
             max_holding_days=max_holding_days,
-            market_cap=market_caps.get(ticker),
+            market_cap=market_cap,
             binary=binary,
             market_ctx=market_ctx,
-            sector_series=sector_data.get(
-                SECTOR_ETF_MAP.get(ticker, _DEFAULT_SECTOR_ETF), pd.Series(dtype=float)
-            ),
+            sector_series=sector_data.get(sector_etf, pd.Series(dtype=float)),
         )
         if result is not None:
             all_data.append(result)
@@ -492,11 +514,21 @@ def main():
     parser.add_argument(
         "--stop-loss", type=float, default=0.03, help="Stop loss fraction (default: 0.03)"
     )
-    parser.add_argument("--holding-days", type=int, default=20, help="Max holding days (default: 20)")
-    parser.add_argument("--binary", action="store_true", default=True,
-                        help="Use binary labels WIN=1/NOT-WIN=0 (default: True)")
-    parser.add_argument("--no-binary", dest="binary", action="store_false",
-                        help="Use 3-class labels WIN/TIMEOUT/LOSS")
+    parser.add_argument(
+        "--holding-days", type=int, default=20, help="Max holding days (default: 20)"
+    )
+    parser.add_argument(
+        "--binary",
+        action="store_true",
+        default=True,
+        help="Use binary labels WIN=1/NOT-WIN=0 (default: True)",
+    )
+    parser.add_argument(
+        "--no-binary",
+        dest="binary",
+        action="store_false",
+        help="Use 3-class labels WIN/TIMEOUT/LOSS",
+    )
     parser.add_argument("--output", type=str, default=None, help="Output parquet path")
     args = parser.parse_args()
 

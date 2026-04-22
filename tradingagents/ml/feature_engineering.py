@@ -51,8 +51,8 @@ FEATURE_COLUMNS: List[str] = [
     "return_volatility_ratio",  # Sharpe-like: return_5d / atr_pct
     "trend_momentum_score",  # combined trend + momentum z-score
     # EMA ratio features (2) — arXiv 2501.07580: highest feature importance
-    "ema14_ratio",   # (close - EMA14) / EMA14
-    "ema14_slope",   # EMA14_today / EMA14_5d_ago - 1
+    "ema14_ratio",  # (close - EMA14) / EMA14
+    "ema14_slope",  # EMA14_today / EMA14_5d_ago - 1
     # Market regime features (5) — filled by build/inference pipeline, NaN placeholders here
     "spy_return_20d",
     "vix_level",
@@ -71,41 +71,148 @@ MIN_HISTORY_ROWS = 210
 
 SECTOR_ETF_MAP: Dict[str, str] = {
     # Technology (XLK)
-    "AAPL": "XLK", "MSFT": "XLK", "NVDA": "XLK", "GOOGL": "XLK", "META": "XLK",
-    "AMZN": "XLK", "TSLA": "XLK", "AVGO": "XLK", "ORCL": "XLK", "CRM": "XLK",
-    "AMD": "XLK", "INTC": "XLK", "CSCO": "XLK", "ADBE": "XLK", "NFLX": "XLK",
-    "QCOM": "XLK", "TXN": "XLK", "AMAT": "XLK", "MU": "XLK", "LRCX": "XLK",
-    "KLAC": "XLK", "MRVL": "XLK", "SNPS": "XLK", "CDNS": "XLK", "PANW": "XLK",
-    "CRWD": "XLK", "FTNT": "XLK", "NOW": "XLK", "UBER": "XLK", "ABNB": "XLK",
+    "AAPL": "XLK",
+    "MSFT": "XLK",
+    "NVDA": "XLK",
+    "GOOGL": "XLK",
+    "META": "XLK",
+    "AMZN": "XLK",
+    "TSLA": "XLK",
+    "AVGO": "XLK",
+    "ORCL": "XLK",
+    "CRM": "XLK",
+    "AMD": "XLK",
+    "INTC": "XLK",
+    "CSCO": "XLK",
+    "ADBE": "XLK",
+    "NFLX": "XLK",
+    "QCOM": "XLK",
+    "TXN": "XLK",
+    "AMAT": "XLK",
+    "MU": "XLK",
+    "LRCX": "XLK",
+    "KLAC": "XLK",
+    "MRVL": "XLK",
+    "SNPS": "XLK",
+    "CDNS": "XLK",
+    "PANW": "XLK",
+    "CRWD": "XLK",
+    "FTNT": "XLK",
+    "NOW": "XLK",
+    "UBER": "XLK",
+    "ABNB": "XLK",
     # Financials (XLF)
-    "JPM": "XLF", "BAC": "XLF", "WFC": "XLF", "GS": "XLF", "MS": "XLF",
-    "C": "XLF", "SCHW": "XLF", "BLK": "XLF", "AXP": "XLF", "USB": "XLF",
-    "PNC": "XLF", "TFC": "XLF", "COF": "XLF", "BK": "XLF", "STT": "XLF",
+    "JPM": "XLF",
+    "BAC": "XLF",
+    "WFC": "XLF",
+    "GS": "XLF",
+    "MS": "XLF",
+    "C": "XLF",
+    "SCHW": "XLF",
+    "BLK": "XLF",
+    "AXP": "XLF",
+    "USB": "XLF",
+    "PNC": "XLF",
+    "TFC": "XLF",
+    "COF": "XLF",
+    "BK": "XLF",
+    "STT": "XLF",
     # Healthcare (XLV)
-    "UNH": "XLV", "JNJ": "XLV", "LLY": "XLV", "PFE": "XLV", "ABBV": "XLV",
-    "MRK": "XLV", "TMO": "XLV", "ABT": "XLV", "DHR": "XLV", "BMY": "XLV",
-    "AMGN": "XLV", "GILD": "XLV", "ISRG": "XLV", "VRTX": "XLV", "REGN": "XLV",
+    "UNH": "XLV",
+    "JNJ": "XLV",
+    "LLY": "XLV",
+    "PFE": "XLV",
+    "ABBV": "XLV",
+    "MRK": "XLV",
+    "TMO": "XLV",
+    "ABT": "XLV",
+    "DHR": "XLV",
+    "BMY": "XLV",
+    "AMGN": "XLV",
+    "GILD": "XLV",
+    "ISRG": "XLV",
+    "VRTX": "XLV",
+    "REGN": "XLV",
     # Consumer Discretionary (XLY) / Staples (XLP)
-    "WMT": "XLP", "PG": "XLP", "KO": "XLP", "PEP": "XLP", "COST": "XLY",
-    "MCD": "XLY", "NKE": "XLY", "SBUX": "XLY", "TGT": "XLY", "LOW": "XLY",
-    "HD": "XLY", "TJX": "XLY", "ROST": "XLY", "DG": "XLP", "DLTR": "XLP",
+    "WMT": "XLP",
+    "PG": "XLP",
+    "KO": "XLP",
+    "PEP": "XLP",
+    "COST": "XLY",
+    "MCD": "XLY",
+    "NKE": "XLY",
+    "SBUX": "XLY",
+    "TGT": "XLY",
+    "LOW": "XLY",
+    "HD": "XLY",
+    "TJX": "XLY",
+    "ROST": "XLY",
+    "DG": "XLP",
+    "DLTR": "XLP",
     # Energy (XLE)
-    "XOM": "XLE", "CVX": "XLE", "COP": "XLE", "EOG": "XLE", "SLB": "XLE",
-    "MPC": "XLE", "PSX": "XLE", "VLO": "XLE", "OXY": "XLE", "DVN": "XLE",
+    "XOM": "XLE",
+    "CVX": "XLE",
+    "COP": "XLE",
+    "EOG": "XLE",
+    "SLB": "XLE",
+    "MPC": "XLE",
+    "PSX": "XLE",
+    "VLO": "XLE",
+    "OXY": "XLE",
+    "DVN": "XLE",
     # Industrials (XLI)
-    "CAT": "XLI", "DE": "XLI", "UNP": "XLI", "UPS": "XLI", "HON": "XLI",
-    "RTX": "XLI", "BA": "XLI", "LMT": "XLI", "GD": "XLI", "NOC": "XLI",
+    "CAT": "XLI",
+    "DE": "XLI",
+    "UNP": "XLI",
+    "UPS": "XLI",
+    "HON": "XLI",
+    "RTX": "XLI",
+    "BA": "XLI",
+    "LMT": "XLI",
+    "GD": "XLI",
+    "NOC": "XLI",
     # Materials (XLB)
-    "LIN": "XLB", "APD": "XLB", "ECL": "XLB", "SHW": "XLB", "DD": "XLB",
+    "LIN": "XLB",
+    "APD": "XLB",
+    "ECL": "XLB",
+    "SHW": "XLB",
+    "DD": "XLB",
     # Utilities (XLU)
-    "NEE": "XLU", "DUK": "XLU", "SO": "XLU", "D": "XLU", "AEP": "XLU",
+    "NEE": "XLU",
+    "DUK": "XLU",
+    "SO": "XLU",
+    "D": "XLU",
+    "AEP": "XLU",
     # REITs (XLRE)
-    "AMT": "XLRE", "PLD": "XLRE", "CCI": "XLRE", "EQIX": "XLRE", "SPG": "XLRE",
+    "AMT": "XLRE",
+    "PLD": "XLRE",
+    "CCI": "XLRE",
+    "EQIX": "XLRE",
+    "SPG": "XLRE",
     # Telecom (XLC)
-    "T": "XLC", "VZ": "XLC", "TMUS": "XLC", "CHTR": "XLC", "CMCSA": "XLC",
+    "T": "XLC",
+    "VZ": "XLC",
+    "TMUS": "XLC",
+    "CHTR": "XLC",
+    "CMCSA": "XLC",
 }
 
 _DEFAULT_SECTOR_ETF = "SPY"  # fallback for unmapped tickers
+
+# yfinance info["sector"] string → SPDR sector ETF
+YFINANCE_SECTOR_TO_ETF: Dict[str, str] = {
+    "Technology": "XLK",
+    "Financial Services": "XLF",
+    "Healthcare": "XLV",
+    "Consumer Cyclical": "XLY",
+    "Consumer Defensive": "XLP",
+    "Industrials": "XLI",
+    "Energy": "XLE",
+    "Utilities": "XLU",
+    "Real Estate": "XLRE",
+    "Basic Materials": "XLB",
+    "Communication Services": "XLC",
+}
 
 
 def fetch_market_context(start: str, end: str) -> pd.DataFrame:
@@ -133,7 +240,9 @@ def fetch_market_context(start: str, end: str) -> pd.DataFrame:
             spy_close = spy_raw["Close"] if not spy_raw.empty else pd.Series(dtype=float)
             vix_close = vix_raw["Close"] if not vix_raw.empty else pd.Series(dtype=float)
     except KeyError:
-        logger.warning("fetch_market_context: unexpected yfinance column structure, returning empty")
+        logger.warning(
+            "fetch_market_context: unexpected yfinance column structure, returning empty"
+        )
         return pd.DataFrame(columns=["spy_return_20d", "vix_level", "vix_ma20_ratio"])
 
     if spy_close.empty or vix_close.empty:
@@ -342,7 +451,13 @@ def compute_features_bulk(ohlcv: pd.DataFrame, market_cap: Optional[float] = Non
     features["ema14_slope"] = ema14 / ema14.shift(5).replace(0, np.nan) - 1
 
     # Market regime placeholders (filled externally by build/predictor pipeline)
-    for col in ("spy_return_20d", "vix_level", "vix_ma20_ratio", "stock_vs_spy_20d", "sector_return_20d"):
+    for col in (
+        "spy_return_20d",
+        "vix_level",
+        "vix_ma20_ratio",
+        "stock_vs_spy_20d",
+        "sector_return_20d",
+    ):
         features[col] = np.nan
 
     return features[FEATURE_COLUMNS]
