@@ -50,15 +50,234 @@ FEATURE_COLUMNS: List[str] = [
     "macd_strength",  # MACD histogram normalized by ATR
     "return_volatility_ratio",  # Sharpe-like: return_5d / atr_pct
     "trend_momentum_score",  # combined trend + momentum z-score
+    # EMA ratio features (2) — arXiv 2501.07580: highest feature importance
+    "ema14_ratio",  # (close - EMA14) / EMA14
+    "ema14_slope",  # EMA14_today / EMA14_5d_ago - 1
+    # Market regime features (5) — filled by build/inference pipeline, NaN placeholders here
+    "spy_return_20d",
+    "vix_level",
+    "vix_ma20_ratio",
+    "stock_vs_spy_20d",
+    "sector_return_20d",
 ]
 
 # Minimum rows of OHLCV history needed before features are valid
 # (200-day SMA needs 200 rows of prior data)
 MIN_HISTORY_ROWS = 210
 
+# ---------------------------------------------------------------------------
+# Sector ETF map — used by build/inference pipeline to fetch sector context
+# ---------------------------------------------------------------------------
+
+SECTOR_ETF_MAP: Dict[str, str] = {
+    # Technology (XLK)
+    "AAPL": "XLK",
+    "MSFT": "XLK",
+    "NVDA": "XLK",
+    "GOOGL": "XLK",
+    "META": "XLK",
+    "AMZN": "XLK",
+    "TSLA": "XLK",
+    "AVGO": "XLK",
+    "ORCL": "XLK",
+    "CRM": "XLK",
+    "AMD": "XLK",
+    "INTC": "XLK",
+    "CSCO": "XLK",
+    "ADBE": "XLK",
+    "NFLX": "XLK",
+    "QCOM": "XLK",
+    "TXN": "XLK",
+    "AMAT": "XLK",
+    "MU": "XLK",
+    "LRCX": "XLK",
+    "KLAC": "XLK",
+    "MRVL": "XLK",
+    "SNPS": "XLK",
+    "CDNS": "XLK",
+    "PANW": "XLK",
+    "CRWD": "XLK",
+    "FTNT": "XLK",
+    "NOW": "XLK",
+    "UBER": "XLK",
+    "ABNB": "XLK",
+    # Financials (XLF)
+    "JPM": "XLF",
+    "BAC": "XLF",
+    "WFC": "XLF",
+    "GS": "XLF",
+    "MS": "XLF",
+    "C": "XLF",
+    "SCHW": "XLF",
+    "BLK": "XLF",
+    "AXP": "XLF",
+    "USB": "XLF",
+    "PNC": "XLF",
+    "TFC": "XLF",
+    "COF": "XLF",
+    "BK": "XLF",
+    "STT": "XLF",
+    # Healthcare (XLV)
+    "UNH": "XLV",
+    "JNJ": "XLV",
+    "LLY": "XLV",
+    "PFE": "XLV",
+    "ABBV": "XLV",
+    "MRK": "XLV",
+    "TMO": "XLV",
+    "ABT": "XLV",
+    "DHR": "XLV",
+    "BMY": "XLV",
+    "AMGN": "XLV",
+    "GILD": "XLV",
+    "ISRG": "XLV",
+    "VRTX": "XLV",
+    "REGN": "XLV",
+    # Consumer Discretionary (XLY) / Staples (XLP)
+    "WMT": "XLP",
+    "PG": "XLP",
+    "KO": "XLP",
+    "PEP": "XLP",
+    "COST": "XLY",
+    "MCD": "XLY",
+    "NKE": "XLY",
+    "SBUX": "XLY",
+    "TGT": "XLY",
+    "LOW": "XLY",
+    "HD": "XLY",
+    "TJX": "XLY",
+    "ROST": "XLY",
+    "DG": "XLP",
+    "DLTR": "XLP",
+    # Energy (XLE)
+    "XOM": "XLE",
+    "CVX": "XLE",
+    "COP": "XLE",
+    "EOG": "XLE",
+    "SLB": "XLE",
+    "MPC": "XLE",
+    "PSX": "XLE",
+    "VLO": "XLE",
+    "OXY": "XLE",
+    "DVN": "XLE",
+    # Industrials (XLI)
+    "CAT": "XLI",
+    "DE": "XLI",
+    "UNP": "XLI",
+    "UPS": "XLI",
+    "HON": "XLI",
+    "RTX": "XLI",
+    "BA": "XLI",
+    "LMT": "XLI",
+    "GD": "XLI",
+    "NOC": "XLI",
+    # Materials (XLB)
+    "LIN": "XLB",
+    "APD": "XLB",
+    "ECL": "XLB",
+    "SHW": "XLB",
+    "DD": "XLB",
+    # Utilities (XLU)
+    "NEE": "XLU",
+    "DUK": "XLU",
+    "SO": "XLU",
+    "D": "XLU",
+    "AEP": "XLU",
+    # REITs (XLRE)
+    "AMT": "XLRE",
+    "PLD": "XLRE",
+    "CCI": "XLRE",
+    "EQIX": "XLRE",
+    "SPG": "XLRE",
+    # Telecom (XLC)
+    "T": "XLC",
+    "VZ": "XLC",
+    "TMUS": "XLC",
+    "CHTR": "XLC",
+    "CMCSA": "XLC",
+}
+
+_DEFAULT_SECTOR_ETF = "SPY"  # fallback for unmapped tickers
+
+# yfinance info["sector"] string → SPDR sector ETF
+YFINANCE_SECTOR_TO_ETF: Dict[str, str] = {
+    "Technology": "XLK",
+    "Financial Services": "XLF",
+    "Healthcare": "XLV",
+    "Consumer Cyclical": "XLY",
+    "Consumer Defensive": "XLP",
+    "Industrials": "XLI",
+    "Energy": "XLE",
+    "Utilities": "XLU",
+    "Real Estate": "XLRE",
+    "Basic Materials": "XLB",
+    "Communication Services": "XLC",
+}
+
+
+def fetch_market_context(start: str, end: str) -> pd.DataFrame:
+    """Fetch SPY and VIX data and compute market-regime features.
+
+    Returns DataFrame indexed by date with columns:
+      spy_return_20d, vix_level, vix_ma20_ratio
+    """
+    import yfinance as yf
+
+    raw = yf.download(["SPY", "^VIX"], start=start, end=end, auto_adjust=True, progress=False)
+
+    if raw.empty:
+        return pd.DataFrame(columns=["spy_return_20d", "vix_level", "vix_ma20_ratio"])
+
+    # Handle MultiIndex (batch) and flat (single-ticker fallback)
+    try:
+        if isinstance(raw.columns, pd.MultiIndex):
+            spy_close = raw["Close"]["SPY"]
+            vix_close = raw["Close"]["^VIX"]
+        else:
+            # Fallback: download separately
+            spy_raw = yf.download("SPY", start=start, end=end, auto_adjust=True, progress=False)
+            vix_raw = yf.download("^VIX", start=start, end=end, auto_adjust=True, progress=False)
+            spy_close = spy_raw["Close"] if not spy_raw.empty else pd.Series(dtype=float)
+            vix_close = vix_raw["Close"] if not vix_raw.empty else pd.Series(dtype=float)
+    except KeyError:
+        logger.warning(
+            "fetch_market_context: unexpected yfinance column structure, returning empty"
+        )
+        return pd.DataFrame(columns=["spy_return_20d", "vix_level", "vix_ma20_ratio"])
+
+    if spy_close.empty or vix_close.empty:
+        return pd.DataFrame(columns=["spy_return_20d", "vix_level", "vix_ma20_ratio"])
+
+    # Align to common index
+    common_index = spy_close.index.intersection(vix_close.index)
+    spy_close = spy_close.reindex(common_index)
+    vix_close = vix_close.reindex(common_index)
+
+    ctx = pd.DataFrame(index=common_index)
+    ctx["spy_return_20d"] = spy_close.pct_change(20, fill_method=None) * 100
+    ctx["vix_level"] = vix_close
+    vix_ma20 = vix_close.rolling(20).mean()
+    ctx["vix_ma20_ratio"] = vix_close / vix_ma20.replace(0, np.nan)
+
+    return ctx.dropna(how="any")
+
+
+def fetch_sector_context(sector_etf: str, start: str, end: str) -> pd.Series:
+    """Fetch 20d return for a sector ETF. Returns Series indexed by date."""
+    import yfinance as yf
+
+    raw = yf.download(sector_etf, start=start, end=end, auto_adjust=True, progress=False)
+    if raw.empty:
+        return pd.Series(dtype=float, name="sector_return_20d")
+
+    close = raw["Close"] if "Close" in raw.columns else raw.iloc[:, 0]
+    if isinstance(close, pd.DataFrame):
+        close = close.iloc[:, 0]  # handle MultiIndex edge case for single ticker
+    return (close.pct_change(20, fill_method=None) * 100).rename("sector_return_20d")
+
 
 def compute_features_bulk(ohlcv: pd.DataFrame, market_cap: Optional[float] = None) -> pd.DataFrame:
-    """Compute all 20 ML features for every row in an OHLCV DataFrame.
+    """Compute all 37 ML features for every row in an OHLCV DataFrame.
 
     Args:
         ohlcv: DataFrame with columns: Date, Open, High, Low, Close, Volume.
@@ -226,6 +445,21 @@ def compute_features_bulk(ohlcv: pd.DataFrame, market_cap: Optional[float] = Non
         + features["macd_hist"] * 0.3
     )
 
+    # EMA ratio features
+    ema14 = close.ewm(span=14, adjust=False).mean()
+    features["ema14_ratio"] = (close - ema14) / ema14.replace(0, np.nan)
+    features["ema14_slope"] = ema14 / ema14.shift(5).replace(0, np.nan) - 1
+
+    # Market regime placeholders (filled externally by build/predictor pipeline)
+    for col in (
+        "spy_return_20d",
+        "vix_level",
+        "vix_ma20_ratio",
+        "stock_vs_spy_20d",
+        "sector_return_20d",
+    ):
+        features[col] = np.nan
+
     return features[FEATURE_COLUMNS]
 
 
@@ -317,22 +551,27 @@ def apply_triple_barrier_labels(
     profit_target: float = 0.05,
     stop_loss: float = 0.03,
     max_holding_days: int = 7,
+    binary: bool = False,
 ) -> pd.Series:
     """Apply triple-barrier labeling to a series of close prices.
 
     For each day, looks forward up to `max_holding_days` trading days:
       +1 (WIN):     Price hits +profit_target first
-      -1 (LOSS):    Price hits -stop_loss first
-       0 (TIMEOUT): Neither barrier hit within the window
+      -1 (LOSS):    Price hits -stop_loss first (only when binary=False)
+       0 (TIMEOUT or NOT-WIN): Neither barrier hit, or stop hit when binary=True
+
+    When binary=True, TIMEOUT and LOSS are both mapped to 0 (NOT-WIN),
+    producing a clean WIN=1 / NOT-WIN=0 binary classification target.
 
     Args:
         close_prices: Series of daily close prices, indexed by date.
         profit_target: Upside target as fraction (0.05 = 5%).
         stop_loss: Downside limit as fraction (0.03 = 3%).
         max_holding_days: Maximum forward-looking trading days.
+        binary: If True, collapse LOSS and TIMEOUT into NOT-WIN=0.
 
     Returns:
-        Series of labels (+1, -1, 0) aligned with close_prices index.
+        Series of labels aligned with close_prices index.
         Last `max_holding_days` rows will be NaN (can't look forward).
     """
     prices = close_prices.values
@@ -344,14 +583,14 @@ def apply_triple_barrier_labels(
         upper = entry * (1 + profit_target)
         lower = entry * (1 - stop_loss)
 
-        label = 0  # default: timeout
+        label = 0  # default: timeout / not-win
         for j in range(1, max_holding_days + 1):
             future_price = prices[i + j]
             if future_price >= upper:
                 label = 1  # hit profit target
                 break
             elif future_price <= lower:
-                label = -1  # hit stop loss
+                label = -1 if not binary else 0  # stop loss
                 break
 
         labels[i] = label
