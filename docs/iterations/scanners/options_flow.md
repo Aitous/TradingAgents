@@ -24,4 +24,4 @@ contracts — scanning up to 3 expirations improves signal quality.
 ## Pending Hypotheses
 - [x] Premium filter: already applied in code at `options_flow.py:143-144, 159`. Hypothesis resolved.
 - [ ] Does scanning 3 expirations vs 1 meaningfully change hit rate?
-- [ ] Is moneyness (ITM vs OTM) a useful signal filter?
+- [x] Is moneyness (ITM vs OTM) a useful signal filter? **Resolved 2026-04-21**: IV skew (OTM put IV − ATM call IV) added to scanner. Bullish flow + low skew (<0.02) → CRITICAL; reduces false-positive bullish signals from put hedging noise.
