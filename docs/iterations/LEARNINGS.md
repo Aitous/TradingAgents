@@ -17,6 +17,7 @@
 | volume_accumulation | scanners/volume_accumulation.md | — | No data yet |
 | short_squeeze | scanners/short_squeeze.md | 2026-04-20 | 60% 7d, +2.15% avg (n=19); ACHC 4-day persistence pre-earnings is valid urgency, not staleness |
 | ML Signal Improvement | research/2026-04-21-ml-signal-improvement.md | 2026-04-21 | Root cause: 3-class TIMEOUT label dominates (48%), caps WIN prob at 46%; fix: binary labels + 5 regime features |
+| Options Flow ML Features | research/2026-04-21-options-flow-ml-features.md | 2026-04-21 | IV skew has strong academic evidence (10.9% annual alpha) but historical IV data requires paid source; implement as live inference features + scanner augmentation |
 | earnings_beat | scanners/earnings_beat.md | 2026-04-14 | New PEAD scanner: recent EPS beats ≥5% surprise; 15% annualized academic edge; distinct from earnings_calendar |
 
 ## Confluence Signals
