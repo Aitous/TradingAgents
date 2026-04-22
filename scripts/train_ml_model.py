@@ -33,7 +33,7 @@ if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
 from tradingagents.ml.feature_engineering import FEATURE_COLUMNS
-from tradingagents.ml.predictor import LGBMWrapper, MLPredictor
+from tradingagents.ml.predictor import MLPredictor
 from tradingagents.utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -119,8 +119,8 @@ def train_tabpfn(X_train, y_train, X_val, y_val):
     if len(X_train) > max_train:
         logger.info(f"Subsampling training data: {len(X_train)} → {max_train}")
         idx = np.random.RandomState(42).choice(len(X_train), max_train, replace=False)
-        X_train_sub = X_train[idx]
-        y_train_sub = y_train[idx]
+        X_train_sub = X_train.iloc[idx] if hasattr(X_train, "iloc") else X_train[idx]
+        y_train_sub = y_train.iloc[idx] if hasattr(y_train, "iloc") else y_train[idx]
     else:
         X_train_sub = X_train
         y_train_sub = y_train
@@ -216,11 +216,15 @@ def evaluate(model, X_val, y_val, model_type: str) -> dict:
 
     # Avg P(WIN) for actual winners
     win_mask = y_val_arr == 1
-    avg_win_prob_for_actual_wins = float(win_probs_all[win_mask].mean()) if win_mask.sum() > 0 else 0.0
+    avg_win_prob_for_actual_wins = (
+        float(win_probs_all[win_mask].mean()) if win_mask.sum() > 0 else 0.0
+    )
 
     # High-confidence win precision (threshold 0.55 — above coin flip after calibration)
     high_conf_mask = win_probs_all >= 0.55
-    high_conf_precision = float((y_val_arr[high_conf_mask] == 1).mean()) if high_conf_mask.sum() > 0 else 0.0
+    high_conf_precision = (
+        float((y_val_arr[high_conf_mask] == 1).mean()) if high_conf_mask.sum() > 0 else 0.0
+    )
     high_conf_count = int(high_conf_mask.sum())
 
     # Quintile calibration
@@ -238,7 +242,9 @@ def evaluate(model, X_val, y_val, model_type: str) -> dict:
     # Top decile
     top_decile_threshold = np.percentile(win_probs_all, 90)
     top_decile_mask = win_probs_all >= top_decile_threshold
-    top_decile_win_rate = float((y_val_arr[top_decile_mask] == 1).mean()) if top_decile_mask.sum() > 0 else 0.0
+    top_decile_win_rate = (
+        float((y_val_arr[top_decile_mask] == 1).mean()) if top_decile_mask.sum() > 0 else 0.0
+    )
 
     metrics = {
         "model_type": model_type,
@@ -265,10 +271,14 @@ def evaluate(model, X_val, y_val, model_type: str) -> dict:
     logger.info(f"Model: {model_type}")
     logger.info(f"Accuracy:      {accuracy:.1%}")
     logger.info(f"ROC-AUC:       {roc_auc:.3f}")
-    logger.info(f"WIN Precision: {metrics['win_precision']:.3f}  Recall: {metrics['win_recall']:.3f}  F1: {metrics['win_f1']:.3f}")
+    logger.info(
+        f"WIN Precision: {metrics['win_precision']:.3f}  Recall: {metrics['win_recall']:.3f}  F1: {metrics['win_f1']:.3f}"
+    )
     logger.info(f"WIN prevalence in val: {float(win_mask.mean()):.1%}")
     logger.info(f"\nAvg P(WIN) for actual winners: {avg_win_prob_for_actual_wins:.1%}")
-    logger.info(f"High-confidence (≥55%) precision: {high_conf_precision:.1%} ({high_conf_count} samples)")
+    logger.info(
+        f"High-confidence (≥55%) precision: {high_conf_precision:.1%} ({high_conf_count} samples)"
+    )
 
     logger.info("\nCalibration (does higher P(WIN) = more actual wins?):")
     logger.info(f"{'Quintile':>10} {'Avg P(WIN)':>12} {'Actual WIN%':>12} {'Count':>8}")
@@ -279,8 +289,10 @@ def evaluate(model, X_val, y_val, model_type: str) -> dict:
         )
 
     baseline_win = float(win_mask.mean())
-    logger.info(f"\nTop decile: P(WIN) >= {top_decile_threshold:.1%}, actual WR = {top_decile_win_rate:.1%} "
-                f"({int(top_decile_mask.sum())} samples, {top_decile_win_rate/baseline_win:.2f}x lift)")
+    logger.info(
+        f"\nTop decile: P(WIN) >= {top_decile_threshold:.1%}, actual WR = {top_decile_win_rate:.1%} "
+        f"({int(top_decile_mask.sum())} samples, {top_decile_win_rate/baseline_win:.2f}x lift)"
+    )
     logger.info(f"{'='*60}")
 
     return metrics
