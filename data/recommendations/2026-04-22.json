@@ -1,0 +1,150 @@
+{
+  "date": "2026-04-22",
+  "llm_provider": "google",
+  "recommendations": [
+    {
+      "ticker": "HOLX",
+      "rank": 1,
+      "company_name": "Hologic, Inc.",
+      "description": "A developer, manufacturer, and supplier of premium diagnostics products, medical imaging systems, and surgical products.",
+      "strategy_match": "volume_divergence",
+      "scanners": [
+        "obv_divergence"
+      ],
+      "pipeline": "volume_divergence",
+      "final_score": 85,
+      "confidence": 9,
+      "risk_level": "low",
+      "reason": "Unusually strong OBV divergence, with On-Balance Volume surging +135.4% of average volume while price remained relatively flat (+0.5% over 20 days). This signals massive, quiet institutional accumulation before a potential move. The technical structure confirms the bullishness with a MACD crossover and ADX at 32.0 indicating a robust and strengthening trend. The upcoming earnings report in 8 days provides a clear catalyst for a breakout. If earnings disappoint or the stock breaks below the 50 SMA ($75.31), the accumulation thesis could be invalidated.",
+      "entry_price": 76.01,
+      "discovery_date": "2026-04-22",
+      "status": "open"
+    },
+    {
+      "ticker": "FFIV",
+      "rank": 2,
+      "company_name": "F5, Inc.",
+      "description": "A technology company specializing in application security, multi-cloud management, and online fraud prevention.",
+      "strategy_match": "volatility_contraction_breakout",
+      "scanners": [
+        "atr_compression"
+      ],
+      "pipeline": "volatility_contraction_breakout",
+      "final_score": 82,
+      "confidence": 8,
+      "risk_level": "moderate",
+      "reason": "Classic Volatility Contraction Pattern (VCP) with an ATR(5)/ATR(20) compression ratio of 0.66 indicating tight consolidation. Price has just broken above its 10-day high, confirming the start of a volatility expansion phase. Technicals align perfectly with a Golden Cross between the 50 SMA and 200 SMA, a bullish MACD crossover, and a rising ADX (26.0). Earnings approach in 6 days, offering the explosive catalyst needed for a substantial short-term move. The main risk is a broader market sell-off dragging down the breakout before the earnings print.",
+      "entry_price": 317.260009765625,
+      "discovery_date": "2026-04-22",
+      "status": "open"
+    },
+    {
+      "ticker": "CGTX",
+      "rank": 3,
+      "company_name": "Cognition Therapeutics",
+      "description": "A clinical-stage biopharmaceutical company engaged in the discovery and development of small molecule therapeutics.",
+      "strategy_match": "insider_cluster_buying",
+      "scanners": [
+        "insider_cluster_buying"
+      ],
+      "pipeline": "insider_cluster_buying",
+      "final_score": 78,
+      "confidence": 8,
+      "risk_level": "high",
+      "reason": "A strong insider cluster buying signal with 3 executives (including the CEO and CFO) purchasing 29,175 shares at an average price of $1.11. The stock has since begun to move, confirming the insider conviction with a bullish MACD crossover and rising On-Balance Volume. Trading above its 50 SMA ($1.03), the stock shows accelerating momentum with an ADX of 20.5. As a micro-cap with a 9.1% ATR, volatility is high, making it an explosive play. The thesis fails if price breaks back below the $1.11 insider purchase level.",
+      "entry_price": 1.2549999952316284,
+      "discovery_date": "2026-04-22",
+      "status": "open"
+    },
+    {
+      "ticker": "NTST",
+      "rank": 4,
+      "company_name": "NetSTREIT Corp.",
+      "description": "A real estate investment trust focused on acquiring single-tenant net lease retail properties nationwide.",
+      "strategy_match": "pead_drift",
+      "scanners": [
+        "earnings_beat"
+      ],
+      "pipeline": "pead_drift",
+      "final_score": 76,
+      "confidence": 7,
+      "risk_level": "moderate",
+      "reason": "Excellent Post-Earnings Announcement Drift (PEAD) setup following a massive +376.2% EPS surprise just two days ago. Momentum is accelerating rapidly with the ADX climbing to 22.8 and the price holding strongly above the 50 SMA ($19.88) and VWAP (+5.7%). Analyst sentiment is overwhelmingly bullish at 80%, providing fundamental tailwinds. While the Stochastic oscillator is overbought (89.8), this is characteristic of early-stage PEAD momentum. The primary risk is an exhaustion gap fill back to the $20.04 EMA level.",
+      "entry_price": 20.860000610351562,
+      "discovery_date": "2026-04-22",
+      "status": "open"
+    },
+    {
+      "ticker": "TFC",
+      "rank": 5,
+      "company_name": "Truist Financial Corporation",
+      "description": "A purpose-driven financial services company offering retail and commercial banking, wealth management, and specialized lending.",
+      "strategy_match": "analyst_upgrade",
+      "scanners": [
+        "analyst_upgrades"
+      ],
+      "pipeline": "analyst_upgrade",
+      "final_score": 75,
+      "confidence": 7,
+      "risk_level": "low",
+      "reason": "Upgraded to a Buy rating by Truist Financial, providing a fresh fundamental catalyst. The stock is in a strong established uptrend, trading 5.4% above its 50 SMA with a healthy, non-extended RSI of 67.6. Trend strength is robust, evidenced by an ADX of 30.7 and heavily rising On-Balance Volume (+207.8M). The convergence of an analyst upgrade with pristine technical momentum creates an asymmetric long opportunity. A breakdown below the 20 EMA at $48.77 would signal a short-term trend reversal.",
+      "entry_price": 51.334999084472656,
+      "discovery_date": "2026-04-22",
+      "status": "open"
+    },
+    {
+      "ticker": "GME",
+      "rank": 6,
+      "company_name": "GameStop Corp.",
+      "description": "A multichannel video game, consumer electronics, and gaming merchandise retailer.",
+      "strategy_match": "social_dd",
+      "scanners": [
+        "reddit_dd"
+      ],
+      "pipeline": "social_dd",
+      "final_score": 74,
+      "confidence": 7,
+      "risk_level": "speculative",
+      "reason": "Social sentiment is heavily backed by real technical accumulation, evidenced by a prominent bullish divergence in On-Balance Volume (+164.1M). The company's fundamental pivot, backed by an $8.8 billion cash pile and Bitcoin treasury, provides a solid valuation narrative floor for retail buyers. Price is acting constructively, trading above its 50 SMA ($23.69) and VWAP ($23.56) with a rising ADX of 24.8. As always with meme-adjacent stocks, the risk is sudden retail distribution, but the current technical posture strongly favors the upside.",
+      "entry_price": 25.459999084472656,
+      "discovery_date": "2026-04-22",
+      "status": "open"
+    },
+    {
+      "ticker": "ACHC",
+      "rank": 7,
+      "company_name": "Acadia Healthcare Company",
+      "description": "A provider of behavioral healthcare services across the United States and Puerto Rico.",
+      "strategy_match": "short_squeeze",
+      "scanners": [
+        "short_squeeze"
+      ],
+      "pipeline": "short_squeeze",
+      "final_score": 72,
+      "confidence": 6,
+      "risk_level": "high",
+      "reason": "Extreme short squeeze potential with 37.1% of the float sold short and a high 7.1 days to cover ratio. The stock is in a strong technical uptrend, trading 21.4% above its 50 SMA and showing bullish VWAP support (+8.8%). A bullish MACD profile and a rising OBV (+85.8M) indicate buyers are actively absorbing short-selling pressure. The upcoming earnings report in 7 days serves as a definitive catalyst that could spark a violent short-covering rally. If the stock falls below its $24.65 Fibonacci support, the squeeze structure breaks.",
+      "entry_price": 27.709999084472656,
+      "discovery_date": "2026-04-22",
+      "status": "open"
+    },
+    {
+      "ticker": "DGX",
+      "rank": 8,
+      "company_name": "Quest Diagnostics",
+      "description": "A leading provider of diagnostic information services providing insights that empower people to make better healthcare decisions.",
+      "strategy_match": "technical_breakout",
+      "scanners": [
+        "technical_breakout"
+      ],
+      "pipeline": "technical_breakout",
+      "final_score": 70,
+      "confidence": 6,
+      "risk_level": "moderate",
+      "reason": "Triggered a high-quality technical breakout, closing +1.5% above its 20-day high on heavy volume (2.7x average). The intraday strength (+4.5%) confirms aggressive institutional buying interest near 52-week highs. Technicals are aligning beautifully with a bullish MACD crossover and price action holding firmly above the 20 EMA ($196.39). While the Bollinger Bands suggest short-term extension, the volume confirmation validates the breakout direction. A failure to hold the $202.71 support level would indicate a false breakout.",
+      "entry_price": 200.1999969482422,
+      "discovery_date": "2026-04-22",
+      "status": "open"
+    }
+  ]
+}
