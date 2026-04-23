@@ -1,4 +1,11 @@
-"""SEC Form 4 insider buying scanner."""
+"""SEC Form 4 insider buying scanner with cluster detection.
+
+Fetches insider transactions over a rolling window and groups by ticker.
+Single-insider buys are scored by title/value; multi-insider clusters
+(3+ distinct buyers) use a richer scoring model with CEO/CFO weighting.
+Staleness suppression prevents the same Form 4 filing from re-appearing
+across consecutive discovery runs.
+"""
 
 import json
 from datetime import date, timedelta
@@ -13,7 +20,7 @@ logger = get_logger(__name__)
 
 
 class InsiderBuyingScanner(BaseScanner):
-    """Scan SEC Form 4 for insider purchases."""
+    """Scan SEC Form 4 for insider purchases, with cluster detection."""
 
     name = "insider_buying"
     pipeline = "edge"
@@ -21,23 +28,24 @@ class InsiderBuyingScanner(BaseScanner):
 
     def __init__(self, config: Dict[str, Any]):
         super().__init__(config)
-        self.lookback_days = self.scanner_config.get("lookback_days", 7)
-        # Raised from $25K to $100K: P&L data (178 recs, -2.05% 30d avg) suggests
-        # sub-$100K transactions add noise. Tests the insider_buying-min-txn-100k
-        # hypothesis registered 2026-04-07.
+        self.cluster_window_days = self.scanner_config.get("cluster_window_days", 14)
         self.min_transaction_value = self.scanner_config.get("min_transaction_value", 100_000)
+        self.min_cluster_insiders = self.scanner_config.get("min_cluster_insiders", 3)
 
     def scan(self, state: Dict[str, Any]) -> List[Dict[str, Any]]:
         if not self.is_enabled():
             return []
 
-        logger.info("Scanning insider buying (OpenInsider)...")
+        logger.info(
+            f"Scanning insider buying (window={self.cluster_window_days}d, "
+            f"min_txn=${self.min_transaction_value:,})..."
+        )
 
         try:
             from tradingagents.dataflows.finviz_scraper import get_finviz_insider_buying
 
             transactions = get_finviz_insider_buying(
-                lookback_days=self.lookback_days,
+                lookback_days=self.cluster_window_days,
                 min_value=self.min_transaction_value,
                 return_structured=True,
                 deduplicate=False,
@@ -49,7 +57,7 @@ class InsiderBuyingScanner(BaseScanner):
 
             logger.info(f"Found {len(transactions)} insider transactions")
 
-            # Group by ticker for cluster detection
+            # Group by ticker, deduplicate by (insider, company)
             by_ticker: Dict[str, list] = {}
             for txn in transactions:
                 ticker = txn.get("ticker", "").upper().strip()
@@ -59,78 +67,26 @@ class InsiderBuyingScanner(BaseScanner):
 
             candidates = []
             for ticker, txns in by_ticker.items():
-                # Use the largest transaction as primary
-                txns.sort(key=lambda t: t.get("value_num", 0), reverse=True)
-                primary = txns[0]
-
-                insider_name = primary.get("insider", "Unknown")
-                title = primary.get("title", "")
-                value = primary.get("value_num", 0)
-                value_str = primary.get("value_str", f"${value:,.0f}")
-                num_insiders = len(set(t.get("insider", "") for t in txns))
-
-                # Priority by significance
-                title_lower = title.lower()
-                is_c_suite = any(
-                    t in title_lower for t in ["ceo", "cfo", "coo", "cto", "president", "chairman"]
-                )
-                is_director = "director" in title_lower
-
-                if num_insiders >= 2:
-                    priority = Priority.CRITICAL.value
-                elif is_c_suite and value >= 100_000:
-                    priority = Priority.CRITICAL.value
-                elif is_c_suite or (is_director and value >= 50_000):
-                    priority = Priority.HIGH.value
-                elif value >= 50_000:
-                    priority = Priority.HIGH.value
-                else:
-                    priority = Priority.MEDIUM.value
-
-                # Build context
-                if num_insiders > 1:
-                    context = (
-                        f"Cluster: {num_insiders} insiders buying {ticker}. "
-                        f"Largest: {title} {insider_name} purchased {value_str}"
-                    )
-                else:
-                    context = f"{title} {insider_name} purchased {value_str} of {ticker}"
-
-                # Scoring: cluster buys > C-suite > dollar value
-                insider_score = value + (num_insiders * 500_000) + (1_000_000 if is_c_suite else 0)
-
-                candidates.append(
-                    {
-                        "ticker": ticker,
-                        "source": self.name,
-                        "context": context,
-                        "priority": priority,
-                        "strategy": self.strategy,
-                        "insider_name": insider_name,
-                        "insider_title": title,
-                        "transaction_value": value,
-                        "num_insiders_buying": num_insiders,
-                        "insider_score": insider_score,
-                    }
-                )
+                candidate = self._build_candidate(ticker, txns)
+                if candidate:
+                    candidates.append(candidate)
 
             # Sort by signal quality, then limit
-            candidates.sort(key=lambda c: c.get("insider_score", 0), reverse=True)
+            candidates.sort(key=lambda c: c.pop("_score", 0), reverse=True)
             candidates = candidates[: self.limit]
 
-            # Staleness suppression: filter tickers already recommended as insider_buying
-            # in the past 3 days (same Form 4 filing appears daily within lookback_days window).
-            # suppress_days=3 closes the gap found on Apr 12: FUL appeared Apr 9 and Apr 12
-            # (3-day spacing), which slipped past the prior suppress_days=2 window.
+            # Staleness suppression: filter tickers seen as insider_buying in past N days.
+            # suppress_days=3 closes the gap found Apr 12: FUL appeared Apr 9 and Apr 12
+            # (3-day spacing) from the same Form 4 filing.
             recently_seen = self._load_recent_insider_tickers(suppress_days=3)
             if recently_seen:
-                before_tickers = {c["ticker"] for c in candidates}
+                before = {c["ticker"] for c in candidates}
                 candidates = [c for c in candidates if c["ticker"] not in recently_seen]
-                suppressed = before_tickers - {c["ticker"] for c in candidates}
+                suppressed = before - {c["ticker"] for c in candidates}
                 if suppressed:
                     logger.info(
-                        f"Staleness filter: suppressed {len(suppressed)} ticker(s) already "
-                        f"recommended as insider_buying in the past 3 days: {suppressed}"
+                        f"Staleness filter: suppressed {len(suppressed)} ticker(s) "
+                        f"already recommended in the past 3 days: {suppressed}"
                     )
 
             logger.info(f"Insider buying: {len(candidates)} candidates")
@@ -140,12 +96,131 @@ class InsiderBuyingScanner(BaseScanner):
             logger.error(f"Insider buying scan failed: {e}", exc_info=True)
             return []
 
-    def _load_recent_insider_tickers(self, suppress_days: int = 2) -> Set[str]:
-        """Return tickers recommended as insider_buying in the past N days.
+    def _build_candidate(self, ticker: str, txns: list) -> Dict[str, Any]:
+        """Build a candidate dict for one ticker from its transactions."""
+        # Deduplicate by (insider_name, company)
+        seen_keys: Set[tuple] = set()
+        unique_txns = []
+        for txn in txns:
+            key = (txn.get("insider", "").strip().lower(), txn.get("company", "").strip().lower())
+            if key not in seen_keys:
+                seen_keys.add(key)
+                unique_txns.append(txn)
 
-        Used to suppress stale Form 4 filings that re-appear daily within the
-        lookback_days window.  P&L review (Apr 3-9 2026) confirmed 3 tickers
-        (PAGS, ZBIO, HMH) each repeated 3-4 consecutive days from the same filing.
+        num_insiders = len(unique_txns)
+
+        # Aggregate title flags and metrics
+        has_ceo = has_cfo = has_chairman = has_executive = False
+        total_value = 0
+        prices = []
+
+        for txn in unique_txns:
+            tl = txn.get("title", "").lower()
+            has_ceo = has_ceo or "ceo" in tl
+            has_cfo = has_cfo or "cfo" in tl
+            has_chairman = has_chairman or "chairman" in tl
+            has_executive = has_executive or any(
+                kw in tl for kw in ["ceo", "cfo", "chairman", "president", "coo", "cto"]
+            )
+            total_value += txn.get("value_num", 0)
+            price = self._parse_price(txn.get("price", ""))
+            if price > 0:
+                prices.append(price)
+
+        # Use largest transaction for single-insider context
+        txns_sorted = sorted(unique_txns, key=lambda t: t.get("value_num", 0), reverse=True)
+        primary = txns_sorted[0]
+        primary_name = primary.get("insider", "Unknown")
+        primary_title = primary.get("title", "")
+        primary_value = primary.get("value_num", 0)
+        primary_value_str = primary.get("value_str", f"${primary_value:,.0f}")
+        avg_price = sum(prices) / len(prices) if prices else 0.0
+        total_shares = sum(self._parse_qty(t.get("qty", "")) for t in unique_txns)
+
+        is_cluster = num_insiders >= self.min_cluster_insiders
+
+        # --- Priority ---
+        if is_cluster:
+            if num_insiders >= 4 and (has_ceo or has_cfo):
+                priority = Priority.CRITICAL.value
+            elif has_ceo or has_cfo or has_executive:
+                priority = Priority.HIGH.value
+            else:
+                priority = Priority.MEDIUM.value
+        else:
+            # Single or 2-insider: use title + value tiering
+            tl = primary_title.lower()
+            is_c_suite = any(kw in tl for kw in ["ceo", "cfo", "coo", "cto", "president", "chairman"])
+            is_director = "director" in tl
+            if num_insiders >= 2 or (is_c_suite and primary_value >= 100_000):
+                priority = Priority.CRITICAL.value
+            elif is_c_suite or (is_director and primary_value >= 50_000):
+                priority = Priority.HIGH.value
+            elif primary_value >= 50_000:
+                priority = Priority.HIGH.value
+            else:
+                priority = Priority.MEDIUM.value
+
+        # --- Context ---
+        if is_cluster:
+            context = (
+                f"Insider cluster: {num_insiders} executives bought in {self.cluster_window_days}d "
+                f"(CEO: {has_ceo}, CFO: {has_cfo}); "
+                f"{total_shares:,} shares | avg price ${avg_price:.2f} | total ${total_value:,.0f}"
+            )
+        elif num_insiders == 2:
+            context = (
+                f"2 insiders buying {ticker}. "
+                f"Largest: {primary_title} {primary_name} purchased {primary_value_str}"
+            )
+        else:
+            context = f"{primary_title} {primary_name} purchased {primary_value_str} of {ticker}"
+
+        # --- Score for ranking ---
+        score = total_value
+        score += num_insiders * 500_000
+        if has_ceo or has_cfo:
+            score += 1_500_000
+        elif has_executive:
+            score += 1_000_000
+        if has_ceo and has_cfo:
+            score += 1_000_000
+        if has_chairman:
+            score += 300_000
+
+        return {
+            "ticker": ticker,
+            "source": self.name,
+            "context": context,
+            "priority": priority,
+            "strategy": self.strategy,
+            "insider_name": primary_name,
+            "insider_title": primary_title,
+            "transaction_value": primary_value,
+            "total_transaction_value": total_value,
+            "num_insiders_buying": num_insiders,
+            "has_ceo": has_ceo,
+            "has_cfo": has_cfo,
+            "_score": score,
+        }
+
+    def _parse_price(self, price_str: str) -> float:
+        try:
+            return float(str(price_str).replace("$", "").replace(",", "").strip() or 0)
+        except (ValueError, AttributeError):
+            return 0.0
+
+    def _parse_qty(self, qty_str: str) -> int:
+        try:
+            return int(float(str(qty_str).replace(",", "").replace("+", "").strip() or 0))
+        except (ValueError, AttributeError):
+            return 0
+
+    def _load_recent_insider_tickers(self, suppress_days: int = 3) -> Set[str]:
+        """Return tickers recommended as insider_buying in the past N days (and today).
+
+        Covers both cross-day staleness (same Form 4 filing re-appearing each day)
+        and same-day multi-run staleness (NKE appeared in 3/4 runs on Apr 20).
         """
         seen: Set[str] = set()
         data_dir = Path(self.config.get("data_dir", "data"))
@@ -155,7 +230,8 @@ class InsiderBuyingScanner(BaseScanner):
             return seen
 
         today = date.today()
-        for i in range(1, suppress_days + 1):
+        # Range: today (same-day dedup) + past suppress_days
+        for i in range(0, suppress_days + 1):
             check_date = today - timedelta(days=i)
             rec_file = recs_dir / f"{check_date.isoformat()}.json"
             if not rec_file.exists():
@@ -164,7 +240,7 @@ class InsiderBuyingScanner(BaseScanner):
                 with open(rec_file) as f:
                     data = json.load(f)
                 for rec in data.get("recommendations", []):
-                    if rec.get("strategy_match") == "insider_buying":
+                    if rec.get("strategy_match") in ("insider_buying", "insider_cluster_buying"):
                         ticker = rec.get("ticker", "").upper()
                         if ticker:
                             seen.add(ticker)

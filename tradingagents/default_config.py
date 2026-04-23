@@ -163,17 +163,9 @@ DEFAULT_CONFIG = {
                 "enabled": True,
                 "pipeline": "edge",
                 "limit": 20,
-                "lookback_days": 7,  # Days to look back for insider purchases
-                "min_transaction_value": 25000,  # Minimum transaction value ($) to consider
-            },
-            "insider_cluster_buying": {
-                "enabled": True,
-                "pipeline": "fundamental",
-                "limit": 10,
-                "cluster_window_days": 14,  # Rolling window to aggregate insider purchases
-                "min_insiders": 3,  # Minimum distinct insiders required for a cluster signal
-                "executive_titles": ["ceo", "cfo", "chairman", "president"],
-                "director_titles": ["director", "officer"],
+                "cluster_window_days": 14,  # Rolling window for Form 4 lookback and cluster detection
+                "min_transaction_value": 100_000,  # Raised from $25K — sub-$100K adds noise
+                "min_cluster_insiders": 3,  # Minimum distinct insiders for cluster signal
             },
             "options_flow": {
                 "enabled": True,

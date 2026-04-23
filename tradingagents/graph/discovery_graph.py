@@ -328,7 +328,6 @@ class DiscoveryGraph:
         """
         logger.info("Scanning market for opportunities...")
 
-        self._update_performance_tracking()
         state.setdefault("tool_logs", [])
 
         # Get execution config
@@ -655,6 +654,14 @@ class DiscoveryGraph:
         ranked_tickers = [r.get("ticker") for r in rankings_list if r.get("ticker")]
         if candidates:
             self.analytics.save_discovery_events(candidates, ranked_tickers, trade_date)
+
+        # Update performance for all three tracking layers after each run
+        self._update_performance_tracking()
+        try:
+            self.analytics.update_scanner_picks_performance()
+            self.analytics.update_discovery_events_performance()
+        except Exception as e:
+            logger.warning(f"Scanner/event performance update failed: {e}")
 
         return final_state
 

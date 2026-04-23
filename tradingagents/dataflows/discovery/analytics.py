@@ -1,7 +1,7 @@
 import glob
 import json
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict, List
 
@@ -188,6 +188,129 @@ class DiscoveryAnalytics:
             json.dump(stats, f, indent=2)
 
         logger.info("💾 Updated performance database and statistics")
+
+    # ------------------------------------------------------------------
+    # Scanner-picks and discovery-events performance (non-recommendation layer)
+    # ------------------------------------------------------------------
+
+    def _fetch_price_on_date(self, ticker: str, date_str: str):
+        """Return closing price for ticker on or just after date_str."""
+        from tradingagents.dataflows.y_finance import get_stock_price
+        return get_stock_price(ticker, curr_date=date_str)
+
+    def _fill_forward_returns(self, row: Dict, entry_price: float, discovery_date: str, today: str) -> bool:
+        """Compute and set return_1d/7d/30d milestones on row. Returns True if any field changed."""
+        changed = False
+        discovery_dt = datetime.strptime(discovery_date, "%Y-%m-%d")
+        today_dt = datetime.strptime(today, "%Y-%m-%d")
+        days_held = (today_dt - discovery_dt).days
+
+        for horizon, key in [(1, "1d"), (7, "7d"), (30, "30d")]:
+            if days_held < horizon or f"return_{key}" in row:
+                continue
+            target_date = (discovery_dt + timedelta(days=horizon)).strftime("%Y-%m-%d")
+            price = self._fetch_price_on_date(row["ticker"], target_date)
+            if price:
+                ret = round((price - entry_price) / entry_price * 100, 2)
+                row[f"return_{key}"] = ret
+                row[f"win_{key}"] = ret > 0
+                changed = True
+
+        if row.get("return_30d") is not None and row.get("status") != "closed":
+            row["status"] = "closed"
+            changed = True
+
+        return changed
+
+    def update_scanner_picks_performance(self):
+        """Backfill entry prices and forward returns for all scanner_picks files."""
+        picks_dir = self.data_dir / "scanner_picks"
+        if not picks_dir.exists():
+            return
+
+        today = datetime.now().strftime("%Y-%m-%d")
+        total_updated = 0
+
+        for filepath in sorted(picks_dir.glob("*.json")):
+            data = json.loads(filepath.read_text())
+            picks = data.get("picks", [])
+            changed = False
+
+            for pick in picks:
+                if pick.get("status") == "closed":
+                    continue
+                ticker = pick.get("ticker")
+                discovery_date = pick.get("discovery_date")
+                if not ticker or not discovery_date:
+                    continue
+
+                # Backfill entry price (close on discovery date)
+                if not pick.get("entry_price"):
+                    price = self._fetch_price_on_date(ticker, discovery_date)
+                    if price:
+                        pick["entry_price"] = price
+                        changed = True
+
+                entry_price = pick.get("entry_price")
+                if not entry_price:
+                    continue
+
+                if self._fill_forward_returns(pick, entry_price, discovery_date, today):
+                    changed = True
+                    total_updated += 1
+
+            if changed:
+                tmp = filepath.with_suffix(".tmp")
+                tmp.write_text(json.dumps(data, indent=2))
+                tmp.rename(filepath)
+
+        if total_updated:
+            logger.info(f"📋 scanner_picks: updated forward returns for {total_updated} picks")
+
+    def update_discovery_events_performance(self):
+        """Backfill entry prices and forward returns for all discovery_events files."""
+        events_dir = self.data_dir / "discovery_events"
+        if not events_dir.exists():
+            return
+
+        today = datetime.now().strftime("%Y-%m-%d")
+        total_updated = 0
+
+        for filepath in sorted(events_dir.glob("*.json")):
+            data = json.loads(filepath.read_text())
+            events = data.get("events", [])
+            changed = False
+
+            for event in events:
+                if event.get("status") == "closed":
+                    continue
+                ticker = event.get("ticker")
+                discovery_date = event.get("discovery_date")
+                if not ticker or not discovery_date:
+                    continue
+
+                if not event.get("entry_price"):
+                    price = self._fetch_price_on_date(ticker, discovery_date)
+                    if price:
+                        event["entry_price"] = price
+                        changed = True
+
+                entry_price = event.get("entry_price")
+                if not entry_price:
+                    continue
+
+                if self._fill_forward_returns(event, entry_price, discovery_date, today):
+                    changed = True
+                    total_updated += 1
+
+            if changed:
+                tmp = filepath.with_suffix(".tmp")
+                tmp.write_text(json.dumps(data, indent=2))
+                tmp.rename(filepath)
+
+        if total_updated:
+            logger.info(f"📋 discovery_events: updated forward returns for {total_updated} events")
+
 
     @staticmethod
     def _normalize_strategy(name: str) -> str:
