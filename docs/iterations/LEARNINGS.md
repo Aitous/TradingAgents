@@ -84,3 +84,4 @@ Exact signal names that have been researched, implemented, and backtested — do
 | sector_rotation | scanners/sector_rotation.md | — | No data yet |
 | ml_signal | scanners/ml_signal.md | 2026-04-21 | min_win_prob=0.35 config override causes 44-49% (sub-coin-flip) picks to dominate runs; fix: raise to 0.50 |
 | momentum | scanners/momentum.md | 2026-04-21 | ⚠️ AUTOPSY: 39.7% WR-7d (n=136), -0.80% avg — worst large-sample performer; deadline 2026-05-05 |
+| Non-OHLCV Signal Saturation Analysis | research/2026-04-23-non-ohlcv-saturation.md | 2026-04-23 | Pipeline exhausted accessible free non-OHLCV signals; remaining opportunities blocked by paid data (IV/borrow costs), stale lags (13F 135d), or already confluenced (SI+insider). Redirect: evaluate dark_pool_flow & insider_cluster_buying P&L, test confluence rules, explore paid data ROI. |
