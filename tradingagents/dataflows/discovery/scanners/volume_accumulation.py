@@ -89,7 +89,10 @@ class VolumeAccumulationScanner(BaseScanner):
                 # Require sustained multi-day accumulation footprint (≥2 of last 5 days
                 # above 1.5x avg volume). Single-day spikes produce 43.8% 7d win rate and
                 # -7.6% avg 30d return — indistinguishable from distributional selling.
-                if cand.get("volume_signal") == "accumulation" and cand.get("high_vol_days_5d", 0) < 2:
+                if (
+                    cand.get("volume_signal") == "accumulation"
+                    and cand.get("high_vol_days_5d", 0) < 2
+                ):
                     continue
                 candidates.append(cand)
                 if len(candidates) >= self.limit:

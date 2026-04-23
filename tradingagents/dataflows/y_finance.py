@@ -699,19 +699,31 @@ def get_stock_price(
     curr_date: Annotated[str, "current date (for reference)"] = None,
 ) -> float:
     """
-    Get the current/latest stock price for a ticker.
+    Get the closing price for a ticker on or just after curr_date.
 
-    Args:
-        ticker: Stock symbol
-        curr_date: Optional date (not used, included for API consistency)
-
-    Returns:
-        Current stock price as a float, or None if unavailable
+    If curr_date is provided, fetches historical close for that specific date
+    (with a 5-day forward window to handle weekends/holidays). Falls back to
+    live fast_info when curr_date is None or the historical fetch fails.
     """
+    from datetime import datetime, timedelta
+
     try:
         with suppress_yfinance_warnings():
+            if curr_date:
+                try:
+                    start = curr_date
+                    end = (datetime.strptime(curr_date, "%Y-%m-%d") + timedelta(days=5)).strftime("%Y-%m-%d")
+                    hist = yf.download(ticker.upper(), start=start, end=end, progress=False, auto_adjust=True)
+                    closes = hist["Close"] if "Close" in hist.columns else hist
+                    if hasattr(closes, "columns"):
+                        closes = closes[ticker.upper()]
+                    closes = closes.dropna()
+                    if not closes.empty:
+                        return float(closes.iloc[0])
+                except Exception:
+                    pass
+
             stock = yf.Ticker(ticker.upper())
-            # Try fast_info first (more efficient)
             try:
                 price = stock.fast_info.get("lastPrice")
                 if price is not None:
@@ -719,7 +731,6 @@ def get_stock_price(
             except Exception:
                 pass
 
-            # Fallback to history
             hist = stock.history(period="1d")
             if not hist.empty:
                 return float(hist["Close"].iloc[-1])

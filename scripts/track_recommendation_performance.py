@@ -245,9 +245,12 @@ def _get_price_on_date(ticker: str, date_str: str) -> float | None:
         return None
 
 
-def _compute_forward_returns(entry_price: float, discovery_date: str, ticker: str, today: str) -> dict:
+def _compute_forward_returns(
+    entry_price: float, discovery_date: str, ticker: str, today: str
+) -> dict:
     """Compute 1d/7d/30d return milestones that are now reachable."""
     from datetime import datetime as dt
+
     results = {}
     discovery_dt = dt.strptime(discovery_date, "%Y-%m-%d")
     today_dt = dt.strptime(today, "%Y-%m-%d")
@@ -255,7 +258,9 @@ def _compute_forward_returns(entry_price: float, discovery_date: str, ticker: st
 
     for horizon, key in [(1, "1d"), (7, "7d"), (30, "30d")]:
         if days_held >= horizon:
-            target = (discovery_dt + __import__("datetime").timedelta(days=horizon)).strftime("%Y-%m-%d")
+            target = (discovery_dt + __import__("datetime").timedelta(days=horizon)).strftime(
+                "%Y-%m-%d"
+            )
             price = _get_price_on_date(ticker, target)
             if price:
                 ret = round((price - entry_price) / entry_price * 100, 2)
@@ -301,8 +306,12 @@ def update_scanner_picks():
 
             # Backfill entry price (T+1 open approximated as T+1 close)
             if not pick.get("entry_price"):
-                from datetime import datetime as dt, timedelta
-                t1 = (dt.strptime(discovery_date, "%Y-%m-%d") + timedelta(days=1)).strftime("%Y-%m-%d")
+                from datetime import datetime as dt
+                from datetime import timedelta
+
+                t1 = (dt.strptime(discovery_date, "%Y-%m-%d") + timedelta(days=1)).strftime(
+                    "%Y-%m-%d"
+                )
                 price = _get_price_on_date(ticker, t1)
                 if price:
                     pick["entry_price"] = price
@@ -349,8 +358,12 @@ def update_discovery_events():
                 continue
 
             if not event.get("entry_price"):
-                from datetime import datetime as dt, timedelta
-                t1 = (dt.strptime(discovery_date, "%Y-%m-%d") + timedelta(days=1)).strftime("%Y-%m-%d")
+                from datetime import datetime as dt
+                from datetime import timedelta
+
+                t1 = (dt.strptime(discovery_date, "%Y-%m-%d") + timedelta(days=1)).strftime(
+                    "%Y-%m-%d"
+                )
                 price = _get_price_on_date(ticker, t1)
                 if price:
                     event["entry_price"] = price
@@ -407,11 +420,13 @@ def main():
         json.dump(stats, f, indent=2)
     logger.info(f"💾 Saved statistics to {stats_path}")
 
-    logger.info("\n📋 Updating raw scanner picks...")
-    update_scanner_picks()
+    logger.info("\n📋 Updating raw scanner picks performance...")
+    from tradingagents.dataflows.discovery.analytics import DiscoveryAnalytics
+    analytics = DiscoveryAnalytics()
+    analytics.update_scanner_picks_performance()
 
-    logger.info("\n📋 Updating discovery events (ranker input set)...")
-    update_discovery_events()
+    logger.info("\n📋 Updating discovery events performance (ranker input set)...")
+    analytics.update_discovery_events_performance()
 
     logger.info("\n✅ Performance tracking complete!")
 
