@@ -33,6 +33,13 @@ an upgrade is a historically strong setup.
 - Pattern confirmed: NI is a strong example of analyst_upgrade's thesis — a non-obvious re-rating event (utility → AI play) that institutional algos may not fully price within 1-3 days.
 - Confidence: medium (Apr 18 picks look high quality; outcomes will confirm or deny)
 
+### 2026-04-22 — Fast-loop (2026-04-22 run)
+- TFC (rank 5, score=75, conf=7): Analyst upgrade to Buy; stock 5.4% above 50 SMA, ADX=30.7 (strong trend), RSI=67.6 (not extended). OBV +207.8M (heavy institutional buying).
+- Catalyst is explicit and recent; technical position is solid without overextension.
+- Calibration: 75/10=7.5 vs conf=7 (Δ=0.5) — good.
+- This is a clean, moderate-conviction play in established uptrend with fresh catalyst.
+- Confidence: low (single data point; fits expected high-quality profile for analyst_upgrade)
+
 ## Pending Hypotheses
 - [ ] Does analyst tier (BB firm vs boutique) predict upgrade quality?
 - [ ] Does short interest >20% combined with an upgrade produce outsized moves?

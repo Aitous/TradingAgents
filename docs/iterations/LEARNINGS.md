@@ -1,21 +1,26 @@
 # Learnings Index
 
-**Last analyzed run:** 2026-04-21
+**Last analyzed run:** 2026-04-22
 
-> **What changed this run:** Revised belief about momentum scanner — it's not simply a bad scanner to disable; its 39.7% standalone WR masks a 74.3% confluence WR with insider_buying (n=35), suggesting it should be kept as a confirming signal rather than retired. Also confirmed ml_signal config bug (0.35 threshold) as the root cause of sub-coin-flip picks dominating rankings.
+> **What changed this run:** New scanners (insider_cluster_buying, earnings_beat/pead_drift, technical_breakout) now live; earnings_beat first appearance shows strong thesis specificity (NTST +376.2% surprise). ACHC 4-day persistence validates short_squeeze urgency model: score erosion (85→88→80→72) reflects price extension, not staleness. ml_signal fix (0.50 threshold) working: no ml_signal dominance in run. High pick quality across all 8 scanners; no noise concerns. Volume_divergence HOLX shows extreme OBV divergence (135%) as top-ranked pick alongside earnings catalyst.
 
 | Domain | File | Last Updated | One-line Summary |
 |--------|------|--------------|-----------------|
 | options_flow | scanners/options_flow.md | 2026-04-12 | Premium filter confirmed applied; CSCO cross-scanner confluence detected; 45.1% 7d win rate (94 recs) |
 | insider_buying | scanners/insider_buying.md | 2026-04-21 | Same-day multi-run staleness: NKE appeared 3/4 runs, BORR in 2/4; suppress_days only blocks cross-day, not intraday |
+| insider_cluster_buying | scanners/insider_cluster_buying.md | 2026-04-22 | First live appearance: CGTX CEO+CFO+director cluster, score=78, outcomes TBD; 2× expected returns per academic studies |
 | minervini | scanners/minervini.md | 2026-04-17 | 100% win rate still holds (n=3 measured, 15 total); +7.19% avg 7d; AVGO persistence Apr 10-11; AA score=92 Apr 12 |
-| analyst_upgrades | scanners/analyst_upgrades.md | 2026-04-20 | 55.9% 7d, +0.18% avg; NI (AI infrastructure re-rating) and PLD (buyback+FFO beat) strong Apr 18 picks |
+| analyst_upgrades | scanners/analyst_upgrades.md | 2026-04-22 | 55.9% 7d, +0.18% avg; TFC Apr 22 shows clean entry with fresh upgrade in established uptrend |
 | earnings_calendar | scanners/earnings_calendar.md | 2026-04-17 | 7d win rate 47.6% (was 37.7%); likely market-recovery effect; still lowest-scoring scanner |
+| earnings_beat | scanners/earnings_beat.md | 2026-04-22 | PEAD scanner first appearance: NTST +376.2% EPS surprise, score=76; 15% annualized academic backing |
 | pipeline/scoring | pipeline/scoring.md | 2026-04-20 | 684 total recs, 44.4% overall 7d; volatility_contraction_breakout 50% of output on Apr 19 |
 | early_accumulation | scanners/early_accumulation.md | 2026-04-20 | 43.8% 7d, -7.6% avg 30d (worst); sustained-accumulation filter (high_vol_days_5d≥2) added to code |
 | social_dd | scanners/social_dd.md | 2026-04-14 | 57.1% 30d win rate (+1.41% avg 30d, n=26) — only scanner positive at 30d; eval horizon mismatch persists |
+| reddit_dd | scanners/reddit_dd.md | 2026-04-22 | GME Apr 22 shows quality filter working: meme play with technical + fundamental backing (cash, Bitcoin thesis) |
 | volume_accumulation | scanners/volume_accumulation.md | — | No data yet |
-| short_squeeze | scanners/short_squeeze.md | 2026-04-20 | 60% 7d, +2.15% avg (n=19); ACHC 4-day persistence pre-earnings is valid urgency, not staleness |
+| short_squeeze | scanners/short_squeeze.md | 2026-04-22 | 60% 7d, +2.15% avg (n=19); ACHC 4-day persistence (Apr 15/18/19/22) validates urgency model: score decay on rally is expected |
+| technical_breakout | scanners/technical_breakout.md | 2026-04-22 | DGX Apr 22: volume-confirmed breakout above 20d high (+1.5%) on 2.7x volume; rank 8 in run |
+| volume_divergence | scanners/volume_divergence.md | 2026-04-22 | HOLX Apr 22: extreme OBV divergence (+135.4%), ranks #1 in run; earnings in 8d catalyst |
 | ML Signal Improvement | research/2026-04-21-ml-signal-improvement.md | 2026-04-21 | Root cause: 3-class TIMEOUT label dominates (48%), caps WIN prob at 46%; fix: binary labels + 5 regime features |
 | Options Flow ML Features | research/2026-04-21-options-flow-ml-features.md | 2026-04-21 | IV skew has strong academic evidence (10.9% annual alpha) but historical IV data requires paid source; implement as live inference features + scanner augmentation |
 | earnings_beat | scanners/earnings_beat.md | 2026-04-14 | New PEAD scanner: recent EPS beats ≥5% surprise; 15% annualized academic edge; distinct from earnings_calendar |
