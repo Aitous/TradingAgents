@@ -415,9 +415,7 @@ IMPORTANT: Return ONLY valid JSON. No markdown wrapping, no commentary outside t
             for rank_dict in final_ranking_list:
                 ticker = rank_dict["ticker"].upper()
                 meta = next((c for c in candidates if c.get("ticker") == ticker), {})
-                rank_dict["scanners"] = meta.get(
-                    "all_sources", [meta.get("source", "unknown")]
-                )
+                rank_dict["scanners"] = meta.get("all_sources", [meta.get("source", "unknown")])
 
             # Update state with opportunities for downstream use (deep dive)
             state_opportunities = []

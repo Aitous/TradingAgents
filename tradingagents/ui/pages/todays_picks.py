@@ -12,7 +12,22 @@ import plotly.graph_objects as go
 import streamlit as st
 
 from tradingagents.ui.theme import COLORS, get_plotly_template, page_header, signal_card
-from tradingagents.ui.utils import load_recommendations
+from tradingagents.ui.utils import get_data_directory, load_recommendations
+
+
+def _available_recommendation_dates() -> list[str]:
+    """Return sorted list of dates that have recommendation files."""
+    rec_dir = get_data_directory() / "recommendations"
+    dates = []
+    for f in rec_dir.glob("*.json"):
+        name = f.stem
+        # Skip non-date files like performance_database, statistics
+        if len(name) == 10 and name[4] == "-" and name[7] == "-":
+            dates.append(name)
+        elif name.endswith("_recommendations") and len(name) == 26:
+            dates.append(name[:10])
+    return sorted(set(dates), reverse=True)
+
 
 TIMEFRAME_LOOKBACK_DAYS = {
     "1D": 1,
@@ -333,8 +348,21 @@ def _render_single_dynamic_chart(ticker: str, timeframe: str) -> None:
 
 def render():
     today = datetime.now().strftime("%Y-%m-%d")
-    recommendations, meta = load_recommendations(today, return_meta=True)
-    display_date = meta.get("date", today) if meta else today
+
+    available_dates = _available_recommendation_dates()
+    if available_dates:
+        selected_date = st.selectbox(
+            "Date",
+            options=available_dates,
+            index=0,
+            format_func=lambda d: f"{'Today — ' if d == today else ''}{d}",
+            key="signals_date_selector",
+        )
+    else:
+        selected_date = today
+
+    recommendations, meta = load_recommendations(selected_date, return_meta=True)
+    display_date = meta.get("date", selected_date) if meta else selected_date
 
     st.markdown(
         page_header("Signals", f"Recommendations for {display_date}"),
@@ -342,11 +370,8 @@ def render():
     )
 
     if not recommendations:
-        st.warning(f"No recommendations for {today}.")
+        st.warning(f"No recommendations for {selected_date}.")
         return
-
-    if meta.get("is_fallback") and meta.get("date"):
-        st.info(f"Showing latest signals from **{meta['date']}** (none for today).")
 
     # ---- Controls row ----
     ctrl_cols = st.columns([1, 1, 1, 1])

@@ -1,0 +1,51 @@
+{
+  "date": "2026-04-20",
+  "llm_provider": "google",
+  "recommendations": [
+    {
+      "ticker": "HOLX",
+      "rank": 1,
+      "company_name": "HOLX",
+      "description": "HOLX - Business description not available.",
+      "strategy_match": "volume_divergence",
+      "pipeline": "volume_divergence",
+      "final_score": 78,
+      "confidence": 8,
+      "risk_level": "low",
+      "reason": "HOLX is exhibiting an exceptionally strong multi-week accumulation signal, with On-Balance Volume surging by +137.1% of its average volume while the price has remained relatively flat (+0.5% over 20 days). Technical indicators confirm this bullish setup, featuring a recent MACD crossover and the price holding firmly above its 50-day SMA ($75.31). The extreme divergence between aggressive volume accumulation and stagnant price action heavily implies an imminent upside breakout. A key risk to monitor is the upcoming earnings report in 10 days, which introduces binary event risk that could override the technical setup.",
+      "entry_price": 76.01,
+      "discovery_date": "2026-04-20",
+      "status": "open"
+    },
+    {
+      "ticker": "NKE",
+      "rank": 2,
+      "company_name": "NKE",
+      "description": "NKE - Business description not available.",
+      "strategy_match": "insider_buying",
+      "pipeline": "insider_buying",
+      "final_score": 75,
+      "confidence": 8,
+      "risk_level": "moderate",
+      "reason": "NKE presents a highly compelling insider buying cluster, with two distinct insiders purchasing shares recently. Notably, prominent Director Tim Cook acquired over $1.06 million in stock, providing a massive vote of confidence in the company's near-term prospects from a high-profile board member. This aligns with a fundamentally bullish analyst sentiment of 62.8%, suggesting the stock is currently undervalued by the market. The primary risk is broader macroeconomic weakness in consumer discretionary spending, which could delay the realization of this fundamental value.",
+      "entry_price": 46.095001220703125,
+      "discovery_date": "2026-04-20",
+      "status": "open"
+    },
+    {
+      "ticker": "CORT",
+      "rank": 3,
+      "company_name": "CORT",
+      "description": "CORT - Business description not available.",
+      "strategy_match": "volatility_contraction_breakout",
+      "pipeline": "volatility_contraction_breakout",
+      "final_score": 72,
+      "confidence": 7,
+      "risk_level": "moderate",
+      "reason": "CORT is executing a textbook volatility contraction breakout, with its ATR ratio compressing to 0.60 before triggering a powerful upside expansion. The stock has decisively broken its 10-day high with a +3.4% surge and is trading significantly above its 50-day SMA ($37.87), confirmed by a strong +4.5% intraday move. This technical alignment suggests the start of a new momentum leg as volatility expands directionally. The primary risk is if the breakout fails to sustain volume, leading to a false breakout trap before its upcoming earnings in 16 days.",
+      "entry_price": 45.939998626708984,
+      "discovery_date": "2026-04-20",
+      "status": "open"
+    }
+  ]
+}
