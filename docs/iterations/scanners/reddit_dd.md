@@ -22,6 +22,14 @@ This is confirmed by P&L data spanning 608 total recommendations.
 - The code already implements the quality filter correctly (>=60 threshold).
 - Confidence: high (26 data points, consistent pattern vs. sister scanner)
 
+### 2026-04-22 — Fast-loop (2026-04-22 run)
+- GME (rank 6, score=74, conf=7): Social sentiment backed by real technical accumulation (OBV +164.1M divergence). Fundamental thesis: $8.8B cash + Bitcoin treasury provides valuation floor. Price above 50 SMA and VWAP, ADX=24.8 rising.
+- Scanner is surfacing meme-adjacent play but with concrete technical + fundamental backing, not pure sentiment.
+- Calibration: 74/10=7.4 vs conf=7 (Δ=0.4) — good.
+- This pick shows the reddit_dd quality filter (score >=60) is working: specific thesis with both social + technical + fundamental support.
+- Confidence: low (single data point; meme stock vol is extreme, outcome highly uncertain)
+
 ## Pending Hypotheses
 - [ ] Does filtering by LLM quality score >80 (HIGH only) further improve outcomes vs >60?
 - [ ] Does subreddit weighting change hit rates (r/investing vs r/wallstreetbets)?
+- [ ] Does fundamental backing (e.g., cash position, buyback program) improve reddit_dd outcomes beyond social sentiment alone?

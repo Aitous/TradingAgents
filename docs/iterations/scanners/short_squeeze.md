@@ -43,6 +43,14 @@ alone and is the primary confluence hypothesis under test.
 - Pattern: cross-day persistence for squeeze candidates near earnings is a signal of urgency, not staleness. Contrasts with insider_buying staleness where the thesis doesn't change.
 - Confidence: medium (pattern is logical; whether it predicts better outcomes vs single-appearance squeeze plays is untested)
 
+### 2026-04-22 — Fast-loop (ACHC 4-day persistence)
+- ACHC appeared again on 2026-04-22 (rank 7, score=72, conf=6). SI=37.1% unchanged, DTC=7.1d, earnings in 7 days.
+- This is the 4th consecutive appearance: Apr 15 (85), Apr 18 (88), Apr 19 (80), Apr 22 (72).
+- Score erosion (85→88→80→72) reflects price extension as rally accelerates — classic squeeze momentum arc. This is NOT staleness, it is urgency tracking.
+- Thesis remains mechanically sound throughout: high SI × approaching binary earnings event = two converging catalysts for forced covering.
+- Pattern: cross-day persistence for squeeze candidates is valid urgency signal; score decline on rally is expected and reflects diminishing upside room as price extends.
+- Confidence: medium (multi-day persistence confirmed; price action consistent with squeeze thesis)
+
 ## Pending Hypotheses
 - [ ] Does short_squeeze + options_flow confluence produce better 7d win rate than either scanner alone?
 - [ ] Does short_squeeze + earnings_calendar (SI>20%) produce better outcomes than earnings alone? (See earnings_calendar.md pending hypothesis)
