@@ -100,6 +100,15 @@
       "scanner": "insider_buying",
       "return_7d": null,
       "win_7d": null
+    },
+    {
+      "date": "2026-04-23",
+      "ticker": "HOMB",
+      "score": 75,
+      "confidence": 8,
+      "scanner": "insider_buying",
+      "return_7d": null,
+      "win_7d": null
     }
   ]
 }
