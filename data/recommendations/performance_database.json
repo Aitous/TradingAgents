@@ -1,6 +1,6 @@
 {
-  "last_updated": "2026-04-23 14:21:58",
-  "total_recommendations": 702,
+  "last_updated": "2026-04-23 14:27:26",
+  "total_recommendations": 711,
   "recommendations_by_date": {
     "2026-02-10": [
       {
@@ -16134,6 +16134,171 @@
         "last_updated": "2026-04-23",
         "return_1d": 0.2,
         "win_1d": true
+      }
+    ],
+    "2026-04-23": [
+      {
+        "ticker": "LRCX",
+        "rank": 1,
+        "company_name": "Lam Research Corporation",
+        "description": "Lam Research is a global supplier of innovative wafer fabrication equipment and services to the semiconductor industry.",
+        "strategy_match": "analyst_upgrade",
+        "scanners": [
+          "analyst_upgrades"
+        ],
+        "pipeline": "analyst_upgrade",
+        "final_score": 85,
+        "confidence": 8,
+        "risk_level": "moderate",
+        "reason": "Lam Research reported record Q3 results with a 24% year-over-year revenue increase to $5.84 billion. Management raised its 2026 outlook for wafer fab equipment spending, driven by accelerating AI demand. Technicals show strong confirmation with the price holding above the 50 SMA ($233.87) and a rising OBV of 387.6M. The combination of a fundamental earnings catalyst and a healthy RSI of 61.7 provides an excellent risk/reward profile. The primary risk is macroeconomic weakness impacting broader semiconductor spending.",
+        "entry_price": 266.4800109863281,
+        "discovery_date": "2026-04-23",
+        "status": "open"
+      },
+      {
+        "ticker": "ISRG",
+        "rank": 2,
+        "company_name": "Intuitive Surgical, Inc.",
+        "description": "Intuitive Surgical develops, manufactures, and markets robotic products designed to improve clinical outcomes of patients through minimally invasive surgery.",
+        "strategy_match": "technical_breakout",
+        "scanners": [
+          "technical_breakout"
+        ],
+        "pipeline": "technical_breakout",
+        "final_score": 84,
+        "confidence": 8,
+        "risk_level": "moderate",
+        "reason": "Intuitive Surgical delivered a significant earnings beat with an adjusted EPS of $2.50 on $2.77 billion in revenue. The company raised its full-year 2026 procedure growth outlook, providing a strong fundamental catalyst. This sparked a technical breakout, closing +0.7% above its 20-day high on 2.3x average volume. With an RSI of 56.9 and a bullish MACD crossover, there is ample room for momentum to continue. The main risk is an overextended valuation or unexpected regulatory scrutiny on medical devices.",
+        "entry_price": 482.95001220703125,
+        "discovery_date": "2026-04-23",
+        "status": "open"
+      },
+      {
+        "ticker": "TXN",
+        "rank": 3,
+        "company_name": "Texas Instruments Incorporated",
+        "description": "Texas Instruments designs and manufactures semiconductors and various integrated circuits, focusing on analog chips and embedded processors.",
+        "strategy_match": "analyst_upgrade",
+        "scanners": [
+          "analyst_upgrades",
+          "high_52w_breakout"
+        ],
+        "pipeline": "analyst_upgrade",
+        "final_score": 82,
+        "confidence": 8,
+        "risk_level": "moderate",
+        "reason": "Texas Instruments crushed estimates with Q1 revenue of $4.83 billion and EPS of $1.68. The announcement of a strategic agreement to acquire Silicon Labs further bolsters its growth narrative. The stock is breaking out to a new 52-week high on 1.7x average volume, confirming institutional demand. Although the RSI is slightly elevated at 76.9, the strong uptrend (price $236.31 vs 50 SMA $207.41) supports continued momentum. A broader market pullback could disrupt this breakout.",
+        "entry_price": 274.9800109863281,
+        "discovery_date": "2026-04-23",
+        "status": "open"
+      },
+      {
+        "ticker": "TAL",
+        "rank": 4,
+        "company_name": "TAL Education Group",
+        "description": "TAL Education Group provides K-12 after-school tutoring services in China.",
+        "strategy_match": "pead_drift",
+        "scanners": [
+          "earnings_beat"
+        ],
+        "pipeline": "pead_drift",
+        "final_score": 80,
+        "confidence": 8,
+        "risk_level": "high",
+        "reason": "TAL reported an explosive +185.2% earnings surprise, swinging to a non-GAAP net income of $254.5 million. Revenue surged 31.5% driven by strong demand for AI-powered learning devices. Technicals reveal a bullish OBV divergence indicating heavy accumulation, and the price is trending cleanly above its 50 SMA ($11.22). The post-earnings drift window is wide open with an RSI of 57.7. Regulatory changes in the Chinese education sector remain the primary risk.",
+        "entry_price": 10.824999809265137,
+        "discovery_date": "2026-04-23",
+        "status": "open"
+      },
+      {
+        "ticker": "MANH",
+        "rank": 5,
+        "company_name": "Manhattan Associates, Inc.",
+        "description": "Manhattan Associates develops and provides supply chain commerce solutions for inventory and omnichannel operations.",
+        "strategy_match": "technical_breakout",
+        "scanners": [
+          "technical_breakout"
+        ],
+        "pipeline": "technical_breakout",
+        "final_score": 78,
+        "confidence": 7,
+        "risk_level": "moderate",
+        "reason": "Manhattan Associates beat Q1 estimates with $282.2 million in revenue and raised its full-year guidance due to robust cloud supply chain demand. This fundamental strength triggered a technical breakout, with the stock closing +2.3% above its 20-day high on 2.2x average volume. A fresh bullish MACD crossover and a healthy RSI of 61.0 point to further upside. The primary risk is a contraction in enterprise software spending.",
+        "entry_price": 135.69000244140625,
+        "discovery_date": "2026-04-23",
+        "status": "open"
+      },
+      {
+        "ticker": "META",
+        "rank": 6,
+        "company_name": "Meta Platforms, Inc.",
+        "description": "Meta Platforms builds technologies that help people connect, find communities, and grow businesses through virtual reality and social media.",
+        "strategy_match": "options_flow",
+        "scanners": [
+          "options_flow"
+        ],
+        "pipeline": "options_flow",
+        "final_score": 76,
+        "confidence": 7,
+        "risk_level": "moderate",
+        "reason": "Meta exhibits the strongest quantitative alignment on the list with an ML Win Probability of 50.2%. The technical setup is pristine, featuring a bullish OBV divergence that signals institutional accumulation. The stock maintains a solid uptrend, trading well above its 50 SMA ($629.71) with a balanced RSI of 63.5. Negative options skew (bearish P/C) acts as a contrarian indicator in the face of strong technical momentum. The primary risk is broad tech sector volatility.",
+        "entry_price": 663.989990234375,
+        "discovery_date": "2026-04-23",
+        "status": "open"
+      },
+      {
+        "ticker": "ACHC",
+        "rank": 7,
+        "company_name": "Acadia Healthcare Company, Inc.",
+        "description": "Acadia Healthcare provides behavioral healthcare services across the United States and Puerto Rico.",
+        "strategy_match": "short_squeeze",
+        "scanners": [
+          "short_squeeze"
+        ],
+        "pipeline": "short_squeeze",
+        "final_score": 74,
+        "confidence": 7,
+        "risk_level": "high",
+        "reason": "Acadia Healthcare is primed for a potential short squeeze, bearing an extreme short interest of 37.1% with 7.1 days to cover. Technical momentum is accelerating, highlighted by a bullish MACD crossover and a strong uptrend above the 50 SMA ($22.90). With earnings scheduled in 6 days (April 29), short sellers may be forced to cover ahead of the binary event. The high volatility and binary nature of the upcoming earnings present the main risks.",
+        "entry_price": 27.434999465942383,
+        "discovery_date": "2026-04-23",
+        "status": "open"
+      },
+      {
+        "ticker": "BA",
+        "rank": 8,
+        "company_name": "The Boeing Company",
+        "description": "Boeing is a major aerospace company that designs, manufactures, and sells airplanes, rotorcraft, rockets, and satellites worldwide.",
+        "strategy_match": "technical_breakout",
+        "scanners": [
+          "technical_breakout"
+        ],
+        "pipeline": "technical_breakout",
+        "final_score": 73,
+        "confidence": 6,
+        "risk_level": "high",
+        "reason": "Boeing is staging a powerful technical breakout, surging +5.5% intraday on 2.6x average volume. The price action pushed through local resistance, supported by a fresh bullish MACD crossover and a rising OBV. Trading at $231.28, it sits comfortably above its 50 SMA ($218.84) with an RSI of 62.3, leaving room to run. The primary risk is headline risk related to manufacturing defects or regulatory probes.",
+        "entry_price": 231.87840270996094,
+        "discovery_date": "2026-04-23",
+        "status": "open"
+      },
+      {
+        "ticker": "PYPL",
+        "rank": 9,
+        "company_name": "PayPal Holdings, Inc.",
+        "description": "PayPal operates a technology platform that enables digital payments and simplifies commerce experiences on behalf of merchants and consumers worldwide.",
+        "strategy_match": "analyst_upgrade",
+        "scanners": [
+          "analyst_upgrades"
+        ],
+        "pipeline": "analyst_upgrade",
+        "final_score": 70,
+        "confidence": 6,
+        "risk_level": "moderate",
+        "reason": "PayPal's announcement of a multi-year partnership to become the NFL's official P2P payments partner provides a strong fundamental catalyst. Institutional accumulation is evident with Milestone Asset Management initiating a 20,773-share position. Technicals are highly supportive, with the stock trading above its 50 SMA ($45.37) and a strong ADX of 39.8 indicating a robust trend. The primary risk is resistance near the $52.30 local high and broader payment sector headwinds.",
+        "entry_price": 49.90999984741211,
+        "discovery_date": "2026-04-23",
+        "status": "open"
       }
     ]
   }
