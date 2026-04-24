@@ -162,6 +162,36 @@ def _picks_by_date(picks: List[Dict[str, Any]]) -> pd.DataFrame:
     return pd.DataFrame(records)
 
 
+def _daily_scanner_metrics(picks: List[Dict[str, Any]]) -> pd.DataFrame:
+    """Daily per-scanner WR-1d, avg return-1d, and pick count."""
+    agg: Dict[tuple, Dict] = defaultdict(
+        lambda: {"total": 0, "evaluated": 0, "wins": 0, "sum_ret": 0.0}
+    )
+    for p in picks:
+        key = (p.get("discovery_date", "?"), p.get("scanner", "unknown"))
+        agg[key]["total"] += 1
+        r1 = p.get("return_1d")
+        if r1 is not None:
+            agg[key]["evaluated"] += 1
+            agg[key]["sum_ret"] += float(r1)
+            if p.get("win_1d"):
+                agg[key]["wins"] += 1
+
+    rows = []
+    for (date, scanner), d in sorted(agg.items()):
+        ev = d["evaluated"]
+        rows.append({
+            "date": date,
+            "scanner": scanner,
+            "picks": d["total"],
+            "wr_1d": round(d["wins"] / ev * 100, 1) if ev else None,
+            "avg_ret_1d": round(d["sum_ret"] / ev, 2) if ev else None,
+        })
+    return pd.DataFrame(rows) if rows else pd.DataFrame(
+        columns=["date", "scanner", "picks", "wr_1d", "avg_ret_1d"]
+    )
+
+
 # ---------------------------------------------------------------------------
 # Render
 # ---------------------------------------------------------------------------
@@ -200,6 +230,10 @@ def render() -> None:
     df_metrics = _scanner_metrics(picks)
     lift = _ranker_lift(events)
     df_volume = _picks_by_date(picks)
+    df_daily = _daily_scanner_metrics(picks)
+
+    if "selected_scanner" not in st.session_state:
+        st.session_state["selected_scanner"] = None
 
     # ── KPI row ────────────────────────────────────────────────────────────
     total_picks = len(picks)
