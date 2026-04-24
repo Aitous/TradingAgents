@@ -85,6 +85,8 @@ jobs:
           # Stage new/updated recommendation and run-log files
           git add data/recommendations/ || true
           git add results/discovery/ || true
+          git add data/scanner_picks/ || true
+          git add data/discovery_events/ || true
 
           # Only commit if there are changes
           if git diff --cached --quiet; then
