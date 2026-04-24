@@ -204,8 +204,8 @@ def render() -> None:
     _kpi(
         cols[3],
         "Ranker Lift 7d",
-        f"{lift_7d:+.2f}%" if lift_7d is not None else "N/A (accumulating)",
-        "ranked − all candidates",
+        f"{lift_7d:+.2f}%" if lift_7d is not None else "N/A",
+        "accumulating data" if lift_7d is None else "ranked − all candidates",
         color=pnl_color(lift_7d) if lift_7d is not None else COLORS["text_muted"],
     )
 
