@@ -266,7 +266,7 @@ def render() -> None:
         display_df = df_metrics.copy()
 
         def _health(wr):
-            if wr is None:
+            if pd.isna(wr):
                 return "⬜"
             if wr >= 55:
                 return "🟢"
@@ -289,6 +289,11 @@ def render() -> None:
             display_df[col] = display_df[col].apply(
                 lambda x: round(x, 2) if x is not None else None
             )
+
+        # Convert to float so NaN renders as blank instead of "None"
+        for col in ["Win Rate 1d", "Win Rate 7d", "Win Rate 30d",
+                    "Avg Return 1d", "Avg Return 7d", "Avg Return 30d"]:
+            display_df[col] = pd.to_numeric(display_df[col], errors="coerce")
 
         selected = st.dataframe(
             display_df,
@@ -319,9 +324,11 @@ def render() -> None:
         )
 
         # Persist selected scanner in session state
-        rows_sel = selected.selection.get("rows", []) if selected else []
+        rows_sel = selected.selection.rows if selected.selection else []
         if rows_sel:
             st.session_state["selected_scanner"] = display_df.iloc[rows_sel[0]]["Scanner"]
+        else:
+            st.session_state["selected_scanner"] = None
 
         st.markdown("<br>", unsafe_allow_html=True)
 
