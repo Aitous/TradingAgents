@@ -59,6 +59,9 @@ def _scanner_metrics(picks: List[Dict[str, Any]]) -> pd.DataFrame:
     agg: Dict[str, Dict] = defaultdict(
         lambda: {
             "total": 0,
+            "evaluated_1d": 0,
+            "wins_1d": 0,
+            "sum_ret_1d": 0.0,
             "evaluated_7d": 0,
             "wins_7d": 0,
             "sum_ret_7d": 0.0,
@@ -70,6 +73,11 @@ def _scanner_metrics(picks: List[Dict[str, Any]]) -> pd.DataFrame:
     for p in picks:
         s = p.get("scanner", "unknown")
         agg[s]["total"] += 1
+        if p.get("return_1d") is not None:
+            agg[s]["evaluated_1d"] += 1
+            agg[s]["sum_ret_1d"] += float(p["return_1d"])
+            if p.get("win_1d"):
+                agg[s]["wins_1d"] += 1
         if p.get("return_7d") is not None:
             agg[s]["evaluated_7d"] += 1
             agg[s]["sum_ret_7d"] += float(p["return_7d"])
@@ -83,17 +91,19 @@ def _scanner_metrics(picks: List[Dict[str, Any]]) -> pd.DataFrame:
 
     rows = []
     for scanner, d in sorted(agg.items(), key=lambda x: -x[1]["total"]):
+        ev1 = d["evaluated_1d"]
         ev7 = d["evaluated_7d"]
         ev30 = d["evaluated_30d"]
         rows.append(
             {
                 "Scanner": scanner,
                 "Total Picks": d["total"],
+                "Win Rate 1d": round(d["wins_1d"] / ev1 * 100, 1) if ev1 else None,
+                "Avg Return 1d": round(d["sum_ret_1d"] / ev1, 2) if ev1 else None,
                 "Win Rate 7d": round(d["wins_7d"] / ev7 * 100, 1) if ev7 else None,
                 "Avg Return 7d": round(d["sum_ret_7d"] / ev7, 2) if ev7 else None,
                 "Win Rate 30d": round(d["wins_30d"] / ev30 * 100, 1) if ev30 else None,
                 "Avg Return 30d": round(d["sum_ret_30d"] / ev30, 2) if ev30 else None,
-                "Evaluated 7d": ev7,
             }
         )
     return pd.DataFrame(rows)
@@ -220,13 +230,12 @@ def render() -> None:
         st.caption("Win rates accumulate as 7d / 30d forward returns are backfilled nightly.")
 
         display_df = df_metrics.copy()
-        for col in ["Win Rate 7d", "Win Rate 30d"]:
+        for col in ["Win Rate 1d", "Win Rate 7d", "Win Rate 30d"]:
             display_df[col] = display_df[col].apply(lambda x: f"{x:.1f}%" if x is not None else "—")
-        for col in ["Avg Return 7d", "Avg Return 30d"]:
+        for col in ["Avg Return 1d", "Avg Return 7d", "Avg Return 30d"]:
             display_df[col] = display_df[col].apply(
                 lambda x: f"{x:+.2f}%" if x is not None else "—"
             )
-        display_df = display_df.drop(columns=["Evaluated 7d"])
         st.dataframe(display_df, use_container_width=True, hide_index=True)
 
         # Bar chart: total picks per scanner
