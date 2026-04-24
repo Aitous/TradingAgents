@@ -386,14 +386,15 @@ def render() -> None:
                     yref="y1",
                 )
 
-                fig.update_layout(
+                fig.update_layout({
                     **template,
-                    yaxis=dict(title="WR / Avg Return (%)", side="left"),
-                    yaxis2=dict(title="Picks", overlaying="y", side="right", showgrid=False),
-                    legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-                    height=380,
-                    margin=dict(t=50, b=20),
-                )
+                    "yaxis": dict(title="WR / Avg Return (%)", side="left",
+                                  gridcolor="rgba(42, 53, 72, 0.5)", zerolinecolor=COLORS["border"], showgrid=True),
+                    "yaxis2": dict(title="Picks", overlaying="y", side="right", showgrid=False),
+                    "legend": dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+                    "height": 380,
+                    "margin": dict(t=50, b=20),
+                })
 
                 if len(scanner_daily) == 1:
                     st.caption("Only 1 day of data — trend builds as more runs complete.")
