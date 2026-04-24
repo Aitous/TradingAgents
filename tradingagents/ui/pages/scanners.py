@@ -261,18 +261,140 @@ def render() -> None:
     # ---- Tab 1: per-scanner metrics table --------------------------------
     with tab1:
         st.markdown("##### Per-Scanner Performance")
-        st.caption("Win rates accumulate as 7d / 30d forward returns are backfilled nightly.")
+        st.caption("Click a row to drill down into that scanner's daily trend.")
 
         display_df = df_metrics.copy()
+
+        def _health(wr):
+            if wr is None:
+                return "⬜"
+            if wr >= 55:
+                return "🟢"
+            if wr >= 45:
+                return "🟡"
+            return "🔴"
+
+        # Health badge: use Win Rate 1d, fall back to Win Rate 7d
+        health_wr = display_df["Win Rate 1d"].where(
+            display_df["Win Rate 1d"].notna(), display_df["Win Rate 7d"]
+        )
+        display_df.insert(0, "Health", health_wr.apply(_health))
+
+        # Round numeric columns for display (ProgressColumn needs raw numbers, not strings)
         for col in ["Win Rate 1d", "Win Rate 7d", "Win Rate 30d"]:
-            display_df[col] = display_df[col].apply(lambda x: f"{x:.1f}%" if x is not None else "—")
+            display_df[col] = display_df[col].apply(
+                lambda x: round(x, 1) if x is not None else None
+            )
         for col in ["Avg Return 1d", "Avg Return 7d", "Avg Return 30d"]:
             display_df[col] = display_df[col].apply(
-                lambda x: f"{x:+.2f}%" if x is not None else "—"
+                lambda x: round(x, 2) if x is not None else None
             )
-        st.dataframe(display_df, use_container_width=True, hide_index=True)
 
-        # Bar chart: total picks per scanner
+        selected = st.dataframe(
+            display_df,
+            use_container_width=True,
+            hide_index=True,
+            on_select="rerun",
+            selection_mode="single-row",
+            column_config={
+                "Win Rate 1d": st.column_config.ProgressColumn(
+                    "Win Rate 1d",
+                    min_value=0,
+                    max_value=100,
+                    format="%.1f%%",
+                ),
+                "Win Rate 7d": st.column_config.ProgressColumn(
+                    "Win Rate 7d",
+                    min_value=0,
+                    max_value=100,
+                    format="%.1f%%",
+                ),
+                "Win Rate 30d": st.column_config.ProgressColumn(
+                    "Win Rate 30d",
+                    min_value=0,
+                    max_value=100,
+                    format="%.1f%%",
+                ),
+            },
+        )
+
+        # Persist selected scanner in session state
+        rows_sel = selected.selection.get("rows", []) if selected else []
+        if rows_sel:
+            st.session_state["selected_scanner"] = display_df.iloc[rows_sel[0]]["Scanner"]
+
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        # ── Drill-down chart ──────────────────────────────────────────────────
+        chosen = st.session_state.get("selected_scanner")
+
+        if df_daily.empty or chosen is None:
+            st.info("Click a scanner row above to see its daily trend.")
+        else:
+            scanner_daily = df_daily[df_daily["scanner"] == chosen].copy()
+            if scanner_daily.empty:
+                st.info(f"No daily data yet for **{chosen}**.")
+            else:
+                st.markdown(f"##### {chosen} — Daily Trend")
+
+                has_wr = scanner_daily["wr_1d"].notna().any()
+                has_ret = scanner_daily["avg_ret_1d"].notna().any()
+
+                fig = go.Figure()
+
+                if has_wr:
+                    fig.add_trace(go.Scatter(
+                        x=scanner_daily["date"],
+                        y=scanner_daily["wr_1d"],
+                        name="WR-1d (%)",
+                        mode="lines+markers",
+                        line=dict(color=COLORS["green"], width=2),
+                        yaxis="y1",
+                    ))
+
+                if has_ret:
+                    fig.add_trace(go.Scatter(
+                        x=scanner_daily["date"],
+                        y=scanner_daily["avg_ret_1d"],
+                        name="Avg Return-1d (%)",
+                        mode="lines+markers",
+                        line=dict(color=COLORS["blue"], width=2, dash="dot"),
+                        yaxis="y1",
+                    ))
+
+                fig.add_trace(go.Bar(
+                    x=scanner_daily["date"],
+                    y=scanner_daily["picks"],
+                    name="Picks",
+                    marker_color=COLORS["text_muted"],
+                    opacity=0.35,
+                    yaxis="y2",
+                ))
+
+                fig.add_hline(
+                    y=50,
+                    line_dash="dash",
+                    line_color=COLORS["amber"],
+                    annotation_text="50% baseline",
+                    yref="y1",
+                )
+
+                fig.update_layout(
+                    **template,
+                    yaxis=dict(title="WR / Avg Return (%)", side="left"),
+                    yaxis2=dict(title="Picks", overlaying="y", side="right", showgrid=False),
+                    legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+                    height=380,
+                    margin=dict(t=50, b=20),
+                )
+
+                if len(scanner_daily) == 1:
+                    st.caption("Only 1 day of data — trend builds as more runs complete.")
+                st.plotly_chart(fig, use_container_width=True)
+
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        # ── Total picks bar chart (unchanged) ─────────────────────────────────
         fig = go.Figure(
             go.Bar(
                 x=df_metrics["Scanner"],
