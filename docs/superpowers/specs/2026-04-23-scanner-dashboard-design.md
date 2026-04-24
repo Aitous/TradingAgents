@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task.
 
-**Goal:** Upgrade `tradingagents/ui/pages/scanners.py` with color-coded health encoding in the scanner table and a click-to-drill-down trend chart showing WR-1d, avg return-1d, and daily pick count over time.
+**Goal:** Upgrade `tradingagents/ui/pages/scanners.py` with color-coded health encoding in the scanner table (adding 1d columns since that's the only populated data today), a click-to-drill-down trend chart showing WR-1d, avg return-1d, and daily pick count over time, and a fixed KPI overflow.
 
 **Architecture:** All data comes from `data/scanner_picks/*.json` (the new tracking system, live from Apr 20 2026). A new `_daily_scanner_metrics()` aggregation helper groups picks by `(discovery_date, scanner)` and computes daily stats. Selected scanner state lives in `st.session_state["selected_scanner"]`. The drill-down chart updates reactively when a table row is clicked via `st.dataframe(on_select=...)`.
 
@@ -73,14 +73,16 @@ def _daily_scanner_metrics(picks: List[Dict[str, Any]]) -> pd.DataFrame:
 
 Replace the `tab1` scanner table block. Add a `Health` column and color-code `Win Rate 7d`.
 
-**Health badge logic:**
-- `🟢` if `Win Rate 7d >= 55`
-- `🟡` if `45 <= Win Rate 7d < 55`
-- `🔴` if `Win Rate 7d < 45`
+**Health badge logic** (based on `Win Rate 1d`, falling back to `Win Rate 7d` if 1d not available):
+- `🟢` if WR >= 55
+- `🟡` if 45 <= WR < 55
+- `🔴` if WR < 45
 - `⬜` if no data yet
 
+**Column order:** Health, Scanner, Total Picks, Win Rate 1d, Avg Return 1d, Win Rate 7d, Avg Return 7d, Win Rate 30d, Avg Return 30d
+
 **Color logic for WR cells:**
-Use `st.dataframe` with `column_config` to apply background gradients. The `Win Rate 7d` column uses a `ProgressColumn` styled 0–100 range so high values appear green and low values appear red.
+Use `st.dataframe` with `column_config`. All three WR columns (`Win Rate 1d`, `Win Rate 7d`, `Win Rate 30d`) use `ProgressColumn` styled 0–100 so high values appear green and low values appear red. The `_scanner_metrics()` helper must be extended to also compute `Win Rate 1d` and `Avg Return 1d` from `return_1d`/`win_1d` fields.
 
 ```python
 with tab1:
@@ -230,11 +232,12 @@ Pass `df_daily` and `template` into the tab1 block (they are already in scope in
 
 ## Success Criteria
 
-1. Table shows `Health` column with correct colored dot for each scanner
-2. `Win Rate 7d` column renders as a progress bar (green = high, red = low via Streamlit ProgressColumn)
-3. Clicking a scanner row updates the drill-down chart below
-4. Drill-down shows three traces: WR-1d (green line), avg return-1d (blue dashed), picks (grey bars)
-5. 50% baseline reference line visible on chart
-6. KPI "Ranker Lift 7d" card shows "N/A" without overflow
-7. Single-day data case shows a point + caption instead of an empty chart
-8. All other tabs (Pick Volume, Ranker Lift) unchanged
+1. Table shows `Health` column with correct colored badge for each scanner
+2. `Win Rate 1d`, `Win Rate 7d`, `Win Rate 30d` columns render as progress bars via `ProgressColumn`
+3. `Win Rate 1d` and `Avg Return 1d` columns are populated (today's data shows real values, not all `—`)
+4. Clicking a scanner row updates the drill-down chart below
+5. Drill-down shows three traces: WR-1d (green line), avg return-1d (blue dashed), picks (grey bars)
+6. 50% baseline reference line visible on chart
+7. KPI "Ranker Lift 7d" card shows "N/A" without overflow
+8. Single-day data case shows a single point + caption "trend builds over time" instead of an empty chart
+9. All other tabs (Pick Volume, Ranker Lift) unchanged
