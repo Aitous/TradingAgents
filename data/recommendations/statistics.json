@@ -1,5 +1,5 @@
 {
-  "total_recommendations": 711,
+  "total_recommendations": 744,
   "by_strategy": {
     "momentum": {
       "count": 136,
@@ -32,8 +32,8 @@
       "win_rate_30d": 31.2
     },
     "insider_buying": {
-      "count": 191,
-      "wins_1d": 70,
+      "count": 194,
+      "wins_1d": 71,
       "losses_1d": 108,
       "wins_7d": 84,
       "losses_7d": 93,
@@ -42,13 +42,13 @@
       "avg_return_1d": 0.06,
       "avg_return_7d": -0.11,
       "avg_return_30d": 1.21,
-      "win_rate_1d": 39.3,
+      "win_rate_1d": 39.7,
       "win_rate_7d": 47.5,
       "win_rate_30d": 45.8
     },
     "options_flow": {
       "count": 101,
-      "wins_1d": 35,
+      "wins_1d": 36,
       "losses_1d": 62,
       "wins_7d": 44,
       "losses_7d": 50,
@@ -57,22 +57,22 @@
       "avg_return_1d": 0.15,
       "avg_return_7d": -0.7,
       "avg_return_30d": -1.04,
-      "win_rate_1d": 36.1,
+      "win_rate_1d": 36.7,
       "win_rate_7d": 46.8,
       "win_rate_30d": 38.6
     },
     "earnings_play": {
-      "count": 68,
+      "count": 70,
       "wins_1d": 24,
-      "losses_1d": 39,
+      "losses_1d": 41,
       "wins_7d": 30,
       "losses_7d": 33,
       "wins_30d": 24,
       "losses_30d": 30,
-      "avg_return_1d": -0.4,
+      "avg_return_1d": -0.45,
       "avg_return_7d": -0.23,
       "avg_return_30d": -2.72,
-      "win_rate_1d": 38.1,
+      "win_rate_1d": 36.9,
       "win_rate_7d": 47.6,
       "win_rate_30d": 44.4
     },
@@ -107,17 +107,17 @@
       "win_rate_30d": 33.3
     },
     "short_squeeze": {
-      "count": 23,
+      "count": 24,
       "wins_1d": 7,
-      "losses_1d": 8,
+      "losses_1d": 9,
       "wins_7d": 7,
       "losses_7d": 4,
       "wins_30d": 3,
       "losses_30d": 7,
-      "avg_return_1d": 0.57,
+      "avg_return_1d": 0.3,
       "avg_return_7d": 2.29,
       "avg_return_30d": -1.1,
-      "win_rate_1d": 46.7,
+      "win_rate_1d": 43.8,
       "win_rate_7d": 63.6,
       "win_rate_30d": 30.0
     },
@@ -138,16 +138,16 @@
     },
     "analyst_upgrade": {
       "count": 48,
-      "wins_1d": 14,
+      "wins_1d": 17,
       "losses_1d": 21,
       "wins_7d": 19,
       "losses_7d": 15,
       "wins_30d": 7,
       "losses_30d": 17,
-      "avg_return_1d": 0.27,
+      "avg_return_1d": 0.3,
       "avg_return_7d": 0.18,
       "avg_return_30d": -3.79,
-      "win_rate_1d": 40.0,
+      "win_rate_1d": 44.7,
       "win_rate_7d": 55.9,
       "win_rate_30d": 29.2
     },
@@ -211,69 +211,70 @@
       "win_rate_7d": 100.0
     },
     "technical_breakout": {
-      "count": 5,
-      "wins_1d": 1,
-      "losses_1d": 0,
-      "wins_7d": 0,
-      "losses_7d": 0,
-      "wins_30d": 0,
-      "losses_30d": 0,
-      "avg_return_1d": 0.2,
-      "avg_return_7d": 0,
-      "avg_return_30d": 0,
-      "win_rate_1d": 100.0
-    },
-    "pead_drift": {
-      "count": 4,
-      "wins_1d": 0,
+      "count": 7,
+      "wins_1d": 3,
       "losses_1d": 1,
       "wins_7d": 0,
       "losses_7d": 0,
       "wins_30d": 0,
       "losses_30d": 0,
-      "avg_return_1d": -0.55,
+      "avg_return_1d": 0.59,
       "avg_return_7d": 0,
       "avg_return_30d": 0,
-      "win_rate_1d": 0.0
+      "win_rate_1d": 75.0
+    },
+    "pead_drift": {
+      "count": 7,
+      "wins_1d": 1,
+      "losses_1d": 1,
+      "wins_7d": 0,
+      "losses_7d": 0,
+      "wins_30d": 0,
+      "losses_30d": 0,
+      "avg_return_1d": 0.39,
+      "avg_return_7d": 0,
+      "avg_return_30d": 0,
+      "win_rate_1d": 50.0
     },
     "volume_divergence": {
-      "count": 12,
+      "count": 18,
       "wins_1d": 3,
-      "losses_1d": 3,
+      "losses_1d": 6,
       "wins_7d": 2,
       "losses_7d": 3,
       "wins_30d": 0,
       "losses_30d": 0,
-      "avg_return_1d": 0.18,
+      "avg_return_1d": -0.16,
       "avg_return_7d": 0.25,
       "avg_return_30d": 0,
-      "win_rate_1d": 50.0,
+      "win_rate_1d": 33.3,
       "win_rate_7d": 40.0
     },
     "high_52w_breakout": {
-      "count": 6,
-      "wins_1d": 0,
+      "count": 9,
+      "wins_1d": 2,
       "losses_1d": 0,
       "wins_7d": 0,
       "losses_7d": 0,
       "wins_30d": 0,
       "losses_30d": 0,
-      "avg_return_1d": 0,
+      "avg_return_1d": 4.21,
       "avg_return_7d": 0,
-      "avg_return_30d": 0
+      "avg_return_30d": 0,
+      "win_rate_1d": 100.0
     },
     "volatility_contraction_breakout": {
-      "count": 7,
-      "wins_1d": 5,
-      "losses_1d": 1,
+      "count": 11,
+      "wins_1d": 7,
+      "losses_1d": 3,
       "wins_7d": 0,
       "losses_7d": 0,
       "wins_30d": 0,
       "losses_30d": 0,
-      "avg_return_1d": 1.04,
+      "avg_return_1d": 0.73,
       "avg_return_7d": 0,
       "avg_return_30d": 0,
-      "win_rate_1d": 83.3
+      "win_rate_1d": 70.0
     },
     "insider_cluster_buying": {
       "count": 1,
@@ -287,13 +288,39 @@
       "avg_return_7d": 0,
       "avg_return_30d": 0,
       "win_rate_1d": 100.0
+    },
+    "ml_signal": {
+      "count": 7,
+      "wins_1d": 3,
+      "losses_1d": 4,
+      "wins_7d": 0,
+      "losses_7d": 0,
+      "wins_30d": 0,
+      "losses_30d": 0,
+      "avg_return_1d": 1.12,
+      "avg_return_7d": 0,
+      "avg_return_30d": 0,
+      "win_rate_1d": 42.9
+    },
+    "institutional_accumulation": {
+      "count": 2,
+      "wins_1d": 1,
+      "losses_1d": 1,
+      "wins_7d": 0,
+      "losses_7d": 0,
+      "wins_30d": 0,
+      "losses_30d": 0,
+      "avg_return_1d": -1.71,
+      "avg_return_7d": 0,
+      "avg_return_30d": 0,
+      "win_rate_1d": 50.0
     }
   },
   "overall_1d": {
-    "count": 632,
-    "wins": 255,
-    "avg_return": -0.12,
-    "win_rate": 40.3
+    "count": 662,
+    "wins": 271,
+    "avg_return": -0.1,
+    "win_rate": 40.9
   },
   "overall_7d": {
     "count": 610,

@@ -1,0 +1,831 @@
+{
+  "date": "2026-04-24",
+  "events": [
+    {
+      "ticker": "PRLD",
+      "all_sources": [
+        "insider_buying"
+      ],
+      "confluence_count": 1,
+      "priority": "critical",
+      "strategy": "insider_buying",
+      "discovery_date": "2026-04-24",
+      "was_ranked": false,
+      "rank_position": null,
+      "entry_price": 4.625
+    },
+    {
+      "ticker": "ALMR",
+      "all_sources": [
+        "insider_buying"
+      ],
+      "confluence_count": 1,
+      "priority": "critical",
+      "strategy": "insider_buying",
+      "discovery_date": "2026-04-24",
+      "was_ranked": false,
+      "rank_position": null,
+      "entry_price": 24.665000915527344
+    },
+    {
+      "ticker": "HTO",
+      "all_sources": [
+        "insider_buying"
+      ],
+      "confluence_count": 1,
+      "priority": "critical",
+      "strategy": "insider_buying",
+      "discovery_date": "2026-04-24",
+      "was_ranked": false,
+      "rank_position": null,
+      "entry_price": 61.22999954223633
+    },
+    {
+      "ticker": "RZLV",
+      "all_sources": [
+        "insider_buying"
+      ],
+      "confluence_count": 1,
+      "priority": "critical",
+      "strategy": "insider_buying",
+      "discovery_date": "2026-04-24",
+      "was_ranked": true,
+      "rank_position": 12,
+      "entry_price": 2.575000047683716
+    },
+    {
+      "ticker": "HOMB",
+      "all_sources": [
+        "insider_buying",
+        "obv_divergence"
+      ],
+      "confluence_count": 2,
+      "priority": "critical",
+      "strategy": "insider_buying",
+      "discovery_date": "2026-04-24",
+      "was_ranked": true,
+      "rank_position": 6,
+      "entry_price": 26.645000457763672
+    },
+    {
+      "ticker": "NKE",
+      "all_sources": [
+        "insider_buying"
+      ],
+      "confluence_count": 1,
+      "priority": "critical",
+      "strategy": "insider_buying",
+      "discovery_date": "2026-04-24",
+      "was_ranked": false,
+      "rank_position": null,
+      "entry_price": 45.279998779296875
+    },
+    {
+      "ticker": "DLR",
+      "all_sources": [
+        "analyst_upgrades",
+        "earnings_beat"
+      ],
+      "confluence_count": 2,
+      "priority": "critical",
+      "strategy": "pead_drift",
+      "discovery_date": "2026-04-24",
+      "was_ranked": true,
+      "rank_position": 3,
+      "entry_price": 206.8699951171875
+    },
+    {
+      "ticker": "ACHC",
+      "all_sources": [
+        "short_squeeze"
+      ],
+      "confluence_count": 1,
+      "priority": "critical",
+      "strategy": "short_squeeze",
+      "discovery_date": "2026-04-24",
+      "was_ranked": true,
+      "rank_position": 11,
+      "entry_price": 26.43000030517578
+    },
+    {
+      "ticker": "BETR",
+      "all_sources": [
+        "short_squeeze"
+      ],
+      "confluence_count": 1,
+      "priority": "critical",
+      "strategy": "short_squeeze",
+      "discovery_date": "2026-04-24",
+      "was_ranked": false,
+      "rank_position": null,
+      "entry_price": 40.505001068115234
+    },
+    {
+      "ticker": "ASAN",
+      "all_sources": [
+        "short_squeeze"
+      ],
+      "confluence_count": 1,
+      "priority": "critical",
+      "strategy": "short_squeeze",
+      "discovery_date": "2026-04-24",
+      "was_ranked": false,
+      "rank_position": null,
+      "entry_price": 6.304999828338623
+    },
+    {
+      "ticker": "INTC",
+      "all_sources": [
+        "options_flow",
+        "earnings_beat"
+      ],
+      "confluence_count": 2,
+      "priority": "critical",
+      "strategy": "options_flow",
+      "discovery_date": "2026-04-24",
+      "was_ranked": false,
+      "rank_position": null,
+      "entry_price": 81.48500061035156
+    },
+    {
+      "ticker": "VOYA",
+      "all_sources": [
+        "technical_breakout"
+      ],
+      "confluence_count": 1,
+      "priority": "critical",
+      "strategy": "technical_breakout",
+      "discovery_date": "2026-04-24",
+      "was_ranked": true,
+      "rank_position": 2,
+      "entry_price": 78.93000030517578
+    },
+    {
+      "ticker": "NTST",
+      "all_sources": [
+        "earnings_beat"
+      ],
+      "confluence_count": 1,
+      "priority": "critical",
+      "strategy": "pead_drift",
+      "discovery_date": "2026-04-24",
+      "was_ranked": false,
+      "rank_position": null,
+      "entry_price": 20.760000228881836
+    },
+    {
+      "ticker": "PECO",
+      "all_sources": [
+        "earnings_beat"
+      ],
+      "confluence_count": 1,
+      "priority": "critical",
+      "strategy": "pead_drift",
+      "discovery_date": "2026-04-24",
+      "was_ranked": true,
+      "rank_position": 4,
+      "entry_price": 38.91999816894531
+    },
+    {
+      "ticker": "KOPN",
+      "all_sources": [
+        "earnings_beat"
+      ],
+      "confluence_count": 1,
+      "priority": "critical",
+      "strategy": "pead_drift",
+      "discovery_date": "2026-04-24",
+      "was_ranked": false,
+      "rank_position": null,
+      "entry_price": 3.7049999237060547
+    },
+    {
+      "ticker": "TAL",
+      "all_sources": [
+        "earnings_beat"
+      ],
+      "confluence_count": 1,
+      "priority": "critical",
+      "strategy": "pead_drift",
+      "discovery_date": "2026-04-24",
+      "was_ranked": false,
+      "rank_position": null,
+      "entry_price": 10.954999923706055
+    },
+    {
+      "ticker": "CCI",
+      "all_sources": [
+        "earnings_beat"
+      ],
+      "confluence_count": 1,
+      "priority": "critical",
+      "strategy": "pead_drift",
+      "discovery_date": "2026-04-24",
+      "was_ranked": true,
+      "rank_position": 1,
+      "entry_price": 85.72000122070312
+    },
+    {
+      "ticker": "THM",
+      "all_sources": [
+        "insider_buying"
+      ],
+      "confluence_count": 1,
+      "priority": "high",
+      "strategy": "insider_buying",
+      "discovery_date": "2026-04-24",
+      "was_ranked": false,
+      "rank_position": null,
+      "entry_price": 2.555000066757202
+    },
+    {
+      "ticker": "AVEX",
+      "all_sources": [
+        "insider_buying"
+      ],
+      "confluence_count": 1,
+      "priority": "high",
+      "strategy": "insider_buying",
+      "discovery_date": "2026-04-24",
+      "was_ranked": false,
+      "rank_position": null,
+      "entry_price": 30.639999389648438
+    },
+    {
+      "ticker": "BMI",
+      "all_sources": [
+        "insider_buying"
+      ],
+      "confluence_count": 1,
+      "priority": "high",
+      "strategy": "insider_buying",
+      "discovery_date": "2026-04-24",
+      "was_ranked": false,
+      "rank_position": null,
+      "entry_price": 122.66999816894531
+    },
+    {
+      "ticker": "BORR",
+      "all_sources": [
+        "insider_buying"
+      ],
+      "confluence_count": 1,
+      "priority": "high",
+      "strategy": "insider_buying",
+      "discovery_date": "2026-04-24",
+      "was_ranked": false,
+      "rank_position": null,
+      "entry_price": 5.59499979019165
+    },
+    {
+      "ticker": "SIRI",
+      "all_sources": [
+        "analyst_upgrades"
+      ],
+      "confluence_count": 1,
+      "priority": "low",
+      "strategy": "analyst_upgrade",
+      "discovery_date": "2026-04-24",
+      "was_ranked": false,
+      "rank_position": null,
+      "entry_price": 27.540000915527344
+    },
+    {
+      "ticker": "JPM",
+      "all_sources": [
+        "analyst_upgrades"
+      ],
+      "confluence_count": 1,
+      "priority": "high",
+      "strategy": "analyst_upgrade",
+      "discovery_date": "2026-04-24",
+      "was_ranked": false,
+      "rank_position": null,
+      "entry_price": 310.0899963378906
+    },
+    {
+      "ticker": "MCHP",
+      "all_sources": [
+        "analyst_upgrades",
+        "high_52w_breakout"
+      ],
+      "confluence_count": 2,
+      "priority": "low",
+      "strategy": "analyst_upgrade",
+      "discovery_date": "2026-04-24",
+      "was_ranked": false,
+      "rank_position": null,
+      "entry_price": 89.05000305175781
+    },
+    {
+      "ticker": "ROP",
+      "all_sources": [
+        "analyst_upgrades"
+      ],
+      "confluence_count": 1,
+      "priority": "high",
+      "strategy": "analyst_upgrade",
+      "discovery_date": "2026-04-24",
+      "was_ranked": false,
+      "rank_position": null,
+      "entry_price": 358.8349914550781
+    },
+    {
+      "ticker": "QCOM",
+      "all_sources": [
+        "analyst_upgrades"
+      ],
+      "confluence_count": 1,
+      "priority": "high",
+      "strategy": "analyst_upgrade",
+      "discovery_date": "2026-04-24",
+      "was_ranked": false,
+      "rank_position": null,
+      "entry_price": 146.2050018310547
+    },
+    {
+      "ticker": "BEN",
+      "all_sources": [
+        "analyst_upgrades"
+      ],
+      "confluence_count": 1,
+      "priority": "high",
+      "strategy": "analyst_upgrade",
+      "discovery_date": "2026-04-24",
+      "was_ranked": false,
+      "rank_position": null,
+      "entry_price": 27.0049991607666
+    },
+    {
+      "ticker": "IVZ",
+      "all_sources": [
+        "analyst_upgrades"
+      ],
+      "confluence_count": 1,
+      "priority": "high",
+      "strategy": "analyst_upgrade",
+      "discovery_date": "2026-04-24",
+      "was_ranked": false,
+      "rank_position": null,
+      "entry_price": 25.3799991607666
+    },
+    {
+      "ticker": "MTB",
+      "all_sources": [
+        "analyst_upgrades"
+      ],
+      "confluence_count": 1,
+      "priority": "high",
+      "strategy": "analyst_upgrade",
+      "discovery_date": "2026-04-24",
+      "was_ranked": false,
+      "rank_position": null,
+      "entry_price": 217.66000366210938
+    },
+    {
+      "ticker": "AMD",
+      "all_sources": [
+        "options_flow",
+        "reddit_dd"
+      ],
+      "confluence_count": 2,
+      "priority": "low",
+      "strategy": "options_flow",
+      "discovery_date": "2026-04-24",
+      "was_ranked": false,
+      "rank_position": null,
+      "entry_price": 345.42498779296875
+    },
+    {
+      "ticker": "UNP",
+      "all_sources": [
+        "options_flow",
+        "high_52w_breakout"
+      ],
+      "confluence_count": 2,
+      "priority": "high",
+      "strategy": "high_52w_breakout",
+      "discovery_date": "2026-04-24",
+      "was_ranked": false,
+      "rank_position": null,
+      "entry_price": 269.82000732421875
+    },
+    {
+      "ticker": "ON",
+      "all_sources": [
+        "high_52w_breakout",
+        "technical_breakout"
+      ],
+      "confluence_count": 2,
+      "priority": "low",
+      "strategy": "high_52w_breakout",
+      "discovery_date": "2026-04-24",
+      "was_ranked": false,
+      "rank_position": null,
+      "entry_price": 97.30999755859375
+    },
+    {
+      "ticker": "NEE",
+      "all_sources": [
+        "high_52w_breakout"
+      ],
+      "confluence_count": 1,
+      "priority": "high",
+      "strategy": "high_52w_breakout",
+      "discovery_date": "2026-04-24",
+      "was_ranked": true,
+      "rank_position": 5,
+      "entry_price": 95.6500015258789
+    },
+    {
+      "ticker": "ARMK",
+      "all_sources": [
+        "high_52w_breakout"
+      ],
+      "confluence_count": 1,
+      "priority": "high",
+      "strategy": "high_52w_breakout",
+      "discovery_date": "2026-04-24",
+      "was_ranked": false,
+      "rank_position": null,
+      "entry_price": 46.40999984741211
+    },
+    {
+      "ticker": "SEIC",
+      "all_sources": [
+        "technical_breakout"
+      ],
+      "confluence_count": 1,
+      "priority": "low",
+      "strategy": "technical_breakout",
+      "discovery_date": "2026-04-24",
+      "was_ranked": false,
+      "rank_position": null,
+      "entry_price": 90.20999908447266
+    },
+    {
+      "ticker": "CHTR",
+      "all_sources": [
+        "earnings_calendar"
+      ],
+      "confluence_count": 1,
+      "priority": "low",
+      "strategy": "earnings_play",
+      "discovery_date": "2026-04-24",
+      "was_ranked": false,
+      "rank_position": null,
+      "entry_price": 195.75
+    },
+    {
+      "ticker": "FHB",
+      "all_sources": [
+        "earnings_calendar"
+      ],
+      "confluence_count": 1,
+      "priority": "high",
+      "strategy": "earnings_play",
+      "discovery_date": "2026-04-24",
+      "was_ranked": false,
+      "rank_position": null,
+      "entry_price": 27.024999618530273
+    },
+    {
+      "ticker": "FLG",
+      "all_sources": [
+        "earnings_calendar"
+      ],
+      "confluence_count": 1,
+      "priority": "high",
+      "strategy": "earnings_play",
+      "discovery_date": "2026-04-24",
+      "was_ranked": false,
+      "rank_position": null,
+      "entry_price": 14.039999961853027
+    },
+    {
+      "ticker": "GTLS",
+      "all_sources": [
+        "earnings_calendar"
+      ],
+      "confluence_count": 1,
+      "priority": "high",
+      "strategy": "earnings_play",
+      "discovery_date": "2026-04-24",
+      "was_ranked": false,
+      "rank_position": null,
+      "entry_price": 207.9199981689453
+    },
+    {
+      "ticker": "NSC",
+      "all_sources": [
+        "earnings_calendar"
+      ],
+      "confluence_count": 1,
+      "priority": "high",
+      "strategy": "earnings_play",
+      "discovery_date": "2026-04-24",
+      "was_ranked": false,
+      "rank_position": null,
+      "entry_price": 319.7699890136719
+    },
+    {
+      "ticker": "KLRA",
+      "all_sources": [
+        "insider_buying"
+      ],
+      "confluence_count": 1,
+      "priority": "medium",
+      "strategy": "insider_buying",
+      "discovery_date": "2026-04-24",
+      "was_ranked": false,
+      "rank_position": null,
+      "entry_price": 24.9950008392334
+    },
+    {
+      "ticker": "ARXS",
+      "all_sources": [
+        "insider_buying"
+      ],
+      "confluence_count": 1,
+      "priority": "medium",
+      "strategy": "insider_buying",
+      "discovery_date": "2026-04-24",
+      "was_ranked": false,
+      "rank_position": null,
+      "entry_price": 36.790000915527344
+    },
+    {
+      "ticker": "TSLA",
+      "all_sources": [
+        "options_flow"
+      ],
+      "confluence_count": 1,
+      "priority": "medium",
+      "strategy": "options_flow",
+      "discovery_date": "2026-04-24",
+      "was_ranked": false,
+      "rank_position": null,
+      "entry_price": 376.55499267578125
+    },
+    {
+      "ticker": "AAPL",
+      "all_sources": [
+        "options_flow"
+      ],
+      "confluence_count": 1,
+      "priority": "medium",
+      "strategy": "options_flow",
+      "discovery_date": "2026-04-24",
+      "was_ranked": false,
+      "rank_position": null,
+      "entry_price": 272.0299987792969
+    },
+    {
+      "ticker": "AMZN",
+      "all_sources": [
+        "options_flow"
+      ],
+      "confluence_count": 1,
+      "priority": "medium",
+      "strategy": "options_flow",
+      "discovery_date": "2026-04-24",
+      "was_ranked": false,
+      "rank_position": null,
+      "entry_price": 260.82989501953125
+    },
+    {
+      "ticker": "NFLX",
+      "all_sources": [
+        "options_flow"
+      ],
+      "confluence_count": 1,
+      "priority": "low",
+      "strategy": "options_flow",
+      "discovery_date": "2026-04-24",
+      "was_ranked": false,
+      "rank_position": null,
+      "entry_price": 92.71499633789062
+    },
+    {
+      "ticker": "GOOG",
+      "all_sources": [
+        "options_flow"
+      ],
+      "confluence_count": 1,
+      "priority": "medium",
+      "strategy": "options_flow",
+      "discovery_date": "2026-04-24",
+      "was_ranked": false,
+      "rank_position": null,
+      "entry_price": 337.5400085449219
+    },
+    {
+      "ticker": "ADI",
+      "all_sources": [
+        "options_flow"
+      ],
+      "confluence_count": 1,
+      "priority": "low",
+      "strategy": "options_flow",
+      "discovery_date": "2026-04-24",
+      "was_ranked": false,
+      "rank_position": null,
+      "entry_price": 404.722900390625
+    },
+    {
+      "ticker": "TMO",
+      "all_sources": [
+        "options_flow"
+      ],
+      "confluence_count": 1,
+      "priority": "low",
+      "strategy": "options_flow",
+      "discovery_date": "2026-04-24",
+      "was_ranked": false,
+      "rank_position": null,
+      "entry_price": 471.0299987792969
+    },
+    {
+      "ticker": "HXL",
+      "all_sources": [
+        "technical_breakout"
+      ],
+      "confluence_count": 1,
+      "priority": "medium",
+      "strategy": "technical_breakout",
+      "discovery_date": "2026-04-24",
+      "was_ranked": true,
+      "rank_position": 7,
+      "entry_price": 88.61000061035156
+    },
+    {
+      "ticker": "WSC",
+      "all_sources": [
+        "technical_breakout"
+      ],
+      "confluence_count": 1,
+      "priority": "low",
+      "strategy": "technical_breakout",
+      "discovery_date": "2026-04-24",
+      "was_ranked": false,
+      "rank_position": null,
+      "entry_price": 22.280000686645508
+    },
+    {
+      "ticker": "KEYS",
+      "all_sources": [
+        "atr_compression"
+      ],
+      "confluence_count": 1,
+      "priority": "medium",
+      "strategy": "volatility_contraction_breakout",
+      "discovery_date": "2026-04-24",
+      "was_ranked": false,
+      "rank_position": null,
+      "entry_price": 348.125
+    },
+    {
+      "ticker": "HOLX",
+      "all_sources": [
+        "obv_divergence"
+      ],
+      "confluence_count": 1,
+      "priority": "medium",
+      "strategy": "volume_divergence",
+      "discovery_date": "2026-04-24",
+      "was_ranked": true,
+      "rank_position": 8,
+      "entry_price": 76.01
+    },
+    {
+      "ticker": "EXAS",
+      "all_sources": [
+        "obv_divergence"
+      ],
+      "confluence_count": 1,
+      "priority": "medium",
+      "strategy": "volume_divergence",
+      "discovery_date": "2026-04-24",
+      "was_ranked": false,
+      "rank_position": null,
+      "entry_price": 104.91
+    },
+    {
+      "ticker": "CPB",
+      "all_sources": [
+        "obv_divergence"
+      ],
+      "confluence_count": 1,
+      "priority": "medium",
+      "strategy": "volume_divergence",
+      "discovery_date": "2026-04-24",
+      "was_ranked": false,
+      "rank_position": null,
+      "entry_price": 20.844999313354492
+    },
+    {
+      "ticker": "CPRT",
+      "all_sources": [
+        "obv_divergence"
+      ],
+      "confluence_count": 1,
+      "priority": "medium",
+      "strategy": "volume_divergence",
+      "discovery_date": "2026-04-24",
+      "was_ranked": false,
+      "rank_position": null,
+      "entry_price": 33.217498779296875
+    },
+    {
+      "ticker": "DRI",
+      "all_sources": [
+        "obv_divergence"
+      ],
+      "confluence_count": 1,
+      "priority": "medium",
+      "strategy": "volume_divergence",
+      "discovery_date": "2026-04-24",
+      "was_ranked": true,
+      "rank_position": 9,
+      "entry_price": 201.10000610351562
+    },
+    {
+      "ticker": "EA",
+      "all_sources": [
+        "obv_divergence"
+      ],
+      "confluence_count": 1,
+      "priority": "medium",
+      "strategy": "volume_divergence",
+      "discovery_date": "2026-04-24",
+      "was_ranked": false,
+      "rank_position": null,
+      "entry_price": 202.49000549316406
+    },
+    {
+      "ticker": "CB",
+      "all_sources": [
+        "obv_divergence"
+      ],
+      "confluence_count": 1,
+      "priority": "medium",
+      "strategy": "volume_divergence",
+      "discovery_date": "2026-04-24",
+      "was_ranked": false,
+      "rank_position": null,
+      "entry_price": 329.32501220703125
+    },
+    {
+      "ticker": "PGR",
+      "all_sources": [
+        "obv_divergence"
+      ],
+      "confluence_count": 1,
+      "priority": "medium",
+      "strategy": "volume_divergence",
+      "discovery_date": "2026-04-24",
+      "was_ranked": true,
+      "rank_position": 10,
+      "entry_price": 201.72999572753906
+    },
+    {
+      "ticker": "CMS",
+      "all_sources": [
+        "obv_divergence"
+      ],
+      "confluence_count": 1,
+      "priority": "medium",
+      "strategy": "volume_divergence",
+      "discovery_date": "2026-04-24",
+      "was_ranked": false,
+      "rank_position": null,
+      "entry_price": 76.63500213623047
+    },
+    {
+      "ticker": "CAR",
+      "all_sources": [
+        "reddit_dd"
+      ],
+      "confluence_count": 1,
+      "priority": "low",
+      "strategy": "social_dd",
+      "discovery_date": "2026-04-24",
+      "was_ranked": false,
+      "rank_position": null,
+      "entry_price": 233.0
+    },
+    {
+      "ticker": "KEEL",
+      "all_sources": [
+        "reddit_dd"
+      ],
+      "confluence_count": 1,
+      "priority": "medium",
+      "strategy": "social_dd",
+      "discovery_date": "2026-04-24",
+      "was_ranked": false,
+      "rank_position": null,
+      "entry_price": 3.369999885559082
+    }
+  ]
+}
