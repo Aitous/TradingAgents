@@ -301,6 +301,7 @@ def render() -> None:
             hide_index=True,
             on_select="rerun",
             selection_mode="single-row",
+            height=35 * len(display_df) + 38,  # fit all rows without inner scroll
             column_config={
                 "Win Rate 1d": st.column_config.ProgressColumn(
                     "Win Rate 1d",
