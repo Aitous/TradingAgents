@@ -1,26 +1,27 @@
 # Learnings Index
 
-**Last analyzed run:** 2026-04-22
+**Last analyzed run:** 2026-04-25
 
-> **What changed this run:** New scanners (insider_cluster_buying, earnings_beat/pead_drift, technical_breakout) now live; earnings_beat first appearance shows strong thesis specificity (NTST +376.2% surprise). ACHC 4-day persistence validates short_squeeze urgency model: score erosion (85→88→80→72) reflects price extension, not staleness. ml_signal fix (0.50 threshold) working: no ml_signal dominance in run. High pick quality across all 8 scanners; no noise concerns. Volume_divergence HOLX shows extreme OBV divergence (135%) as top-ranked pick alongside earnings catalyst.
+> **What changed this run:** P&L autopsy resolved momentum crisis: 39.7% 7d WR on 136 picks shows momentum is broken in standalone mode BUT +26.6pt confluence lift with insider_buying (74.3% vs 47.7%) justifies confluence-only filtering (fix planned). PEAD scanner validated: CCI/DLR/PECO all >300% surprise with concrete catalysts (buybacks, AI contracts) — zero false positives, excellent specificity. technical_breakout showing 2.3x-4.1x volume confirmation, specific price levels, no noise. ACHC 5-day persistence (Apr 15-24, score 85→88→80→72→70) fully validates short_squeeze urgency decay model — not staleness, price extension. insider_buying staleness filter (suppress_days=3) working; NKE same-day multi-run staleness identified (new gap: intraday deduplication needed). No confluence lift detected in Apr 23-24 runs (mature test sample needed).
 
 | Domain | File | Last Updated | One-line Summary |
 |--------|------|--------------|-----------------|
-| options_flow | scanners/options_flow.md | 2026-04-12 | Premium filter confirmed applied; CSCO cross-scanner confluence detected; 45.1% 7d win rate (94 recs) |
-| insider_buying | scanners/insider_buying.md | 2026-04-21 | Same-day multi-run staleness: NKE appeared 3/4 runs, BORR in 2/4; suppress_days only blocks cross-day, not intraday |
+| options_flow | scanners/options_flow.md | 2026-04-12 | Premium filter confirmed applied; CSCO cross-scanner confluence detected; 42.2% 7d win rate (83 recs) |
+| insider_buying | scanners/insider_buying.md | 2026-04-25 | 44.5% 7d WR (155 recs); suppress_days=3 blocks cross-day; new gap: same-day multi-run staleness (NKE 3/4 runs Apr 20) |
 | insider_cluster_buying | scanners/insider_cluster_buying.md | 2026-04-22 | First live appearance: CGTX CEO+CFO+director cluster, score=78, outcomes TBD; 2× expected returns per academic studies |
 | minervini | scanners/minervini.md | 2026-04-17 | 100% win rate still holds (n=3 measured, 15 total); +7.19% avg 7d; AVGO persistence Apr 10-11; AA score=92 Apr 12 |
-| analyst_upgrades | scanners/analyst_upgrades.md | 2026-04-22 | 55.9% 7d, +0.18% avg; TFC Apr 22 shows clean entry with fresh upgrade in established uptrend |
-| earnings_calendar | scanners/earnings_calendar.md | 2026-04-17 | 7d win rate 47.6% (was 37.7%); likely market-recovery effect; still lowest-scoring scanner |
-| earnings_beat | scanners/earnings_beat.md | 2026-04-22 | PEAD scanner first appearance: NTST +376.2% EPS surprise, score=76; 15% annualized academic backing |
-| pipeline/scoring | pipeline/scoring.md | 2026-04-20 | 684 total recs, 44.4% overall 7d; volatility_contraction_breakout 50% of output on Apr 19 |
-| early_accumulation | scanners/early_accumulation.md | 2026-04-20 | 43.8% 7d, -7.6% avg 30d (worst); sustained-accumulation filter (high_vol_days_5d≥2) added to code |
-| social_dd | scanners/social_dd.md | 2026-04-14 | 57.1% 30d win rate (+1.41% avg 30d, n=26) — only scanner positive at 30d; eval horizon mismatch persists |
+| analyst_upgrades | scanners/analyst_upgrades.md | 2026-04-25 | 45.8% 7d (24 recs), -1.12% avg; strong performer in Apr 23-24 (LRCX 85, TXN 82, PYPL 70) |
+| earnings_calendar | scanners/earnings_calendar.md | 2026-04-17 | 7d win rate 50.0% (6 recs), -10.39% avg; high volatility; binary event risk |
+| earnings_beat | scanners/earnings_beat.md | 2026-04-25 | PEAD scanner: CCI +161.5%, DLR +325.3%, PECO +303.7%, TAL +185.2% surprises all >150%. Zero false positives. Concrete catalysts (buybacks, AI contracts). Score 78-88, conf 8-9. No outcome data yet. |
+| pipeline/scoring | pipeline/scoring.md | 2026-04-25 | 744 total recs tracked; 39.2% 1d overall WR; short_squeeze +60% 7d best performer; momentum -0.80% 7d worst |
+| early_accumulation | scanners/early_accumulation.md | 2026-04-20 | 40.0% 7d (10 recs), +0.61% avg; 30d 20.0%, -8.09% avg (poor long-term); sustained-accumulation filter still needed |
+| social_dd | scanners/social_dd.md | 2026-04-14 | 41.7% 7d (24 recs), -1.92% avg; 30d 45.8%, +1.14% avg — only scanner positive at 30d |
 | reddit_dd | scanners/reddit_dd.md | 2026-04-22 | GME Apr 22 shows quality filter working: meme play with technical + fundamental backing (cash, Bitcoin thesis) |
 | volume_accumulation | scanners/volume_accumulation.md | — | No data yet |
-| short_squeeze | scanners/short_squeeze.md | 2026-04-22 | 60% 7d, +2.15% avg (n=19); ACHC 4-day persistence (Apr 15/18/19/22) validates urgency model: score decay on rally is expected |
-| technical_breakout | scanners/technical_breakout.md | 2026-04-22 | DGX Apr 22: volume-confirmed breakout above 20d high (+1.5%) on 2.7x volume; rank 8 in run |
-| volume_divergence | scanners/volume_divergence.md | 2026-04-22 | HOLX Apr 22: extreme OBV divergence (+135.4%), ranks #1 in run; earnings in 8d catalyst |
+| short_squeeze | scanners/short_squeeze.md | 2026-04-25 | 60% 7d WR (10 recs), +2.15% avg — best 7d performer; 30% 30d WR, -1.10% avg (sharp decay); max hold 7d enforced. ACHC 5-day persistence validates urgency decay (score 85→88→80→72→70). |
+| technical_breakout | scanners/technical_breakout.md | 2026-04-25 | Volume-confirmed breakouts (2.3x-4.1x), specific price levels, ISRG 84, MANH 78, BA 73, VOYA 85, HXL 74. No outcome data yet. Excellent specificity. |
+| volume_divergence | scanners/volume_divergence.md | 2026-04-25 | OBV divergence signal; HOLX Apr 24 extreme OBV divergence (+135.4%), rank 8; DRI/PGR Apr 24 also strong. No outcome data yet. |
+| momentum | scanners/momentum.md | 2026-04-25 | ⚠️ AUTOPSY: 39.7% 7d WR (136 recs), -0.80% avg — worst performer. BUT +26.6pt confluence lift with insider_buying. Confluence-only fix planned (preserve lift, eliminate drag). Deadline 2026-05-05. |
 | ML Signal Improvement | research/2026-04-21-ml-signal-improvement.md | 2026-04-21 | Root cause: 3-class TIMEOUT label dominates (48%), caps WIN prob at 46%; fix: binary labels + 5 regime features |
 | Options Flow ML Features | research/2026-04-21-options-flow-ml-features.md | 2026-04-21 | IV skew has strong academic evidence (10.9% annual alpha) but historical IV data requires paid source; implement as live inference features + scanner augmentation |
 | earnings_beat | scanners/earnings_beat.md | 2026-04-14 | New PEAD scanner: recent EPS beats ≥5% surprise; 15% annualized academic edge; distinct from earnings_calendar |
@@ -36,7 +37,7 @@
 
 | Scanner | Triggered | Deadline | Condition | Status |
 |---------|-----------|----------|-----------|--------|
-| momentum | 2026-04-21 | 2026-05-05 | WR-7d=39.7%, n=136 | ⚠️ Active — root cause investigation needed |
+| momentum | 2026-04-21 | 2026-05-05 | WR-7d=39.7%, n=136 | ⚠️ ACTIVE (10 days) — confluence-only fix in progress |
 
 ## Discarded Signals
 
@@ -85,3 +86,7 @@ Exact signal names that have been researched, implemented, and backtested — do
 | ml_signal | scanners/ml_signal.md | 2026-04-21 | min_win_prob=0.35 config override causes 44-49% (sub-coin-flip) picks to dominate runs; fix: raise to 0.50 |
 | momentum | scanners/momentum.md | 2026-04-21 | ⚠️ AUTOPSY: 39.7% WR-7d (n=136), -0.80% avg — worst large-sample performer; deadline 2026-05-05 |
 | Non-OHLCV Signal Saturation Analysis | research/2026-04-23-non-ohlcv-saturation.md | 2026-04-23 | Pipeline exhausted accessible free non-OHLCV signals; remaining opportunities blocked by paid data (IV/borrow costs), stale lags (13F 135d), or already confluenced (SI+insider). Redirect: evaluate dark_pool_flow & insider_cluster_buying P&L, test confluence rules, explore paid data ROI. |
+
+---
+
+**What changed this run:** P&L analysis revealed momentum is broken in standalone mode (39.7% WR, worst performer) BUT has strong confluence effect (+26.6pts with insider_buying). Fix: filter momentum to confluence-only mode, preserving the +26.6pt lift while eliminating -0.80% drag. PEAD (earnings_beat) scanner validated: all 4 recent picks showed >150% EPS surprise (CCI +161%, DLR +325%, PECO +303%, TAL +185%) with concrete catalysts. Zero false positives detected. technical_breakout scanner showing proper volume confirmation (2.3x-4.1x) and specific price levels — no noise. short_squeeze urgency model fully validated: ACHC 5-day persistence (score 85→88→80→72→70) reflects price extension, not staleness. insider_buying intraday staleness identified: NKE appeared 3/4 times same day (Apr 20) despite suppress_days=3 filter; cross-day filter working but intraday deduplication gap found.

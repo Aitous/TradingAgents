@@ -1,6 +1,7 @@
 import json
 import re
 from datetime import datetime, timedelta
+from pathlib import Path
 from typing import Any, Callable, Dict, List
 
 import pandas as pd
@@ -168,6 +169,7 @@ class CandidateFilter:
 
         priority_order = self._priority_order()
         candidates = self._dedupe_candidates(candidates, priority_order)
+        candidates = self._apply_momentum_confluence_filter(candidates, end_date_obj)
         candidates = self._sort_by_priority(candidates, priority_order)
         self._log_priority_breakdown(candidates)
 
@@ -223,6 +225,61 @@ class CandidateFilter:
             "candidate_metadata": filtered_candidates,
             "status": "filtered",
         }
+
+    def _apply_momentum_confluence_filter(
+        self, candidates: List[Dict[str, Any]], trade_date_obj: Any
+    ) -> List[Dict[str, Any]]:
+        """Drop standalone momentum candidates; keep only those confirmed by insider_buying or options_flow."""
+        CONFLUENCE_SCANNERS = {"insider_buying", "options_flow"}
+        MOMENTUM_STRATEGY = "momentum"
+
+        # Tickers appearing in THIS run from confluence scanners
+        current_confluence: set = set()
+        for cand in candidates:
+            sources = cand.get("all_sources", [cand.get("source", "")])
+            if CONFLUENCE_SCANNERS & set(sources):
+                current_confluence.add(cand["ticker"])
+
+        # Tickers from past 3 days' scanner_picks files
+        historical_confluence: set = set()
+        picks_dir = Path(self.config.get("data_dir", "data")) / "scanner_picks"
+        for days_back in range(1, 4):
+            date_str = (trade_date_obj - timedelta(days=days_back)).strftime("%Y-%m-%d")
+            picks_file = picks_dir / f"{date_str}.json"
+            if picks_file.exists():
+                try:
+                    with open(picks_file) as fh:
+                        data = json.load(fh)
+                    for row in data.get("picks", []):
+                        if row.get("scanner") in CONFLUENCE_SCANNERS:
+                            historical_confluence.add(row["ticker"])
+                except Exception:
+                    pass
+
+        confluence_tickers = current_confluence | historical_confluence
+
+        result = []
+        dropped = 0
+        for cand in candidates:
+            strategy = cand.get("strategy", "")
+            sources = set(cand.get("all_sources", [cand.get("source", "")]))
+            is_pure_momentum = strategy == MOMENTUM_STRATEGY and not (
+                sources & CONFLUENCE_SCANNERS
+            )
+            if is_pure_momentum:
+                if cand["ticker"] not in confluence_tickers:
+                    dropped += 1
+                    continue
+                cand["context"] = cand.get("context", "") + " | confluence_confirmed: insider_buying or options_flow within 3d"
+                cand["confluence_confirmed"] = True
+            result.append(cand)
+
+        if dropped:
+            logger.info(
+                f"Momentum confluence filter: dropped {dropped} standalone momentum candidates, "
+                f"{len(confluence_tickers)} confluence tickers available"
+            )
+        return result
 
     def _priority_order(self) -> Dict[str, int]:
         return dict(PRIORITY_ORDER)
