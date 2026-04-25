@@ -1,5 +1,5 @@
 {
-  "total_recommendations": 744,
+  "total_recommendations": 752,
   "by_strategy": {
     "momentum": {
       "count": 136,
@@ -32,17 +32,17 @@
       "win_rate_30d": 31.2
     },
     "insider_buying": {
-      "count": 194,
-      "wins_1d": 71,
-      "losses_1d": 108,
+      "count": 198,
+      "wins_1d": 72,
+      "losses_1d": 109,
       "wins_7d": 84,
       "losses_7d": 93,
       "wins_30d": 71,
       "losses_30d": 84,
-      "avg_return_1d": 0.06,
+      "avg_return_1d": 0.07,
       "avg_return_7d": -0.11,
       "avg_return_30d": 1.21,
-      "win_rate_1d": 39.7,
+      "win_rate_1d": 39.8,
       "win_rate_7d": 47.5,
       "win_rate_30d": 45.8
     },
@@ -107,17 +107,17 @@
       "win_rate_30d": 33.3
     },
     "short_squeeze": {
-      "count": 24,
-      "wins_1d": 7,
+      "count": 26,
+      "wins_1d": 8,
       "losses_1d": 9,
       "wins_7d": 7,
       "losses_7d": 4,
       "wins_30d": 3,
       "losses_30d": 7,
-      "avg_return_1d": 0.3,
+      "avg_return_1d": 0.5,
       "avg_return_7d": 2.29,
       "avg_return_30d": -1.1,
-      "win_rate_1d": 43.8,
+      "win_rate_1d": 47.1,
       "win_rate_7d": 63.6,
       "win_rate_30d": 30.0
     },
@@ -212,56 +212,56 @@
     },
     "technical_breakout": {
       "count": 7,
-      "wins_1d": 3,
+      "wins_1d": 5,
       "losses_1d": 1,
       "wins_7d": 0,
       "losses_7d": 0,
       "wins_30d": 0,
       "losses_30d": 0,
-      "avg_return_1d": 0.59,
+      "avg_return_1d": 0.86,
       "avg_return_7d": 0,
       "avg_return_30d": 0,
-      "win_rate_1d": 75.0
+      "win_rate_1d": 83.3
     },
     "pead_drift": {
-      "count": 7,
-      "wins_1d": 1,
-      "losses_1d": 1,
+      "count": 9,
+      "wins_1d": 3,
+      "losses_1d": 2,
       "wins_7d": 0,
       "losses_7d": 0,
       "wins_30d": 0,
       "losses_30d": 0,
-      "avg_return_1d": 0.39,
+      "avg_return_1d": -0.1,
       "avg_return_7d": 0,
       "avg_return_30d": 0,
-      "win_rate_1d": 50.0
+      "win_rate_1d": 60.0
     },
     "volume_divergence": {
       "count": 18,
       "wins_1d": 3,
-      "losses_1d": 6,
+      "losses_1d": 9,
       "wins_7d": 2,
       "losses_7d": 3,
       "wins_30d": 0,
       "losses_30d": 0,
-      "avg_return_1d": -0.16,
+      "avg_return_1d": -0.14,
       "avg_return_7d": 0.25,
       "avg_return_30d": 0,
-      "win_rate_1d": 33.3,
+      "win_rate_1d": 25.0,
       "win_rate_7d": 40.0
     },
     "high_52w_breakout": {
       "count": 9,
       "wins_1d": 2,
-      "losses_1d": 0,
+      "losses_1d": 1,
       "wins_7d": 0,
       "losses_7d": 0,
       "wins_30d": 0,
       "losses_30d": 0,
-      "avg_return_1d": 4.21,
+      "avg_return_1d": 2.66,
       "avg_return_7d": 0,
       "avg_return_30d": 0,
-      "win_rate_1d": 100.0
+      "win_rate_1d": 66.7
     },
     "volatility_contraction_breakout": {
       "count": 11,
@@ -317,10 +317,10 @@
     }
   },
   "overall_1d": {
-    "count": 662,
-    "wins": 271,
-    "avg_return": -0.1,
-    "win_rate": 40.9
+    "count": 674,
+    "wins": 277,
+    "avg_return": -0.09,
+    "win_rate": 41.1
   },
   "overall_7d": {
     "count": 610,

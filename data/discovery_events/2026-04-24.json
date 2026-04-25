@@ -12,7 +12,9 @@
       "discovery_date": "2026-04-24",
       "was_ranked": false,
       "rank_position": null,
-      "entry_price": 4.625
+      "entry_price": 4.625,
+      "return_1d": 1.62,
+      "win_1d": true
     },
     {
       "ticker": "ALMR",
@@ -25,7 +27,9 @@
       "discovery_date": "2026-04-24",
       "was_ranked": false,
       "rank_position": null,
-      "entry_price": 24.665000915527344
+      "entry_price": 24.665000915527344,
+      "return_1d": 0.71,
+      "win_1d": true
     },
     {
       "ticker": "HTO",
@@ -38,7 +42,9 @@
       "discovery_date": "2026-04-24",
       "was_ranked": false,
       "rank_position": null,
-      "entry_price": 61.22999954223633
+      "entry_price": 61.22999954223633,
+      "return_1d": -2.47,
+      "win_1d": false
     },
     {
       "ticker": "RZLV",
@@ -51,7 +57,9 @@
       "discovery_date": "2026-04-24",
       "was_ranked": true,
       "rank_position": 12,
-      "entry_price": 2.575000047683716
+      "entry_price": 2.575000047683716,
+      "return_1d": 1.75,
+      "win_1d": true
     },
     {
       "ticker": "HOMB",
@@ -65,7 +73,9 @@
       "discovery_date": "2026-04-24",
       "was_ranked": true,
       "rank_position": 6,
-      "entry_price": 26.645000457763672
+      "entry_price": 26.645000457763672,
+      "return_1d": -0.69,
+      "win_1d": false
     },
     {
       "ticker": "NKE",
@@ -78,7 +88,9 @@
       "discovery_date": "2026-04-24",
       "was_ranked": false,
       "rank_position": null,
-      "entry_price": 45.279998779296875
+      "entry_price": 45.279998779296875,
+      "return_1d": -1.3,
+      "win_1d": false
     },
     {
       "ticker": "DLR",
@@ -92,7 +104,9 @@
       "discovery_date": "2026-04-24",
       "was_ranked": true,
       "rank_position": 3,
-      "entry_price": 206.8699951171875
+      "entry_price": 206.8699951171875,
+      "return_1d": -3.32,
+      "win_1d": false
     },
     {
       "ticker": "ACHC",
@@ -105,7 +119,9 @@
       "discovery_date": "2026-04-24",
       "was_ranked": true,
       "rank_position": 11,
-      "entry_price": 26.43000030517578
+      "entry_price": 26.43000030517578,
+      "return_1d": 3.59,
+      "win_1d": true
     },
     {
       "ticker": "BETR",
@@ -118,7 +134,9 @@
       "discovery_date": "2026-04-24",
       "was_ranked": false,
       "rank_position": null,
-      "entry_price": 40.505001068115234
+      "entry_price": 40.505001068115234,
+      "return_1d": 5.02,
+      "win_1d": true
     },
     {
       "ticker": "ASAN",
@@ -131,7 +149,9 @@
       "discovery_date": "2026-04-24",
       "was_ranked": false,
       "rank_position": null,
-      "entry_price": 6.304999828338623
+      "entry_price": 6.304999828338623,
+      "return_1d": 1.35,
+      "win_1d": true
     },
     {
       "ticker": "INTC",
@@ -145,7 +165,9 @@
       "discovery_date": "2026-04-24",
       "was_ranked": false,
       "rank_position": null,
-      "entry_price": 81.48500061035156
+      "entry_price": 81.48500061035156,
+      "return_1d": 1.29,
+      "win_1d": true
     },
     {
       "ticker": "VOYA",
@@ -158,7 +180,9 @@
       "discovery_date": "2026-04-24",
       "was_ranked": true,
       "rank_position": 2,
-      "entry_price": 78.93000030517578
+      "entry_price": 78.93000030517578,
+      "return_1d": 1.8,
+      "win_1d": true
     },
     {
       "ticker": "NTST",
@@ -171,7 +195,9 @@
       "discovery_date": "2026-04-24",
       "was_ranked": false,
       "rank_position": null,
-      "entry_price": 20.760000228881836
+      "entry_price": 20.760000228881836,
+      "return_1d": -0.96,
+      "win_1d": false
     },
     {
       "ticker": "PECO",
@@ -184,7 +210,9 @@
       "discovery_date": "2026-04-24",
       "was_ranked": true,
       "rank_position": 4,
-      "entry_price": 38.91999816894531
+      "entry_price": 38.91999816894531,
+      "return_1d": 1.39,
+      "win_1d": true
     },
     {
       "ticker": "KOPN",
@@ -197,7 +225,9 @@
       "discovery_date": "2026-04-24",
       "was_ranked": false,
       "rank_position": null,
-      "entry_price": 3.7049999237060547
+      "entry_price": 3.7049999237060547,
+      "return_1d": -0.13,
+      "win_1d": false
     },
     {
       "ticker": "TAL",
@@ -210,7 +240,9 @@
       "discovery_date": "2026-04-24",
       "was_ranked": false,
       "rank_position": null,
-      "entry_price": 10.954999923706055
+      "entry_price": 10.954999923706055,
+      "return_1d": 2.6,
+      "win_1d": true
     },
     {
       "ticker": "CCI",
@@ -223,7 +255,9 @@
       "discovery_date": "2026-04-24",
       "was_ranked": true,
       "rank_position": 1,
-      "entry_price": 85.72000122070312
+      "entry_price": 85.72000122070312,
+      "return_1d": 0.72,
+      "win_1d": true
     },
     {
       "ticker": "THM",
@@ -236,7 +270,9 @@
       "discovery_date": "2026-04-24",
       "was_ranked": false,
       "rank_position": null,
-      "entry_price": 2.555000066757202
+      "entry_price": 2.555000066757202,
+      "return_1d": 2.94,
+      "win_1d": true
     },
     {
       "ticker": "AVEX",
@@ -249,7 +285,9 @@
       "discovery_date": "2026-04-24",
       "was_ranked": false,
       "rank_position": null,
-      "entry_price": 30.639999389648438
+      "entry_price": 30.639999389648438,
+      "return_1d": -3.07,
+      "win_1d": false
     },
     {
       "ticker": "BMI",
@@ -262,7 +300,9 @@
       "discovery_date": "2026-04-24",
       "was_ranked": false,
       "rank_position": null,
-      "entry_price": 122.66999816894531
+      "entry_price": 122.66999816894531,
+      "return_1d": -0.68,
+      "win_1d": false
     },
     {
       "ticker": "BORR",
@@ -275,7 +315,9 @@
       "discovery_date": "2026-04-24",
       "was_ranked": false,
       "rank_position": null,
-      "entry_price": 5.59499979019165
+      "entry_price": 5.59499979019165,
+      "return_1d": 1.7,
+      "win_1d": true
     },
     {
       "ticker": "SIRI",
@@ -288,7 +330,9 @@
       "discovery_date": "2026-04-24",
       "was_ranked": false,
       "rank_position": null,
-      "entry_price": 27.540000915527344
+      "entry_price": 27.540000915527344,
+      "return_1d": -3.38,
+      "win_1d": false
     },
     {
       "ticker": "JPM",
@@ -301,7 +345,9 @@
       "discovery_date": "2026-04-24",
       "was_ranked": false,
       "rank_position": null,
-      "entry_price": 310.0899963378906
+      "entry_price": 310.0899963378906,
+      "return_1d": -0.58,
+      "win_1d": false
     },
     {
       "ticker": "MCHP",
@@ -315,7 +361,9 @@
       "discovery_date": "2026-04-24",
       "was_ranked": false,
       "rank_position": null,
-      "entry_price": 89.05000305175781
+      "entry_price": 89.05000305175781,
+      "return_1d": 0.44,
+      "win_1d": true
     },
     {
       "ticker": "ROP",
@@ -328,7 +376,9 @@
       "discovery_date": "2026-04-24",
       "was_ranked": false,
       "rank_position": null,
-      "entry_price": 358.8349914550781
+      "entry_price": 358.8349914550781,
+      "return_1d": -1.51,
+      "win_1d": false
     },
     {
       "ticker": "QCOM",
@@ -341,7 +391,9 @@
       "discovery_date": "2026-04-24",
       "was_ranked": false,
       "rank_position": null,
-      "entry_price": 146.2050018310547
+      "entry_price": 146.2050018310547,
+      "return_1d": 1.81,
+      "win_1d": true
     },
     {
       "ticker": "BEN",
@@ -354,7 +406,9 @@
       "discovery_date": "2026-04-24",
       "was_ranked": false,
       "rank_position": null,
-      "entry_price": 27.0049991607666
+      "entry_price": 27.0049991607666,
+      "return_1d": 0.43,
+      "win_1d": true
     },
     {
       "ticker": "IVZ",
@@ -367,7 +421,9 @@
       "discovery_date": "2026-04-24",
       "was_ranked": false,
       "rank_position": null,
-      "entry_price": 25.3799991607666
+      "entry_price": 25.3799991607666,
+      "return_1d": 0.51,
+      "win_1d": true
     },
     {
       "ticker": "MTB",
@@ -380,7 +436,9 @@
       "discovery_date": "2026-04-24",
       "was_ranked": false,
       "rank_position": null,
-      "entry_price": 217.66000366210938
+      "entry_price": 217.66000366210938,
+      "return_1d": -1.26,
+      "win_1d": false
     },
     {
       "ticker": "AMD",
@@ -394,7 +452,9 @@
       "discovery_date": "2026-04-24",
       "was_ranked": false,
       "rank_position": null,
-      "entry_price": 345.42498779296875
+      "entry_price": 345.42498779296875,
+      "return_1d": 0.69,
+      "win_1d": true
     },
     {
       "ticker": "UNP",
@@ -408,7 +468,9 @@
       "discovery_date": "2026-04-24",
       "was_ranked": false,
       "rank_position": null,
-      "entry_price": 269.82000732421875
+      "entry_price": 269.82000732421875,
+      "return_1d": -0.42,
+      "win_1d": false
     },
     {
       "ticker": "ON",
@@ -422,7 +484,9 @@
       "discovery_date": "2026-04-24",
       "was_ranked": false,
       "rank_position": null,
-      "entry_price": 97.30999755859375
+      "entry_price": 97.30999755859375,
+      "return_1d": 1.12,
+      "win_1d": true
     },
     {
       "ticker": "NEE",
@@ -435,7 +499,9 @@
       "discovery_date": "2026-04-24",
       "was_ranked": true,
       "rank_position": 5,
-      "entry_price": 95.6500015258789
+      "entry_price": 95.6500015258789,
+      "return_1d": -0.39,
+      "win_1d": false
     },
     {
       "ticker": "ARMK",
@@ -448,7 +514,9 @@
       "discovery_date": "2026-04-24",
       "was_ranked": false,
       "rank_position": null,
-      "entry_price": 46.40999984741211
+      "entry_price": 46.40999984741211,
+      "return_1d": -0.28,
+      "win_1d": false
     },
     {
       "ticker": "SEIC",
@@ -461,7 +529,9 @@
       "discovery_date": "2026-04-24",
       "was_ranked": false,
       "rank_position": null,
-      "entry_price": 90.20999908447266
+      "entry_price": 90.20999908447266,
+      "return_1d": -1.52,
+      "win_1d": false
     },
     {
       "ticker": "CHTR",
@@ -474,7 +544,9 @@
       "discovery_date": "2026-04-24",
       "was_ranked": false,
       "rank_position": null,
-      "entry_price": 195.75
+      "entry_price": 195.75,
+      "return_1d": -7.98,
+      "win_1d": false
     },
     {
       "ticker": "FHB",
@@ -487,7 +559,9 @@
       "discovery_date": "2026-04-24",
       "was_ranked": false,
       "rank_position": null,
-      "entry_price": 27.024999618530273
+      "entry_price": 27.024999618530273,
+      "return_1d": -2.28,
+      "win_1d": false
     },
     {
       "ticker": "FLG",
@@ -500,7 +574,9 @@
       "discovery_date": "2026-04-24",
       "was_ranked": false,
       "rank_position": null,
-      "entry_price": 14.039999961853027
+      "entry_price": 14.039999961853027,
+      "return_1d": -0.07,
+      "win_1d": false
     },
     {
       "ticker": "GTLS",
@@ -513,7 +589,9 @@
       "discovery_date": "2026-04-24",
       "was_ranked": false,
       "rank_position": null,
-      "entry_price": 207.9199981689453
+      "entry_price": 207.9199981689453,
+      "return_1d": -0.03,
+      "win_1d": false
     },
     {
       "ticker": "NSC",
@@ -526,7 +604,9 @@
       "discovery_date": "2026-04-24",
       "was_ranked": false,
       "rank_position": null,
-      "entry_price": 319.7699890136719
+      "entry_price": 319.7699890136719,
+      "return_1d": -0.02,
+      "win_1d": false
     },
     {
       "ticker": "KLRA",
@@ -539,7 +619,9 @@
       "discovery_date": "2026-04-24",
       "was_ranked": false,
       "rank_position": null,
-      "entry_price": 24.9950008392334
+      "entry_price": 24.9950008392334,
+      "return_1d": -10.1,
+      "win_1d": false
     },
     {
       "ticker": "ARXS",
@@ -552,7 +634,9 @@
       "discovery_date": "2026-04-24",
       "was_ranked": false,
       "rank_position": null,
-      "entry_price": 36.790000915527344
+      "entry_price": 36.790000915527344,
+      "return_1d": -4.87,
+      "win_1d": false
     },
     {
       "ticker": "TSLA",
@@ -565,7 +649,9 @@
       "discovery_date": "2026-04-24",
       "was_ranked": false,
       "rank_position": null,
-      "entry_price": 376.55499267578125
+      "entry_price": 376.55499267578125,
+      "return_1d": -0.07,
+      "win_1d": false
     },
     {
       "ticker": "AAPL",
@@ -578,7 +664,9 @@
       "discovery_date": "2026-04-24",
       "was_ranked": false,
       "rank_position": null,
-      "entry_price": 272.0299987792969
+      "entry_price": 272.0299987792969,
+      "return_1d": -0.36,
+      "win_1d": false
     },
     {
       "ticker": "AMZN",
@@ -591,7 +679,9 @@
       "discovery_date": "2026-04-24",
       "was_ranked": false,
       "rank_position": null,
-      "entry_price": 260.82989501953125
+      "entry_price": 260.82989501953125,
+      "return_1d": 1.21,
+      "win_1d": true
     },
     {
       "ticker": "NFLX",
@@ -604,7 +694,9 @@
       "discovery_date": "2026-04-24",
       "was_ranked": false,
       "rank_position": null,
-      "entry_price": 92.71499633789062
+      "entry_price": 92.71499633789062,
+      "return_1d": -0.3,
+      "win_1d": false
     },
     {
       "ticker": "GOOG",
@@ -617,7 +709,9 @@
       "discovery_date": "2026-04-24",
       "was_ranked": false,
       "rank_position": null,
-      "entry_price": 337.5400085449219
+      "entry_price": 337.5400085449219,
+      "return_1d": 1.42,
+      "win_1d": true
     },
     {
       "ticker": "ADI",
@@ -630,7 +724,9 @@
       "discovery_date": "2026-04-24",
       "was_ranked": false,
       "rank_position": null,
-      "entry_price": 404.722900390625
+      "entry_price": 404.722900390625,
+      "return_1d": -1.27,
+      "win_1d": false
     },
     {
       "ticker": "TMO",
@@ -643,7 +739,9 @@
       "discovery_date": "2026-04-24",
       "was_ranked": false,
       "rank_position": null,
-      "entry_price": 471.0299987792969
+      "entry_price": 471.0299987792969,
+      "return_1d": -0.28,
+      "win_1d": false
     },
     {
       "ticker": "HXL",
@@ -656,7 +754,9 @@
       "discovery_date": "2026-04-24",
       "was_ranked": true,
       "rank_position": 7,
-      "entry_price": 88.61000061035156
+      "entry_price": 88.61000061035156,
+      "return_1d": 0.88,
+      "win_1d": true
     },
     {
       "ticker": "WSC",
@@ -669,7 +769,9 @@
       "discovery_date": "2026-04-24",
       "was_ranked": false,
       "rank_position": null,
-      "entry_price": 22.280000686645508
+      "entry_price": 22.280000686645508,
+      "return_1d": 1.71,
+      "win_1d": true
     },
     {
       "ticker": "KEYS",
@@ -682,7 +784,9 @@
       "discovery_date": "2026-04-24",
       "was_ranked": false,
       "rank_position": null,
-      "entry_price": 348.125
+      "entry_price": 348.125,
+      "return_1d": -0.33,
+      "win_1d": false
     },
     {
       "ticker": "HOLX",
@@ -695,7 +799,9 @@
       "discovery_date": "2026-04-24",
       "was_ranked": true,
       "rank_position": 8,
-      "entry_price": 76.01
+      "entry_price": 76.01,
+      "return_1d": 0.0,
+      "win_1d": false
     },
     {
       "ticker": "EXAS",
@@ -708,7 +814,9 @@
       "discovery_date": "2026-04-24",
       "was_ranked": false,
       "rank_position": null,
-      "entry_price": 104.91
+      "entry_price": 104.91,
+      "return_1d": 0.0,
+      "win_1d": false
     },
     {
       "ticker": "CPB",
@@ -721,7 +829,9 @@
       "discovery_date": "2026-04-24",
       "was_ranked": false,
       "rank_position": null,
-      "entry_price": 20.844999313354492
+      "entry_price": 20.844999313354492,
+      "return_1d": -1.08,
+      "win_1d": false
     },
     {
       "ticker": "CPRT",
@@ -734,7 +844,9 @@
       "discovery_date": "2026-04-24",
       "was_ranked": false,
       "rank_position": null,
-      "entry_price": 33.217498779296875
+      "entry_price": 33.217498779296875,
+      "return_1d": -0.44,
+      "win_1d": false
     },
     {
       "ticker": "DRI",
@@ -747,7 +859,9 @@
       "discovery_date": "2026-04-24",
       "was_ranked": true,
       "rank_position": 9,
-      "entry_price": 201.10000610351562
+      "entry_price": 201.10000610351562,
+      "return_1d": -0.02,
+      "win_1d": false
     },
     {
       "ticker": "EA",
@@ -760,7 +874,9 @@
       "discovery_date": "2026-04-24",
       "was_ranked": false,
       "rank_position": null,
-      "entry_price": 202.49000549316406
+      "entry_price": 202.49000549316406,
+      "return_1d": 0.09,
+      "win_1d": true
     },
     {
       "ticker": "CB",
@@ -773,7 +889,9 @@
       "discovery_date": "2026-04-24",
       "was_ranked": false,
       "rank_position": null,
-      "entry_price": 329.32501220703125
+      "entry_price": 329.32501220703125,
+      "return_1d": -0.97,
+      "win_1d": false
     },
     {
       "ticker": "PGR",
@@ -786,7 +904,9 @@
       "discovery_date": "2026-04-24",
       "was_ranked": true,
       "rank_position": 10,
-      "entry_price": 201.72999572753906
+      "entry_price": 201.72999572753906,
+      "return_1d": -0.42,
+      "win_1d": false
     },
     {
       "ticker": "CMS",
@@ -799,7 +919,9 @@
       "discovery_date": "2026-04-24",
       "was_ranked": false,
       "rank_position": null,
-      "entry_price": 76.63500213623047
+      "entry_price": 76.63500213623047,
+      "return_1d": -0.48,
+      "win_1d": false
     },
     {
       "ticker": "CAR",
@@ -812,7 +934,9 @@
       "discovery_date": "2026-04-24",
       "was_ranked": false,
       "rank_position": null,
-      "entry_price": 233.0
+      "entry_price": 233.0,
+      "return_1d": -12.45,
+      "win_1d": false
     },
     {
       "ticker": "KEEL",
@@ -825,7 +949,9 @@
       "discovery_date": "2026-04-24",
       "was_ranked": false,
       "rank_position": null,
-      "entry_price": 3.369999885559082
+      "entry_price": 3.369999885559082,
+      "return_1d": -2.37,
+      "win_1d": false
     }
   ]
 }
