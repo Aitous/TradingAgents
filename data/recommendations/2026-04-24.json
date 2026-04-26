@@ -1,0 +1,224 @@
+{
+  "date": "2026-04-24",
+  "llm_provider": "google",
+  "recommendations": [
+    {
+      "ticker": "CCI",
+      "rank": 1,
+      "company_name": "Crown Castle",
+      "description": "Crown Castle operates and leases shared communications infrastructure.",
+      "strategy_match": "pead_drift",
+      "scanners": [
+        "earnings_beat"
+      ],
+      "pipeline": "pead_drift",
+      "final_score": 88,
+      "confidence": 9,
+      "risk_level": "low",
+      "reason": "Crown Castle posted a massive earnings beat with Q1 EPS of $1.02 vs the $0.39 estimate (+161.5% surprise), and announced a $1 billion share buyback to offset Dish network default fears. The PEAD drift window is open just 2 days post-earnings. The technicals support immediate entry with a MACD bullish crossover and an RSI of 55.9. Favorable risk/reward as the $1 billion buyback establishes a strong price floor, and volatility is low with an ATR of just $2.49 (2.8%). If the $65 million in cost cuts fails to fully offset the Dish contract revenue drop in upcoming quarters, institutional accumulation could reverse.",
+      "entry_price": 85.70999908447266,
+      "discovery_date": "2026-04-24",
+      "status": "open"
+    },
+    {
+      "ticker": "VOYA",
+      "rank": 2,
+      "company_name": "Voya Financial",
+      "description": "Voya Financial provides retirement, investment, and insurance products.",
+      "strategy_match": "technical_breakout",
+      "scanners": [
+        "technical_breakout"
+      ],
+      "pipeline": "technical_breakout",
+      "final_score": 85,
+      "confidence": 8,
+      "risk_level": "moderate",
+      "reason": "Voya is buoyed by activist pressure pushing for a potential sale, coupled with a newly announced $150 million Q2 buyback. The stock just staged a powerful breakout, closing +3.2% above its 20-day high on 4.1x average volume. High reward potential driven by M&A speculation, though the RSI at 74.7 indicates momentum is running hot. If activist negotiations break down or no viable buyer emerges, the stock could rapidly retrace its breakout gains.",
+      "entry_price": 78.93000030517578,
+      "discovery_date": "2026-04-24",
+      "status": "open"
+    },
+    {
+      "ticker": "DLR",
+      "rank": 3,
+      "company_name": "Digital Realty Trust",
+      "description": "Digital Realty Trust is a real estate investment trust focused on data centers.",
+      "strategy_match": "pead_drift",
+      "scanners": [
+        "analyst_upgrades",
+        "earnings_beat"
+      ],
+      "pipeline": "pead_drift",
+      "final_score": 82,
+      "confidence": 8,
+      "risk_level": "moderate",
+      "reason": "Digital Realty crushed Q1 estimates with Core FFO of $2.04 vs $0.48 (+325.3% surprise) and secured its largest-ever 200-MW AI inference lease. The stock is in the early stages of a post-earnings drift and holds firmly above its 50 SMA by 9.8%, signaling strong institutional support. The setup offers excellent upside tied to AI infrastructure demand, though an elevated RSI of 72.2 suggests minor consolidation is possible. The stock's premium valuation leaves it highly vulnerable to any macro-driven tech sector selloff or rising interest rates.",
+      "entry_price": 207.16000366210938,
+      "discovery_date": "2026-04-24",
+      "status": "open"
+    },
+    {
+      "ticker": "PECO",
+      "rank": 4,
+      "company_name": "Phillips Edison & Company",
+      "description": "Phillips Edison & Company is a REIT focused on grocery-anchored shopping centers.",
+      "strategy_match": "pead_drift",
+      "scanners": [
+        "earnings_beat"
+      ],
+      "pipeline": "pead_drift",
+      "final_score": 78,
+      "confidence": 8,
+      "risk_level": "low",
+      "reason": "Phillips Edison delivered a strong earnings beat with $0.69 actual vs $0.17 estimated (+303.7% surprise) and raised its 2026 guidance. The market reaction was initially muted due to conservative guidance interpretations, leaving a prime delayed PEAD drift window open with an RSI of 59.0. Very low risk profile characterized by a small ATR of $0.69 (1.8%) and a solid technical base +2.4% above the 50 SMA. Continued headwinds in the broader commercial real estate sector could limit the stock's multiple expansion despite fundamental outperformance.",
+      "entry_price": 38.904998779296875,
+      "discovery_date": "2026-04-24",
+      "status": "open"
+    },
+    {
+      "ticker": "NEE",
+      "rank": 5,
+      "company_name": "NextEra Energy",
+      "description": "NextEra Energy is a leading clean energy and utilities company.",
+      "strategy_match": "high_52w_breakout",
+      "scanners": [
+        "high_52w_breakout"
+      ],
+      "pipeline": "high_52w_breakout",
+      "final_score": 76,
+      "confidence": 7,
+      "risk_level": "moderate",
+      "reason": "NextEra Energy printed a fresh 52-week high of $96.25 on 2.2x average volume, indicating severe institutional accumulation. A fresh breakout from a multi-month base with a MACD bullish crossover is well underway. The risk/reward is highly attractive as the RSI is only 64.7, meaning the stock has significant room to run before becoming technically overbought. As a utility stock, it is highly sensitive to interest rate expectations; an unexpected spike in yields could swiftly invalidate the breakout.",
+      "entry_price": 95.70500183105469,
+      "discovery_date": "2026-04-24",
+      "status": "open"
+    },
+    {
+      "ticker": "HOMB",
+      "rank": 6,
+      "company_name": "Home BancShares",
+      "description": "Home BancShares operates as a bank holding company.",
+      "strategy_match": "insider_buying",
+      "scanners": [
+        "insider_buying",
+        "obv_divergence"
+      ],
+      "pipeline": "insider_buying",
+      "final_score": 75,
+      "confidence": 8,
+      "risk_level": "moderate",
+      "reason": "The stock saw massive insider conviction with COB and CEO John W. Allison purchasing $2.69 million worth of shares. Multi-week accumulation is evident with the 20-day OBV +14.6% above average volume, despite the price falling -0.8%. Favorable contrarian setup near support, with an oversold RSI of 44.3 and moderate volatility (ATR $0.63). The stock remains in a strong downtrend -2.4% below the 50 SMA, meaning broader regional bank weakness could easily trigger further technical selling.",
+      "entry_price": 26.645000457763672,
+      "discovery_date": "2026-04-24",
+      "status": "open"
+    },
+    {
+      "ticker": "HXL",
+      "rank": 7,
+      "company_name": "Hexcel Corporation",
+      "description": "Hexcel Corporation manufactures advanced composite materials for aerospace and defense.",
+      "strategy_match": "technical_breakout",
+      "scanners": [
+        "technical_breakout"
+      ],
+      "pipeline": "technical_breakout",
+      "final_score": 74,
+      "confidence": 7,
+      "risk_level": "moderate",
+      "reason": "Hexcel triggered a clean technical breakout by closing +0.8% above its 20-day high on 2.9x average volume. The breakout is accompanied by a fresh MACD bullish crossover and rising trend strength, with the price now +6.9% above the 50 SMA. Solid risk/reward for momentum traders, backed by a moderate ATR of $3.63 (4.0%) and a healthy RSI of 64.5. If the stock rejects the upper Bollinger Band ($91.13), it could suffer a rapid mean-reversion pullback.",
+      "entry_price": 88.5199966430664,
+      "discovery_date": "2026-04-24",
+      "status": "open"
+    },
+    {
+      "ticker": "HOLX",
+      "rank": 8,
+      "company_name": "Hologic",
+      "description": "Hologic focuses on medical diagnostics and women's health products.",
+      "strategy_match": "volume_divergence",
+      "scanners": [
+        "obv_divergence"
+      ],
+      "pipeline": "volume_divergence",
+      "final_score": 73,
+      "confidence": 7,
+      "risk_level": "low",
+      "reason": "A massive volume divergence is in play, with the 20-day OBV spiking +135.0% of average volume while the price barely moved (+0.5%). The stealth accumulation has just culminated in a MACD bullish crossover, and the stock is hovering right at the upper Bollinger Band. Excellent low-risk setup with an extremely compressed ATR of $0.21 (0.3%), setting the stage for a volatility expansion. A failure to break meaningfully above the $76.07 resistance level could exhaust buyers and trap early breakout traders.",
+      "entry_price": 76.01,
+      "discovery_date": "2026-04-24",
+      "status": "open"
+    },
+    {
+      "ticker": "DRI",
+      "rank": 9,
+      "company_name": "Darden Restaurants",
+      "description": "Darden Restaurants operates a portfolio of casual dining restaurant brands.",
+      "strategy_match": "volume_divergence",
+      "scanners": [
+        "obv_divergence"
+      ],
+      "pipeline": "volume_divergence",
+      "final_score": 72,
+      "confidence": 7,
+      "risk_level": "moderate",
+      "reason": "Darden Restaurants is displaying textbook stealth accumulation, with a 20-day OBV surge of +22.5% versus a minimal +1.7% price gain. The setup is perfectly timed with a fresh MACD bullish crossover and the stock successfully reclaiming support +0.2% above its 50 SMA. Moderate risk profile with plenty of runway, as the RSI sits at a neutral 55.2 and the ATR is manageable at $5.52. Any sudden deterioration in consumer discretionary spending or rising food commodity costs could rapidly derail the bullish thesis.",
+      "entry_price": 201.10000610351562,
+      "discovery_date": "2026-04-24",
+      "status": "open"
+    },
+    {
+      "ticker": "PGR",
+      "rank": 10,
+      "company_name": "Progressive Corporation",
+      "description": "The Progressive Corporation is a major American insurance provider.",
+      "strategy_match": "volume_divergence",
+      "scanners": [
+        "obv_divergence"
+      ],
+      "pipeline": "volume_divergence",
+      "final_score": 71,
+      "confidence": 7,
+      "risk_level": "low",
+      "reason": "Progressive is showing classic divergence accumulation, with 20-day OBV rising +16.7% of average volume despite a -0.9% drop in price. A MACD bullish crossover has just fired, and the stock has established a base +0.8% above its 50 SMA. Low-to-moderate risk with an RSI of 54.7, offering a safe entry point before momentum accelerates toward the $214.86 recent high. Unexpected spikes in catastrophic weather events or auto claims severity could quickly destroy the fundamental thesis.",
+      "entry_price": 201.3300018310547,
+      "discovery_date": "2026-04-24",
+      "status": "open"
+    },
+    {
+      "ticker": "ACHC",
+      "rank": 11,
+      "company_name": "Acadia Healthcare",
+      "description": "Acadia Healthcare operates a network of behavioral health facilities.",
+      "strategy_match": "short_squeeze",
+      "scanners": [
+        "short_squeeze"
+      ],
+      "pipeline": "short_squeeze",
+      "final_score": 70,
+      "confidence": 6,
+      "risk_level": "high",
+      "reason": "Acadia faces a massive short squeeze setup with 37.1% short interest and 7.1 days to cover, compounded by the stabilizing return of its interim CFO. Reaffirmed full-year guidance acts as the immediate catalyst to force covering, while the stock technically holds +18.0% above its 50 SMA. High risk but explosive reward potential; the elevated ATR of $1.11 (4.1%) suggests violent multi-day moves are highly probable. The recent abrupt resignation of the previous CFO highlights ongoing internal instability that could spook institutional longs.",
+      "entry_price": 26.43000030517578,
+      "discovery_date": "2026-04-24",
+      "status": "open"
+    },
+    {
+      "ticker": "RZLV",
+      "rank": 12,
+      "company_name": "RZLV",
+      "description": "RZLV is a corporate entity, detailed business description currently unavailable.",
+      "strategy_match": "insider_buying",
+      "scanners": [
+        "insider_buying"
+      ],
+      "pipeline": "insider_buying",
+      "final_score": 68,
+      "confidence": 6,
+      "risk_level": "speculative",
+      "reason": "CEO Daniel Maurice stepped in with a massive $3.25 million insider purchase during a sharp price drop. The stock fell -7.1% today, providing an urgent dislocation entry that perfectly aligns with the CEO's cluster buying behavior. Highly speculative but asymmetric reward profile, supported by a bullish OBV divergence despite the weak ADX (10.8). With an extremely high ATR of 9.1% and the price trading -3.1% below the 20 EMA, the stock could suffer further technical breakdowns before bottoming.",
+      "entry_price": 2.5701000690460205,
+      "discovery_date": "2026-04-24",
+      "status": "open"
+    }
+  ]
+}
