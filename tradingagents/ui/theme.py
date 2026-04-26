@@ -123,9 +123,8 @@ section[data-testid="stSidebar"] .stRadio label:hover {{
 }}
 section[data-testid="stSidebar"] .stRadio label[data-checked="true"],
 section[data-testid="stSidebar"] .stRadio div[role="radiogroup"] label:has(input:checked) {{
-    background-color: var(--bg-card) !important;
+    background-color: rgba(34, 197, 94, 0.10) !important;
     color: var(--green) !important;
-    border-left: 3px solid var(--green);
 }}
 
 /* ---- Metric cards ---- */
@@ -308,9 +307,9 @@ div[data-testid="stMetric"] div[data-testid="stMetricDelta"] > div {{
     line-height: 1.55;
     color: var(--text-secondary);
     padding: 0.75rem;
-    background: var(--bg-secondary);
+    background: rgba(17, 24, 39, 0.7);
     border-radius: 6px;
-    border-left: 3px solid var(--border);
+    border: 1px solid rgba(42, 53, 72, 0.6);
 }}
 
 /* ---- Confidence bar ---- */
@@ -337,10 +336,10 @@ div[data-testid="stMetric"] div[data-testid="stMetricDelta"] > div {{
 /* ---- Company brief panel ---- */
 .company-brief {{
     margin: 0.45rem 0 0.7rem;
-    padding: 0.45rem 0.75rem 0.45rem 0.85rem;
-    border-left: 2px solid rgba(100, 116, 139, 0.35);
-    background: rgba(10, 14, 23, 0.45);
-    border-radius: 0 5px 5px 0;
+    padding: 0.45rem 0.75rem;
+    background: rgba(10, 14, 23, 0.55);
+    border-radius: 5px;
+    border: 1px solid rgba(42, 53, 72, 0.45);
     position: relative;
 }}
 .company-brief-label {{

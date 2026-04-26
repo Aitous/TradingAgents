@@ -292,22 +292,58 @@ def load_quick_stats() -> Tuple[int, float]:
     Returns:
         Tuple of (open_positions_count, win_rate_percentage)
     """
-    # Load open positions
     positions = load_open_positions()
     open_positions_count = len(positions)
 
-    # Calculate win rate from statistics
     stats = load_statistics()
     win_rate = 0.0
-
-    if stats and "trades" in stats and len(stats["trades"]) > 0:
-        winning_trades = sum(
-            1
-            for trade in stats["trades"]
-            if trade.get("status") == "closed" and trade.get("profit", 0) > 0
-        )
-        total_trades = sum(1 for trade in stats["trades"] if trade.get("status") == "closed")
-        if total_trades > 0:
-            win_rate = (winning_trades / total_trades) * 100
+    if stats:
+        overall = stats.get("overall_7d", {})
+        win_rate = float(overall.get("win_rate", 0.0) or 0.0)
 
     return open_positions_count, win_rate
+
+
+def load_scanner_health() -> List[Dict[str, Any]]:
+    """
+    Aggregate per-scanner win rate (1d) and pick volume for the overview panel.
+
+    Returns list of dicts: {scanner, total, win_rate_1d, health}
+    where health is 'green' (>=55%), 'amber' (>=45%), 'red' (<45%), or 'gray' (no data).
+    """
+    import json
+    from collections import defaultdict
+
+    scanner_picks_dir = get_data_directory() / "scanner_picks"
+    if not scanner_picks_dir.exists():
+        return []
+
+    agg: Dict[str, Dict] = defaultdict(lambda: {"total": 0, "ev1": 0, "wins1": 0})
+    for f in sorted(scanner_picks_dir.glob("*.json")):
+        try:
+            data = json.loads(f.read_text())
+            for pick in data.get("picks", []):
+                s = pick.get("scanner", "unknown")
+                agg[s]["total"] += 1
+                if pick.get("return_1d") is not None:
+                    agg[s]["ev1"] += 1
+                    if pick.get("win_1d"):
+                        agg[s]["wins1"] += 1
+        except Exception:
+            continue
+
+    rows = []
+    for scanner, d in sorted(agg.items(), key=lambda x: -x[1]["total"]):
+        ev = d["ev1"]
+        wr = round(d["wins1"] / ev * 100, 1) if ev else None
+        if wr is None:
+            health = "gray"
+        elif wr >= 55:
+            health = "green"
+        elif wr >= 45:
+            health = "amber"
+        else:
+            health = "red"
+        rows.append({"scanner": scanner, "total": d["total"], "win_rate_1d": wr, "health": health})
+
+    return rows
