@@ -10,7 +10,9 @@
       "context": "Dir Visionwave Holdings, Inc. purchased +$2,147,483,647 of SVRE",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 3.809999942779541
+      "entry_price": 3.809999942779541,
+      "return_1d": 1.31,
+      "win_1d": true
     },
     {
       "ticker": "KLRA",
@@ -21,7 +23,9 @@
       "context": "Insider cluster: 5 executives bought in 14d (CEO: False, CFO: False); 20,421,876 shares | avg price $16.00 | total $326,750,016",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 24.9950008392334
+      "entry_price": 24.9950008392334,
+      "return_1d": -10.1,
+      "win_1d": false
     },
     {
       "ticker": "SMC",
@@ -32,7 +36,9 @@
       "context": "10% Owner Connect Midstream, LLC purchased +$37,946,131 of SMC",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 29.199899673461914
+      "entry_price": 29.199899673461914,
+      "return_1d": 1.64,
+      "win_1d": true
     },
     {
       "ticker": "COE",
@@ -43,7 +49,9 @@
       "context": "CEO, 10% Huang Jack Jiajia purchased +$35,332,457 of COE",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 25.15999984741211
+      "entry_price": 25.15999984741211,
+      "return_1d": 2.31,
+      "win_1d": true
     },
     {
       "ticker": "PRLD",
@@ -54,7 +62,9 @@
       "context": "2 insiders buying PRLD. Largest: Dir, 10% Bonita David P purchased +$12,499,999",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 4.625
+      "entry_price": 4.625,
+      "return_1d": 1.62,
+      "win_1d": true
     },
     {
       "ticker": "LNBIX",
@@ -65,7 +75,9 @@
       "context": "Investment Adviser,  Lincoln Financial Investm purchased +$25,000,000 of LNBIX",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 10.13
+      "entry_price": 10.13,
+      "return_1d": 0.1,
+      "win_1d": true
     },
     {
       "ticker": "THM",
@@ -76,7 +88,9 @@
       "context": "10% Owner Paulson & Co. Inc. purchased +$12,578,982 of THM",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 2.555000066757202
+      "entry_price": 2.555000066757202,
+      "return_1d": 2.94,
+      "win_1d": true
     },
     {
       "ticker": "MESO",
@@ -87,7 +101,9 @@
       "context": "Dir, 10% George Gregory purchased +$11,396,977 of MESO",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 15.449999809265137
+      "entry_price": 15.449999809265137,
+      "return_1d": 0.39,
+      "win_1d": true
     },
     {
       "ticker": "ARXS",
@@ -98,7 +114,9 @@
       "context": "Insider cluster: 7 executives bought in 14d (CEO: False, CFO: False); 201,564 shares | avg price $28.00 | total $5,643,792",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 36.790000915527344
+      "entry_price": 36.790000915527344,
+      "return_1d": -4.87,
+      "win_1d": false
     },
     {
       "ticker": "ALMR",
@@ -109,7 +127,9 @@
       "context": "2 insiders buying ALMR. Largest: 10% Owner Illumina Innovation Fund  purchased +$3,999,998",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 24.665000915527344
+      "entry_price": 24.665000915527344,
+      "return_1d": 0.71,
+      "win_1d": true
     },
     {
       "ticker": "HTO",
@@ -120,7 +140,9 @@
       "context": "2 insiders buying HTO. Largest: 10% Owner Gip Atlas Holdings Ltd purchased +$2,975,919",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 61.369998931884766
+      "entry_price": 61.369998931884766,
+      "return_1d": -2.69,
+      "win_1d": false
     },
     {
       "ticker": "LW",
@@ -131,7 +153,9 @@
       "context": "See Remarks Jana Partners Management, purchased +$6,371,500 of LW",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 44.41999816894531
+      "entry_price": 44.41999816894531,
+      "return_1d": -0.23,
+      "win_1d": false
     },
     {
       "ticker": "RZLV",
@@ -142,7 +166,9 @@
       "context": "CEO, 10% Wagner Daniel Maurice purchased +$3,251,824 of RZLV",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 2.575000047683716
+      "entry_price": 2.575000047683716,
+      "return_1d": 1.75,
+      "win_1d": true
     },
     {
       "ticker": "HOMB",
@@ -153,7 +179,9 @@
       "context": "COB, CEO Allison John W purchased +$2,696,210 of HOMB",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 26.645000457763672
+      "entry_price": 26.645000457763672,
+      "return_1d": -0.69,
+      "win_1d": false
     },
     {
       "ticker": "NKE",
@@ -164,7 +192,9 @@
       "context": "2 insiders buying NKE. Largest: Dir Cook Timothy D purchased +$1,060,750",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 45.275001525878906
+      "entry_price": 45.275001525878906,
+      "return_1d": -1.29,
+      "win_1d": false
     },
     {
       "ticker": "AVEX",
@@ -175,7 +205,9 @@
       "context": "Insider cluster: 3 executives bought in 14d (CEO: False, CFO: True); 73,000 shares | avg price $20.00 | total $1,460,000",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 30.690000534057617
+      "entry_price": 30.690000534057617,
+      "return_1d": -3.23,
+      "win_1d": false
     },
     {
       "ticker": "BMI",
@@ -186,7 +218,9 @@
       "context": "Insider cluster: 3 executives bought in 14d (CEO: True, CFO: False); 4,900 shares | avg price $118.67 | total $578,344",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 122.66999816894531
+      "entry_price": 122.66999816894531,
+      "return_1d": -0.68,
+      "win_1d": false
     },
     {
       "ticker": "BURU",
@@ -197,7 +231,9 @@
       "context": "Co-CEO Zamboni Alessandro purchased +$1,496,021 of BURU",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 0.3352999985218048
+      "entry_price": 0.3352999985218048,
+      "return_1d": -6.26,
+      "win_1d": false
     },
     {
       "ticker": "BORR",
@@ -208,7 +244,9 @@
       "context": "Dir Troim Tor Olav purchased +$2,790,900 of BORR",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 5.590000152587891
+      "entry_price": 5.590000152587891,
+      "return_1d": 1.79,
+      "win_1d": true
     },
     {
       "ticker": "GLOO",
@@ -219,7 +257,9 @@
       "context": "2 insiders buying GLOO. Largest: See Remarks Gelsinger Patrick P purchased +$264,635",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 7.340000152587891
+      "entry_price": 7.340000152587891,
+      "return_1d": -6.27,
+      "win_1d": false
     },
     {
       "ticker": "SIRI",
@@ -230,7 +270,9 @@
       "context": "Analyst upgrade: Sirius XM Holdings Inc. (NASDAQ:SIRI) Declares $0.27 Quarterly Dividend",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 27.549999237060547
+      "entry_price": 27.549999237060547,
+      "return_1d": -3.41,
+      "win_1d": false
     },
     {
       "ticker": "JPM",
@@ -241,7 +283,9 @@
       "context": "Analyst upgrade: Sirius XM Holdings Inc. (NASDAQ:SIRI) Declares $0.27 Quarterly Dividend",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 310.0950012207031
+      "entry_price": 310.0950012207031,
+      "return_1d": -0.59,
+      "win_1d": false
     },
     {
       "ticker": "MCHP",
@@ -252,7 +296,9 @@
       "context": "Analyst upgrade: Zurcher Kantonalbank Zurich Cantonalbank Has $8.13 Million Position in Microchip Technology Incorpor",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 89.06999969482422
+      "entry_price": 89.06999969482422,
+      "return_1d": 0.42,
+      "win_1d": true
     },
     {
       "ticker": "ROP",
@@ -263,7 +309,9 @@
       "context": "Analyst upgrade: Roper Technologies, Inc. (NASDAQ:ROP) Q1 2026 Earnings Call Transcript",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 358.8349914550781
+      "entry_price": 358.8349914550781,
+      "return_1d": -1.51,
+      "win_1d": false
     },
     {
       "ticker": "MPWR",
@@ -274,7 +322,9 @@
       "context": "Analyst upgrade: Universal Beteiligungs und Servicegesellschaft mbH Purchases 5,898 Shares of Monolithic Power System",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 1620.5699462890625
+      "entry_price": 1620.5699462890625,
+      "return_1d": 0.71,
+      "win_1d": true
     },
     {
       "ticker": "DLR",
@@ -285,7 +335,9 @@
       "context": "Analyst upgrade: Digital Realty Trust, Inc. (NYSE:DLR) Q1 2026 Earnings Call Transcript",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 206.8699951171875
+      "entry_price": 206.8699951171875,
+      "return_1d": -3.32,
+      "win_1d": false
     },
     {
       "ticker": "QCOM",
@@ -296,7 +348,9 @@
       "context": "Analyst upgrade: NBC Securities Inc. Has $3.20 Million Stock Position in Qualcomm Incorporated $QCOM",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 146.17999267578125
+      "entry_price": 146.17999267578125,
+      "return_1d": 1.83,
+      "win_1d": true
     },
     {
       "ticker": "BEN",
@@ -307,7 +361,9 @@
       "context": "Analyst upgrade: Teacher Retirement System of Texas Boosts Stock Holdings in Roper Technologies, Inc. $ROP",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 27.0049991607666
+      "entry_price": 27.0049991607666,
+      "return_1d": 0.43,
+      "win_1d": true
     },
     {
       "ticker": "IVZ",
@@ -318,7 +374,9 @@
       "context": "Analyst upgrade: Teacher Retirement System of Texas Boosts Stock Holdings in Roper Technologies, Inc. $ROP",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 25.3799991607666
+      "entry_price": 25.3799991607666,
+      "return_1d": 0.51,
+      "win_1d": true
     },
     {
       "ticker": "MTB",
@@ -329,7 +387,9 @@
       "context": "Analyst upgrade: M&T Bank Corp Raises Stake in Twilio Inc. $TWLO",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 217.66000366210938
+      "entry_price": 217.66000366210938,
+      "return_1d": -1.26,
+      "win_1d": false
     },
     {
       "ticker": "ABX",
@@ -340,7 +400,9 @@
       "context": "Short interest 50.0% of float, 7.7 days to cover \u2014 extreme squeeze risk | squeeze risk elevates if catalyst arrives",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 9.390000343322754
+      "entry_price": 9.390000343322754,
+      "return_1d": -1.92,
+      "win_1d": false
     },
     {
       "ticker": "ACHC",
@@ -351,7 +413,9 @@
       "context": "Short interest 37.1% of float, 7.1 days to cover \u2014 extreme squeeze risk | squeeze risk elevates if catalyst arrives",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 26.43000030517578
+      "entry_price": 26.43000030517578,
+      "return_1d": 3.59,
+      "win_1d": true
     },
     {
       "ticker": "BETR",
@@ -362,7 +426,9 @@
       "context": "Short interest 35.8% of float, 6.0 days to cover \u2014 extreme squeeze risk | squeeze risk elevates if catalyst arrives",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 40.5
+      "entry_price": 40.5,
+      "return_1d": 5.04,
+      "win_1d": true
     },
     {
       "ticker": "ARCT",
@@ -373,7 +439,9 @@
       "context": "Short interest 34.2% of float, 11.2 days to cover \u2014 extreme squeeze risk | squeeze risk elevates if catalyst arrives",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 8.445599555969238
+      "entry_price": 8.445599555969238,
+      "return_1d": 1.71,
+      "win_1d": true
     },
     {
       "ticker": "ASAN",
@@ -384,7 +452,9 @@
       "context": "Short interest 32.0% of float, 5.2 days to cover \u2014 extreme squeeze risk | squeeze risk elevates if catalyst arrives",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 6.309999942779541
+      "entry_price": 6.309999942779541,
+      "return_1d": 1.27,
+      "win_1d": true
     },
     {
       "ticker": "AMD",
@@ -395,7 +465,9 @@
       "context": "Unusual options: 19 strikes across 3 exp, P/C=999.00 (bearish), 12 unusual calls / 7 unusual puts, IV_skew=0.591",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 346.10870361328125
+      "entry_price": 346.10870361328125,
+      "return_1d": 0.49,
+      "win_1d": true
     },
     {
       "ticker": "INTC",
@@ -406,7 +478,9 @@
       "context": "Unusual options: 18 strikes across 3 exp, P/C=0.61 (bullish), 7 unusual calls / 11 unusual puts, IV_skew=0.003",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 81.74909973144531
+      "entry_price": 81.74909973144531,
+      "return_1d": 0.97,
+      "win_1d": true
     },
     {
       "ticker": "TSLA",
@@ -417,7 +491,9 @@
       "context": "Unusual options: 10 strikes across 3 exp, P/C=999.00 (bearish), 8 unusual calls / 2 unusual puts, IV_skew=-0.186",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 376.44500732421875
+      "entry_price": 376.44500732421875,
+      "return_1d": -0.04,
+      "win_1d": false
     },
     {
       "ticker": "AAPL",
@@ -428,7 +504,9 @@
       "context": "Unusual options: 6 strikes across 3 exp, P/C=999.00 (bearish), 2 unusual calls / 4 unusual puts",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 272.0423889160156
+      "entry_price": 272.0423889160156,
+      "return_1d": -0.36,
+      "win_1d": false
     },
     {
       "ticker": "AMZN",
@@ -439,7 +517,9 @@
       "context": "Unusual options: 4 strikes across 3 exp, P/C=999.00 (bearish), 2 unusual calls / 2 unusual puts, IV_skew=0.895",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 260.5400085449219
+      "entry_price": 260.5400085449219,
+      "return_1d": 1.32,
+      "win_1d": true
     },
     {
       "ticker": "MU",
@@ -450,7 +530,9 @@
       "context": "Unusual options: 4 strikes across 3 exp, P/C=999.00 (bearish), 1 unusual calls / 3 unusual puts",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 499.0679931640625
+      "entry_price": 499.0679931640625,
+      "return_1d": -0.47,
+      "win_1d": false
     },
     {
       "ticker": "NFLX",
@@ -461,7 +543,9 @@
       "context": "Unusual options: 3 strikes across 3 exp, P/C=999.00 (bearish), 0 unusual calls / 3 unusual puts",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 92.70500183105469
+      "entry_price": 92.70500183105469,
+      "return_1d": -0.29,
+      "win_1d": false
     },
     {
       "ticker": "GOOG",
@@ -472,7 +556,9 @@
       "context": "Unusual options: 2 strikes across 3 exp, P/C=999.00 (bearish), 1 unusual calls / 1 unusual puts",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 337.5150146484375
+      "entry_price": 337.5150146484375,
+      "return_1d": 1.42,
+      "win_1d": true
     },
     {
       "ticker": "ADI",
@@ -483,7 +569,9 @@
       "context": "Unusual options: 1 strikes across 3 exp, P/C=999.00 (bearish), 1 unusual calls / 0 unusual puts, IV_skew=0.411",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 404.722900390625
+      "entry_price": 404.722900390625,
+      "return_1d": -1.27,
+      "win_1d": false
     },
     {
       "ticker": "UNP",
@@ -494,7 +582,9 @@
       "context": "Unusual options: 1 strikes across 3 exp, P/C=999.00 (bearish), 1 unusual calls / 0 unusual puts",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 269.82000732421875
+      "entry_price": 269.82000732421875,
+      "return_1d": -0.42,
+      "win_1d": false
     },
     {
       "ticker": "TMO",
@@ -505,7 +595,9 @@
       "context": "Unusual options: 1 strikes across 3 exp, P/C=999.00 (bearish), 0 unusual calls / 1 unusual puts",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 470.8349914550781
+      "entry_price": 470.8349914550781,
+      "return_1d": -0.24,
+      "win_1d": false
     },
     {
       "ticker": "SCHW",
@@ -516,7 +608,9 @@
       "context": "Unusual options: 1 strikes across 3 exp, P/C=999.00 (bearish), 0 unusual calls / 1 unusual puts",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 89.45999908447266
+      "entry_price": 89.45999908447266,
+      "return_1d": -1.07,
+      "win_1d": false
     },
     {
       "ticker": "TXN",
@@ -527,7 +621,9 @@
       "context": "New 52-week high: closed at $282.23 (+18.5% above prior 52w high of $238.18) on 4.4x avg volume | Fresh crossing \u2014 first time at new high this week",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 275.67498779296875
+      "entry_price": 275.67498779296875,
+      "return_1d": 0.53,
+      "win_1d": true
     },
     {
       "ticker": "ON",
@@ -538,7 +634,9 @@
       "context": "New 52-week high: closed at $97.78 (+9.0% above prior 52w high of $89.69) on 2.4x avg volume | Fresh crossing \u2014 first time at new high this week",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 97.31999969482422
+      "entry_price": 97.31999969482422,
+      "return_1d": 1.11,
+      "win_1d": true
     },
     {
       "ticker": "NEE",
@@ -549,7 +647,9 @@
       "context": "New 52-week high: closed at $96.25 (+0.0% above prior 52w high of $96.21) on 2.2x avg volume | Fresh crossing \u2014 first time at new high this week",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 95.70999908447266
+      "entry_price": 95.70999908447266,
+      "return_1d": -0.45,
+      "win_1d": false
     },
     {
       "ticker": "MCHP",
@@ -560,7 +660,9 @@
       "context": "New 52-week high: closed at $90.64 (+9.3% above prior 52w high of $82.89) on 2.1x avg volume | Fresh crossing \u2014 first time at new high this week",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 89.08999633789062
+      "entry_price": 89.08999633789062,
+      "return_1d": 0.39,
+      "win_1d": true
     },
     {
       "ticker": "R",
@@ -571,7 +673,9 @@
       "context": "New 52-week high: closed at $242.59 (+3.9% above prior 52w high of $233.45) on 2.1x avg volume | Fresh crossing \u2014 first time at new high this week",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 246.8350067138672
+      "entry_price": 246.8350067138672,
+      "return_1d": 2.64,
+      "win_1d": true
     },
     {
       "ticker": "UNP",
@@ -582,7 +686,9 @@
       "context": "New 52-week high: closed at $271.26 (+1.2% above prior 52w high of $268.14) on 1.9x avg volume | Fresh crossing \u2014 first time at new high this week",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 269.82000732421875
+      "entry_price": 269.82000732421875,
+      "return_1d": -0.42,
+      "win_1d": false
     },
     {
       "ticker": "ARMK",
@@ -593,7 +699,9 @@
       "context": "New 52-week high: closed at $46.17 (+0.0% above prior 52w high of $46.17) on 1.8x avg volume | Fresh crossing \u2014 first time at new high this week",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 46.40999984741211
+      "entry_price": 46.40999984741211,
+      "return_1d": -0.28,
+      "win_1d": false
     },
     {
       "ticker": "FIX",
@@ -604,7 +712,9 @@
       "context": "New 52-week high: closed at $1773.91 (+2.5% above prior 52w high of $1730.26) on 1.7x avg volume | Fresh crossing \u2014 first time at new high this week",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 1743.2750244140625
+      "entry_price": 1743.2750244140625,
+      "return_1d": -0.98,
+      "win_1d": false
     },
     {
       "ticker": "SNA",
@@ -615,7 +725,9 @@
       "context": "New 52-week high: closed at $390.75 (+0.2% above prior 52w high of $390.05) on 1.6x avg volume | Fresh crossing \u2014 first time at new high this week",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 386.29998779296875
+      "entry_price": 386.29998779296875,
+      "return_1d": -2.04,
+      "win_1d": false
     },
     {
       "ticker": "ARW",
@@ -626,7 +738,9 @@
       "context": "New 52-week high: closed at $187.50 (+3.1% above prior 52w high of $181.93) on 1.6x avg volume | Fresh crossing \u2014 first time at new high this week",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 187.05999755859375
+      "entry_price": 187.05999755859375,
+      "return_1d": -0.02,
+      "win_1d": false
     },
     {
       "ticker": "TXN",
@@ -637,7 +751,9 @@
       "context": "Breakout: closed +18.5% above 20d high on 4.4x volume | Near 52-week high",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 275.67498779296875
+      "entry_price": 275.67498779296875,
+      "return_1d": 0.53,
+      "win_1d": true
     },
     {
       "ticker": "VOYA",
@@ -648,7 +764,9 @@
       "context": "Breakout: closed +3.2% above 20d high on 4.1x volume | Near 52-week high",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 78.93000030517578
+      "entry_price": 78.93000030517578,
+      "return_1d": 1.8,
+      "win_1d": true
     },
     {
       "ticker": "PENN",
@@ -659,7 +777,9 @@
       "context": "Breakout: closed +4.7% above 20d high on 3.2x volume | Near 52-week high",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 16.899999618530273
+      "entry_price": 16.899999618530273,
+      "return_1d": 2.01,
+      "win_1d": true
     },
     {
       "ticker": "WST",
@@ -670,7 +790,9 @@
       "context": "Breakout: closed +10.1% above 20d high on 3.0x volume | Near 52-week high",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 310.010009765625
+      "entry_price": 310.010009765625,
+      "return_1d": -1.24,
+      "win_1d": false
     },
     {
       "ticker": "URI",
@@ -681,7 +803,9 @@
       "context": "Breakout: closed +18.2% above 20d high on 3.0x volume | Near 52-week high",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 979.47998046875
+      "entry_price": 979.47998046875,
+      "return_1d": -0.52,
+      "win_1d": false
     },
     {
       "ticker": "MOH",
@@ -692,7 +816,9 @@
       "context": "Breakout: closed +11.1% above 20d high on 3.0x volume | Near 52-week high",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 168.9499969482422
+      "entry_price": 168.9499969482422,
+      "return_1d": 4.14,
+      "win_1d": true
     },
     {
       "ticker": "HXL",
@@ -703,7 +829,9 @@
       "context": "Breakout: closed +0.8% above 20d high on 2.9x volume",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 88.4800033569336
+      "entry_price": 88.4800033569336,
+      "return_1d": 1.03,
+      "win_1d": true
     },
     {
       "ticker": "WSC",
@@ -714,7 +842,9 @@
       "context": "Breakout: closed +1.4% above 20d high on 2.8x volume",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 22.280000686645508
+      "entry_price": 22.280000686645508,
+      "return_1d": 1.71,
+      "win_1d": true
     },
     {
       "ticker": "SEIC",
@@ -725,7 +855,9 @@
       "context": "Breakout: closed +7.3% above 20d high on 2.5x volume | Near 52-week high",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 90.20999908447266
+      "entry_price": 90.20999908447266,
+      "return_1d": -1.52,
+      "win_1d": false
     },
     {
       "ticker": "ON",
@@ -736,7 +868,9 @@
       "context": "Breakout: closed +9.0% above 20d high on 2.4x volume | Near 52-week high",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 97.33000183105469
+      "entry_price": 97.33000183105469,
+      "return_1d": 1.1,
+      "win_1d": true
     },
     {
       "ticker": "MASI",
@@ -747,7 +881,9 @@
       "context": "ATR(5)/ATR(20) = 0.49 (compressed) | Price $178.71 breaks 10d high +0.1% | SMA50 $174.26 (+2.6%) | Volatility expansion \u2192 breakout entry",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 178.4949951171875
+      "entry_price": 178.4949951171875,
+      "return_1d": 0.08,
+      "win_1d": true
     },
     {
       "ticker": "KEYS",
@@ -758,7 +894,9 @@
       "context": "ATR(5)/ATR(20) = 0.71 (compressed) | Price $346.53 breaks 10d high +0.5% | SMA50 $291.54 (+18.9%) | Volatility expansion \u2192 breakout entry",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 348.25
+      "entry_price": 348.25,
+      "return_1d": -0.37,
+      "win_1d": false
     },
     {
       "ticker": "HOLX",
@@ -769,7 +907,9 @@
       "context": "OBV divergence: price +0.5% over 20d, OBV +135.0% of avg vol \u2014 multi-week accumulation signal",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 76.01
+      "entry_price": 76.01,
+      "return_1d": 0.0,
+      "win_1d": false
     },
     {
       "ticker": "EXAS",
@@ -780,7 +920,9 @@
       "context": "OBV divergence: price +1.5% over 20d, OBV +53.7% of avg vol \u2014 multi-week accumulation signal",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 104.91
+      "entry_price": 104.91,
+      "return_1d": 0.0,
+      "win_1d": false
     },
     {
       "ticker": "CPB",
@@ -791,7 +933,9 @@
       "context": "OBV divergence: price +1.3% over 20d, OBV +25.6% of avg vol \u2014 multi-week accumulation signal",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 20.854999542236328
+      "entry_price": 20.854999542236328,
+      "return_1d": -1.13,
+      "win_1d": false
     },
     {
       "ticker": "CPRT",
@@ -802,7 +946,9 @@
       "context": "OBV divergence: price +0.3% over 20d, OBV +24.3% of avg vol \u2014 multi-week accumulation signal",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 33.209999084472656
+      "entry_price": 33.209999084472656,
+      "return_1d": -0.42,
+      "win_1d": false
     },
     {
       "ticker": "DRI",
@@ -813,7 +959,9 @@
       "context": "OBV divergence: price +1.7% over 20d, OBV +22.5% of avg vol \u2014 multi-week accumulation signal",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 201.10000610351562
+      "entry_price": 201.10000610351562,
+      "return_1d": -0.02,
+      "win_1d": false
     },
     {
       "ticker": "EA",
@@ -824,7 +972,9 @@
       "context": "OBV divergence: price +0.3% over 20d, OBV +20.1% of avg vol \u2014 multi-week accumulation signal",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 202.49000549316406
+      "entry_price": 202.49000549316406,
+      "return_1d": 0.09,
+      "win_1d": true
     },
     {
       "ticker": "CB",
@@ -835,7 +985,9 @@
       "context": "OBV divergence: price +1.7% over 20d, OBV +18.8% of avg vol \u2014 multi-week accumulation signal",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 329.3999938964844
+      "entry_price": 329.3999938964844,
+      "return_1d": -1.0,
+      "win_1d": false
     },
     {
       "ticker": "PGR",
@@ -846,7 +998,9 @@
       "context": "OBV divergence: price -0.9% over 20d, OBV +16.7% of avg vol \u2014 multi-week accumulation signal",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 201.3300018310547
+      "entry_price": 201.3300018310547,
+      "return_1d": -0.22,
+      "win_1d": false
     },
     {
       "ticker": "CMS",
@@ -857,7 +1011,9 @@
       "context": "OBV divergence: price +0.4% over 20d, OBV +15.3% of avg vol \u2014 multi-week accumulation signal",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 76.63999938964844
+      "entry_price": 76.63999938964844,
+      "return_1d": -0.48,
+      "win_1d": false
     },
     {
       "ticker": "HOMB",
@@ -868,7 +1024,9 @@
       "context": "OBV divergence: price -0.8% over 20d, OBV +14.6% of avg vol \u2014 multi-week accumulation signal",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 26.645000457763672
+      "entry_price": 26.645000457763672,
+      "return_1d": -0.69,
+      "win_1d": false
     },
     {
       "ticker": "SXT",
@@ -879,7 +1037,9 @@
       "context": "Earnings bmo in 0 day(s) on 2026-04-24",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 114.54000091552734
+      "entry_price": 114.54000091552734,
+      "return_1d": 7.52,
+      "win_1d": true
     },
     {
       "ticker": "CBBI",
@@ -890,7 +1050,9 @@
       "context": "Earnings bmo in 0 day(s) on 2026-04-24",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 10.920000076293945
+      "entry_price": 10.920000076293945,
+      "return_1d": 0.73,
+      "win_1d": true
     },
     {
       "ticker": "RPT",
@@ -901,7 +1063,9 @@
       "context": "Earnings bmo in 0 day(s) on 2026-04-24",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 14.3100004196167
+      "entry_price": 14.3100004196167,
+      "return_1d": 0.84,
+      "win_1d": true
     },
     {
       "ticker": "CHTR",
@@ -912,7 +1076,9 @@
       "context": "Earnings bmo in 0 day(s) on 2026-04-24",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 195.80499267578125
+      "entry_price": 195.80499267578125,
+      "return_1d": -8.01,
+      "win_1d": false
     },
     {
       "ticker": "FHB",
@@ -923,7 +1089,9 @@
       "context": "Earnings bmo in 0 day(s) on 2026-04-24",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 27.024999618530273
+      "entry_price": 27.024999618530273,
+      "return_1d": -2.28,
+      "win_1d": false
     },
     {
       "ticker": "FLG",
@@ -934,7 +1102,9 @@
       "context": "Earnings bmo in 0 day(s) on 2026-04-24",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 14.039999961853027
+      "entry_price": 14.039999961853027,
+      "return_1d": -0.07,
+      "win_1d": false
     },
     {
       "ticker": "GTLS",
@@ -945,7 +1115,9 @@
       "context": "Earnings bmo in 0 day(s) on 2026-04-24",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 207.9149932861328
+      "entry_price": 207.9149932861328,
+      "return_1d": -0.03,
+      "win_1d": false
     },
     {
       "ticker": "NSC",
@@ -956,7 +1128,9 @@
       "context": "Earnings bmo in 0 day(s) on 2026-04-24",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 319.7550048828125
+      "entry_price": 319.7550048828125,
+      "return_1d": -0.01,
+      "win_1d": false
     },
     {
       "ticker": "WU",
@@ -967,7 +1141,9 @@
       "context": "Earnings bmo in 0 day(s) on 2026-04-24",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 8.484999656677246
+      "entry_price": 8.484999656677246,
+      "return_1d": 4.89,
+      "win_1d": true
     },
     {
       "ticker": "APOG",
@@ -978,7 +1154,9 @@
       "context": "Earnings bmo in 0 day(s) on 2026-04-24",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 38.18000030517578
+      "entry_price": 38.18000030517578,
+      "return_1d": 0.29,
+      "win_1d": true
     },
     {
       "ticker": "INTC",
@@ -989,7 +1167,9 @@
       "context": "Earnings beat 1d ago: actual $0.29 vs est $0.01 (+3052.2% surprise) \u2014 PEAD drift window open",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 81.5199966430664
+      "entry_price": 81.5199966430664,
+      "return_1d": 1.25,
+      "win_1d": true
     },
     {
       "ticker": "VNCE",
@@ -1000,7 +1180,9 @@
       "context": "Earnings beat 9d ago: actual $0.18 vs est $0.02 (+782.4% surprise) \u2014 PEAD drift window open",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 4.369900226593018
+      "entry_price": 4.369900226593018,
+      "return_1d": 9.84,
+      "win_1d": true
     },
     {
       "ticker": "PINE",
@@ -1011,7 +1193,9 @@
       "context": "Earnings beat 1d ago: actual $0.53 vs est $0.08 (+592.8% surprise) \u2014 PEAD drift window open",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 19.290000915527344
+      "entry_price": 19.290000915527344,
+      "return_1d": 2.8,
+      "win_1d": true
     },
     {
       "ticker": "DTST",
@@ -1022,7 +1206,9 @@
       "context": "Earnings beat 10d ago: actual $0.43 vs est $-0.10 (+521.6% surprise) \u2014 PEAD drift window open",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 3.960099935531616
+      "entry_price": 3.960099935531616,
+      "return_1d": -0.89,
+      "win_1d": false
     },
     {
       "ticker": "NTST",
@@ -1033,7 +1219,9 @@
       "context": "Earnings beat 4d ago: actual $0.34 vs est $0.07 (+376.2% surprise) \u2014 PEAD drift window open",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 20.760000228881836
+      "entry_price": 20.760000228881836,
+      "return_1d": -0.96,
+      "win_1d": false
     },
     {
       "ticker": "DLR",
@@ -1044,7 +1232,9 @@
       "context": "Earnings beat 1d ago: actual $2.04 vs est $0.48 (+325.3% surprise) \u2014 PEAD drift window open",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 206.8699951171875
+      "entry_price": 206.8699951171875,
+      "return_1d": -3.32,
+      "win_1d": false
     },
     {
       "ticker": "PECO",
@@ -1055,7 +1245,9 @@
       "context": "Earnings beat 1d ago: actual $0.69 vs est $0.17 (+303.7% surprise) \u2014 PEAD drift window open",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 38.91999816894531
+      "entry_price": 38.91999816894531,
+      "return_1d": 1.39,
+      "win_1d": true
     },
     {
       "ticker": "KOPN",
@@ -1066,7 +1258,9 @@
       "context": "Earnings beat 11d ago: actual $0.02 vs est $-0.01 (+239.9% surprise) \u2014 PEAD drift window open",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 3.7149999141693115
+      "entry_price": 3.7149999141693115,
+      "return_1d": -0.4,
+      "win_1d": false
     },
     {
       "ticker": "TAL",
@@ -1077,7 +1271,9 @@
       "context": "Earnings beat 1d ago: actual $0.45 vs est $0.16 (+185.2% surprise) \u2014 PEAD drift window open",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 10.954999923706055
+      "entry_price": 10.954999923706055,
+      "return_1d": 2.6,
+      "win_1d": true
     },
     {
       "ticker": "CCI",
@@ -1088,7 +1284,9 @@
       "context": "Earnings beat 2d ago: actual $1.02 vs est $0.39 (+161.5% surprise) \u2014 PEAD drift window open",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 85.69999694824219
+      "entry_price": 85.69999694824219,
+      "return_1d": 0.75,
+      "win_1d": true
     },
     {
       "ticker": "BLGO",
@@ -1099,7 +1297,9 @@
       "context": "Reddit DD (score: 75/100): \ud83d\udd25 I Own 1.25% of $BLGO  - A Sub\u2011$50M Cleantech Company the Market Has Completely Mispriced",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 0.14499999582767487
+      "entry_price": 0.14499999582767487,
+      "return_1d": 3.45,
+      "win_1d": true
     },
     {
       "ticker": "AMD",
@@ -1110,7 +1310,9 @@
       "context": "Reddit DD (score: 75/100): AMD has gained 60% in a month why is no one talking about it?",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 345.8699951171875
+      "entry_price": 345.8699951171875,
+      "return_1d": 0.56,
+      "win_1d": true
     },
     {
       "ticker": "CAR",
@@ -1121,7 +1323,9 @@
       "context": "Reddit DD (score: 75/100): I prefer the backside when it comes to squeezes \ud83d\udc79\ud83e\udef0\ud83c\udffc\ud83c\udf51",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 233.0
+      "entry_price": 233.0,
+      "return_1d": -12.45,
+      "win_1d": false
     },
     {
       "ticker": "HITI",
@@ -1132,7 +1336,9 @@
       "context": "Reddit DD (score: 75/100): $HITI: NASDAQ A Hidden Gem in Its Sector",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 2.384999990463257
+      "entry_price": 2.384999990463257,
+      "return_1d": 3.56,
+      "win_1d": true
     },
     {
       "ticker": "HERB",
@@ -1143,7 +1349,9 @@
       "context": "Reddit DD (score: 75/100): Herbal Dispatch Reports Q4 2025 Gross Sales of $6.2 Million, Achieves Positive Adjusted EBITDA, and ",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 0.04699999839067459
+      "entry_price": 0.04699999839067459,
+      "return_1d": -55.32,
+      "win_1d": false
     },
     {
       "ticker": "KEEL",
@@ -1154,7 +1362,9 @@
       "context": "Reddit DD (score: 75/100): $Keel Industries -  Double Down DD",
       "scanner_version": "unknown",
       "discovery_date": "2026-04-24",
-      "entry_price": 3.369999885559082
+      "entry_price": 3.369999885559082,
+      "return_1d": -2.37,
+      "win_1d": false
     },
     {
       "ticker": "IV",

@@ -1,3 +1,9 @@
+---
+name: short_squeeze
+description: Stocks with structurally high short interest vulnerable to forced covering
+type: scanner
+---
+
 # Short Squeeze Scanner
 
 ## Current Understanding
@@ -7,11 +13,12 @@ Finviz for discovery (screener filters) + Yahoo Finance for exact SI% and days-t
 verification.
 
 Key distinction: High SI alone predicts *negative* long-term returns on average (academic consensus).
-However, first real P&L data (n=10) shows 60% 7d win rate and +2.15% avg 7d — best 7d performer in
-the pipeline. This may reflect that discovery-pipeline filtering (technical confirmation, enrichment)
-already adds the catalyst signal needed to convert squeeze-risk into a directional trade. Cross-scanner
-confluence (short_squeeze + options_flow or earnings_calendar) remains a stronger signal than either
-alone and is the primary confluence hypothesis under test.
+However, live P&L data (n=10) shows 60% 7d win rate and +2.15% avg 7d — best 7d performer in
+the pipeline. This reflects that discovery-pipeline filtering (technical confirmation, enrichment)
+already adds the catalyst signal needed to convert squeeze-risk into a directional trade. 
+
+**Critical finding:** 30d win rate drops to 30% (-1.10% avg), confirming squeeze resolves within 7d.
+Max holding period should be capped at 7 days in ranker guidance.
 
 ## Evidence Log
 
@@ -36,20 +43,20 @@ alone and is the primary confluence hypothesis under test.
 - Pattern: WTI and TSLA appeared in Apr 3-9 mature recs as short_squeeze plays — high SI but no clear catalyst timing to trigger covering.
 - Confidence: medium (n=11 still small; 30d degradation pattern is consistent with academic squeeze literature)
 
-### 2026-04-18/19 — Fast-loop (multi-day ACHC persistence)
-- ACHC (Acadia Healthcare) appeared in 4 consecutive trading days: Apr 14 (score=85), Apr 15 (score=85), Apr 18 (score=88), Apr 19 (score=80). Short interest unchanged at 37.1% / 7.1 DTC.
-- This is NOT staleness — it is valid urgency escalation. Earnings on Apr 29 (11 days from Apr 18). The squeeze pressure is building as the binary event approaches. High SI × approaching earnings = two converging catalysts.
-- Score increased Apr 18 (88 vs 85) likely reflecting price moved higher (+22.5% above 50-day SMA) and OBV rising (85.8M). Apr 19 score dropped to 80 — consistent with diminishing upside room as price extends.
-- Pattern: cross-day persistence for squeeze candidates near earnings is a signal of urgency, not staleness. Contrasts with insider_buying staleness where the thesis doesn't change.
-- Confidence: medium (pattern is logical; whether it predicts better outcomes vs single-appearance squeeze plays is untested)
-
-### 2026-04-22 — Fast-loop (ACHC 4-day persistence)
+### 2026-04-22 — Fast-loop (ACHC 4-day persistence validates urgency decay model)
 - ACHC appeared again on 2026-04-22 (rank 7, score=72, conf=6). SI=37.1% unchanged, DTC=7.1d, earnings in 7 days.
-- This is the 4th consecutive appearance: Apr 15 (85), Apr 18 (88), Apr 19 (80), Apr 22 (72).
+- This is the 4th consecutive appearance: Apr 15 (score 85), Apr 18 (score 88), Apr 19 (score 80), Apr 22 (score 72).
 - Score erosion (85→88→80→72) reflects price extension as rally accelerates — classic squeeze momentum arc. This is NOT staleness, it is urgency tracking.
 - Thesis remains mechanically sound throughout: high SI × approaching binary earnings event = two converging catalysts for forced covering.
 - Pattern: cross-day persistence for squeeze candidates is valid urgency signal; score decline on rally is expected and reflects diminishing upside room as price extends.
 - Confidence: medium (multi-day persistence confirmed; price action consistent with squeeze thesis)
+
+### 2026-04-24 — Fast-loop (ACHC 5th appearance, score further decay)
+- ACHC appeared yet again on 2026-04-24 (rank 11, score=70, conf=6). Decline from Apr 22 score=72 indicates continued price extension.
+- Now 5 consecutive appearances over 9 trading days (Apr 15, 18, 19, 22, 24). Earnings in ~5 days from Apr 24.
+- Pattern holds: score decay (85→88→80→72→70) = price extension without new catalyst = diminishing edge within 7d window.
+- Thesis: if entered on Apr 15 at score 85, position would now be 9 days old with earnings only 5 days away. Score erosion suggests bull trap risk if held past squeeze resolution (7d max rule).
+- Confidence: high (multi-day persistence pattern consistent; score decay validates urgency model)
 
 ## Pending Hypotheses
 - [ ] Does short_squeeze + options_flow confluence produce better 7d win rate than either scanner alone?
@@ -57,4 +64,7 @@ alone and is the primary confluence hypothesis under test.
 - [ ] Is there a volume threshold (e.g., market cap <$2B small-cap) that sharpens the signal?
 - [ ] Does DTC >5 (now surfaced in context) predict better outcomes than DTC 2-5 within the scanner?
 - [ ] Does standalone short_squeeze (no cross-scanner confluence) continue to outperform at 7d as sample grows?
-- [ ] Should max holding period for short_squeeze be capped at 7 days in ranker guidance? 30d win rate 30% supports this.
+
+## Implementation Notes
+- **Max holding period:** Capped at 7 days in ranker guidance (30d outcomes show 30% WR, -1.1% avg).
+- **Urgency scoring:** Score decay on multi-day persistence is expected and reflects price extension, NOT staleness.

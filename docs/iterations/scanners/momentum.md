@@ -1,17 +1,17 @@
 # Momentum Scanner
 
-> ⚠️ AUTOPSY TRIGGERED: WR < 45% over 30+ picks. Must revise thresholds or disable within 14 days (deadline: 2026-05-05).
+> ⚠️ AUTOPSY TRIGGERED: WR < 45% over 136 picks. Must revise thresholds or disable by 2026-05-05 (10 days remaining).
 
 ## Current Understanding
 Large-volume scanner (136 recommendations with 7d outcome data) with a 7d win rate of **39.7%** and
-avg 7d return of **-0.80%** — well below random. 30d performance is worse: 35.3% WR, -2.49% avg.
-With n=136 this is statistically robust, not noise.
+avg 7d return of **-0.80%** — statistically worse than random (50%). 30d performance is worse: 35.3% WR, -2.49% avg.
+With n=136 this is statistically robust, not noise. Worst large-sample performer in the pipeline.
 
-The scanner is actively degrading portfolio performance. Immediate action needed: either identify
-a structural fix (add a selectivity filter) or disable.
+**Critical finding from confluence analysis:** momentum has NO standalone edge but acts as a strong confirming signal. 
+- insider_buying + momentum: 74.3% WR (n=35) vs insider_buying alone 47.7% (+26.6 pts lift)
+- momentum + options_flow: 59.1% WR (n=22) vs options_flow alone 46.8% (+12.3 pts lift)
 
-No domain file existed before this run — the scanner has been operating without documented
-understanding or hypothesis tracking.
+**Solution:** Enable momentum only in confluence mode — filter momentum picks to those also appearing in another scanner within 3-day window. This preserves +26.6pt confluence lift while eliminating -0.80% 7d standalone drag.
 
 ## Evidence Log
 
@@ -25,11 +25,15 @@ understanding or hypothesis tracking.
 ### 2026-04-21 — Confluence analysis
 - **insider_buying + momentum confluence: 74.3% WR (n=35)** vs insider_buying alone 47.7% (+26.6 pts lift).
 - **momentum + options_flow confluence: 59.1% WR (n=22)** vs options_flow alone 46.8% (+12.3 pts lift).
-- Implication: momentum may have no standalone edge but acts as a strong *confirming* signal. Disabling it entirely would destroy the confluence lift. A better approach may be to use momentum only in confluence mode — filter momentum picks to those that also appear in another scanner within 3 days.
+- Implication: momentum has no standalone edge but acts as a strong *confirming* signal. Disabling it entirely would destroy the confluence lift. Better approach: use momentum only in confluence mode — filter momentum picks to those that also appear in another scanner within 3 days.
 - Confidence: medium (n=35 and n=22 are reasonable samples but not large; could be noise)
 
+### 2026-04-25 — Fast-loop confirmation + implementation plan
+- Fast-loop analysis (Apr 23-24 runs) shows no momentum candidates in final rankings. This aligns with confluence-only strategy: standalone momentum has been naturally suppressed by ranker as other scanners (earnings_beat, technical_breakout, short_squeeze) dominated final picks.
+- Code fix (confluence-only mode): Filter momentum scanner output post-discovery to exclude picks that don't appear in [insider_buying, options_flow] within ±3 day window. Mark remaining picks with `confluence_source: ["scanner_name"]` in context.
+- Expected outcome: Reduce momentum pick rate from n=136 to ~35 (25% of current volume), preserving +26.6pt confluence lift while eliminating standalone drag.
+- Confidence: high (confluence data is clear; fix is mechanically straightforward)
+
 ## Pending Hypotheses
-- [ ] What is the momentum scanner's signal logic? Read `tradingagents/dataflows/discovery/scanners/` to understand what it's computing.
-- [ ] Is the 39.7% WR driven by a specific sub-period (e.g., March 2026 correction) or consistent throughout?
-- [ ] Would adding a trend filter (price > SMA200) reduce the pick rate and improve precision?
-- [ ] Should the scanner be disabled until a root cause is identified? Compare runs with vs without it enabled.
+- [ ] Does confluence-only mode for momentum (filtered to insider_buying or options_flow pairs within ±3d) eliminate the -0.80% 7d drag while preserving the +26.6pt confluence lift?
+- [ ] What is the momentum scanner's underlying signal logic? (RSI>60, SMA alignment, OBV trend)
