@@ -24,6 +24,15 @@ quarterly.
 - Earnings_play consistently scores lowest of active scanners (60-75 range) — the ranker's skepticism is well-calibrated.
 - Confidence: medium (7d improvement appears market-context-driven, not structural; pattern may not persist in flat/bear market)
 
+### 2026-04-26 — P&L autopsy (earnings_play = earnings_calendar, n=48 7d outcomes)
+- 7d win rate: 37.5% (18/48), avg return: -1.22% — AUTOPSY TRIGGERED. Worst performer in pipeline alongside early_accumulation.
+- Root cause analysis: max_days_until_earnings=7 pulls in earnings events too far out (4-7 days), where pre-earnings volatility setup hasn't formed yet. These are just ordinary trend trades with event-day risk premium baked in.
+- Secondary issue: pure event-day plays without pre-earnings accumulation confirmation are scored too high (CRITICAL priority), leading to overconfident trading on binary event risk.
+- Fix applied: (1) Reduce max_days_until_earnings from 7 → 3 days (closer to event = setup more likely intact), (2) Enrich only 2-3d candidates (line 69 guard), (3) Cap unmatchable candidates (no accumulation signal) at score 70 (HIGH/MEDIUM boundary, not CRITICAL).
+- Expected impact: Eliminate immature setups (4-7d window) and reduce binary event-day trades without confirmation.
+- Confidence: medium (window tightening is sound, but 7+ days needed to validate if 3-day window catches genuine setups)
+
 ## Pending Hypotheses
 - [ ] Does requiring options confirmation alongside earnings improve signal quality?
 - [ ] Does short interest >20% pre-earnings produce better outcomes than <10%? APLD (30.6% SI) scored highest in recent runs — worth tracking.
+- [ ] **Does tightening max_days_until_earnings from 7 to 3 days move WR from 37.5% toward >45%?** — forward testing started 2026-04-26
