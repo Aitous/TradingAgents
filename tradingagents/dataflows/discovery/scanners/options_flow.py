@@ -197,7 +197,16 @@ class OptionsFlowScanner(BaseScanner):
 
             # Refine priority using IV skew (OTM put IV - ATM call IV)
             # High skew = bearish informed positioning; low skew = bullish
+            # When IV data is available and skew >= 0.02, the elevated OTM-put IV indicates
+            # put-hedging activity rather than genuine call buying — reject to reduce noise.
             if sentiment == "bullish":
+                if iv_skew is not None and iv_skew >= 0.02:
+                    logger.debug(
+                        f"{ticker}: bullish flow rejected — IV skew={iv_skew:.3f} >= 0.02 "
+                        "(OTM put hedging, not call buying)"
+                    )
+                    return None
+                # iv_skew < 0.02 (genuine call demand) or no IV data available
                 if iv_skew is not None and iv_skew < 0.02:
                     priority = Priority.CRITICAL.value  # unusual calls + low skew = strong bullish
                 else:

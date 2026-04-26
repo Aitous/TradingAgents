@@ -217,33 +217,70 @@ class InsiderBuyingScanner(BaseScanner):
             return 0
 
     def _load_recent_insider_tickers(self, suppress_days: int = 3) -> Set[str]:
-        """Return tickers recommended as insider_buying in the past N days (and today).
+        """Return tickers surfaced as insider_buying today or in the past N days.
 
-        Covers both cross-day staleness (same Form 4 filing re-appearing each day)
-        and same-day multi-run staleness (NKE appeared in 3/4 runs on Apr 20).
+        Two complementary sources are checked:
+        1. ``recommendations/YYYY-MM-DD.json`` — final pipeline output, written at
+           end-of-run.  Catches cross-day staleness (same Form 4 re-appearing each
+           day) and same-day duplicates once a prior run has fully completed.
+        2. ``scanner_picks/YYYY-MM-DD.json`` — raw scanner output written by
+           ``save_scanner_picks`` *during* the scanner node, before the ranking and
+           recommendations stages.  Catches same-day intraday duplicates where a
+           prior run is still in-flight or the recommendations file has not yet been
+           written (e.g. NKE appearing in 3/4 runs on 2026-04-20).
+
+        Only today's ``scanner_picks`` file is consulted (intraday dedup only); the
+        cross-day suppression is handled exclusively by the recommendations layer.
         """
         seen: Set[str] = set()
         data_dir = Path(self.config.get("data_dir", "data"))
-        recs_dir = data_dir / "recommendations"
-
-        if not recs_dir.exists():
-            return seen
-
         today = date.today()
-        # Range: today (same-day dedup) + past suppress_days
-        for i in range(0, suppress_days + 1):
-            check_date = today - timedelta(days=i)
-            rec_file = recs_dir / f"{check_date.isoformat()}.json"
-            if not rec_file.exists():
-                continue
+        today_str = today.isoformat()
+
+        # --- Source 1: recommendations (today + past suppress_days) ---
+        recs_dir = data_dir / "recommendations"
+        if recs_dir.exists():
+            for i in range(0, suppress_days + 1):
+                check_date = today - timedelta(days=i)
+                rec_file = recs_dir / f"{check_date.isoformat()}.json"
+                if not rec_file.exists():
+                    continue
+                try:
+                    with open(rec_file) as f:
+                        data = json.load(f)
+                    for rec in data.get("recommendations", []):
+                        if rec.get("strategy_match") in ("insider_buying", "insider_cluster_buying"):
+                            ticker = rec.get("ticker", "").upper()
+                            if ticker:
+                                seen.add(ticker)
+                except Exception:
+                    pass
+
+        # --- Source 2: today's scanner_picks (intraday dedup) ---
+        # scanner_picks/YYYY-MM-DD.json is written by save_scanner_picks() at the
+        # end of the scanner node, BEFORE the current run overwrites it.  Reading it
+        # here (at scan time) captures every insider_buying ticker that a prior run
+        # today already surfaced, even if that run never reached the recommendations
+        # stage (e.g. it was still in-flight).
+        picks_dir = data_dir / "scanner_picks"
+        picks_file = picks_dir / f"{today_str}.json"
+        if picks_file.exists():
             try:
-                with open(rec_file) as f:
-                    data = json.load(f)
-                for rec in data.get("recommendations", []):
-                    if rec.get("strategy_match") in ("insider_buying", "insider_cluster_buying"):
-                        ticker = rec.get("ticker", "").upper()
+                with open(picks_file) as f:
+                    picks_data = json.load(f)
+                for pick in picks_data.get("picks", []):
+                    if pick.get("scanner") in ("insider_buying",) or pick.get("strategy") in (
+                        "insider_buying",
+                        "insider_cluster_buying",
+                    ):
+                        ticker = pick.get("ticker", "").upper()
                         if ticker:
                             seen.add(ticker)
+                if seen:
+                    logger.debug(
+                        f"Intraday dedup: loaded {len(seen)} insider_buying ticker(s) "
+                        f"from today's scanner_picks ({today_str})"
+                    )
             except Exception:
                 pass
 

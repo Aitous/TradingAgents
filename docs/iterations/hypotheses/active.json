@@ -1,5 +1,5 @@
 {
-  "max_active": 5,
+  "max_active": 8,
   "hypotheses": [
     {
       "id": "insider_buying-min-txn-100k",
@@ -133,6 +133,60 @@
       "days_elapsed": 0,
       "picks_log": [],
       "baseline_scanner": "momentum",
+      "conclusion": null
+    },
+    {
+      "id": "options_flow-iv-skew-filter",
+      "scanner": "options_flow",
+      "title": "Add IV skew rejection filter (skew >= 0.02)",
+      "description": "Autopsy P&L analysis: options_flow has 42.2% 7d WR (n=83), below historical ~50% baseline. Root cause: IV skew filter added 2026-04-21 promoted strong signals to CRITICAL but never rejected high-skew bullish candidates (OTM put IV > ATM call IV indicates hedging, not bullish conviction). Fix: bullish candidates with iv_skew >= 0.02 now return None (filtered out). Candidates with iv_skew < 0.02 promoted to CRITICAL; no-IV-data candidates pass at HIGH. Expected outcome: reduce false-positive rate from put-hedging noise, move 7d WR toward 50%+.",
+      "branch": null,
+      "pr_number": null,
+      "status": "running",
+      "priority": 7,
+      "expected_impact": "high",
+      "hypothesis_type": "implementation",
+      "created_at": "2026-04-26",
+      "min_days": 14,
+      "days_elapsed": 0,
+      "picks_log": [],
+      "baseline_scanner": "options_flow",
+      "conclusion": null
+    },
+    {
+      "id": "earnings_calendar-window-tightening",
+      "scanner": "earnings_calendar",
+      "title": "Tighten pre-earnings window: 7 days → 3 days",
+      "description": "Autopsy P&L analysis: earnings_play (earnings_calendar scanner) has 37.5% 7d WR (n=48), worst performer. Root cause: max_days_until_earnings=7 pulls in earnings 4-7 days out, where pre-earnings volatility setup hasn't formed yet. These are immature plays with added event-day binary risk. Fix: (1) Reduce max_days_until_earnings 7 → 3 days (closer to event = setup more likely intact), (2) Cap unmatchable candidates (no accumulation signal) at score 70 (HIGH/MEDIUM, not CRITICAL). Expected outcome: eliminate immature setups and overconfident binary trades, move 7d WR from 37.5% toward >45%.",
+      "branch": null,
+      "pr_number": null,
+      "status": "running",
+      "priority": 7,
+      "expected_impact": "high",
+      "hypothesis_type": "implementation",
+      "created_at": "2026-04-26",
+      "min_days": 14,
+      "days_elapsed": 0,
+      "picks_log": [],
+      "baseline_scanner": "earnings_calendar",
+      "conclusion": null
+    },
+    {
+      "id": "insider_buying-intraday-dedup",
+      "scanner": "insider_buying",
+      "title": "Add intraday deduplication via scanner_picks",
+      "description": "Autopsy P&L analysis: insider_buying 44.5% 7d WR (n=155), borderline (at 45% threshold). Fast-loop observation (2026-04-20): NKE appeared in 3/4 intraday runs same day (75→82→85 score escalation), same SEC filing. Cross-day suppress_days=3 works, but intraday repeats slip through (recommendations file written end-of-pipeline, not available at scanner start). Fix: _load_recent_insider_tickers() now reads scanner_picks/YYYY-MM-DD.json (written immediately after scanner, before pipeline end). Intraday dedup now works. Expected outcome: eliminate same-day repeats, deconflate confidence scores, move 7d WR from 44.5% toward 50%+.",
+      "branch": null,
+      "pr_number": null,
+      "status": "running",
+      "priority": 6,
+      "expected_impact": "medium",
+      "hypothesis_type": "implementation",
+      "created_at": "2026-04-26",
+      "min_days": 14,
+      "days_elapsed": 0,
+      "picks_log": [],
+      "baseline_scanner": "insider_buying",
       "conclusion": null
     }
   ]

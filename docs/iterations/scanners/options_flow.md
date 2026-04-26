@@ -21,7 +21,16 @@ contracts — scanning up to 3 expirations improves signal quality.
 - TSLA scored only 60 (conf 6) — borderline quality; appeared alongside GME social_dd (56) in same run (Apr 8), suggesting the LLM is rightly cautious about speculative social names.
 - Confidence: medium
 
+### 2026-04-26 — P&L autopsy (n=83 7d outcomes)
+- 7d win rate: 42.2%, avg return: -1.33% — below historical ~50% baseline.
+- IV skew filter added 2026-04-21 promoted strong signals to CRITICAL but never rejected high-skew bullish candidates.
+- Root cause: bullish candidates with OTM-put IV > ATM-call IV (hedging signal, not bullish) still emitted at HIGH priority.
+- Fix applied: bullish candidates with iv_skew >= 0.02 now return None (filtered out). Only iv_skew < 0.02 (low hedging premium) promoted to CRITICAL.
+- Expected impact: Reduce false-positive rate from put hedging, move WR back toward 50%.
+- Confidence: medium (IV skew hypothesis is sound but outcomes will take 7+ days to evaluate)
+
 ## Pending Hypotheses
 - [x] Premium filter: already applied in code at `options_flow.py:143-144, 159`. Hypothesis resolved.
 - [ ] Does scanning 3 expirations vs 1 meaningfully change hit rate?
 - [x] Is moneyness (ITM vs OTM) a useful signal filter? **Resolved 2026-04-21**: IV skew (OTM put IV − ATM call IV) added to scanner. Bullish flow + low skew (<0.02) → CRITICAL; reduces false-positive bullish signals from put hedging noise.
+- [ ] **Does IV skew rejection (iv_skew >= 0.02 filtered out) move WR from 42.2% toward 50%?** — forward testing started 2026-04-26

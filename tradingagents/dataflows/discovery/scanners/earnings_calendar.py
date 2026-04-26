@@ -21,7 +21,7 @@ class EarningsCalendarScanner(BaseScanner):
     def __init__(self, config: Dict[str, Any]):
         super().__init__(config)
         self.max_candidates = self.scanner_config.get("max_candidates", 25)
-        self.max_days_until_earnings = self.scanner_config.get("max_days_until_earnings", 7)
+        self.max_days_until_earnings = self.scanner_config.get("max_days_until_earnings", 3)
         self.min_market_cap = self.scanner_config.get("min_market_cap", 0)
 
     def scan(self, state: Dict[str, Any]) -> List[Dict[str, Any]]:
@@ -61,11 +61,18 @@ class EarningsCalendarScanner(BaseScanner):
             # Sort by days until earnings (sooner = higher priority)
             candidates.sort(key=lambda x: x.get("days_until", 999))
 
-            # Enrich top candidates with accumulation signal and EPS estimates
+            # Enrich top candidates with accumulation signal and EPS estimates.
+            # Only enrich within the tighter 2–3 day window; beyond that the
+            # setup hasn't matured and enrichment adds noise, not signal.
             for cand in candidates[:10]:
                 days_until = cand.get("days_until", 999)
-                if 2 <= days_until <= 7:
+                if 2 <= days_until <= 3:
                     self._enrich_earnings_candidate(cand)
+                    # Post-enrichment gate: without accumulation confirmation a
+                    # pure event-day binary play is low-conviction.  Cap priority
+                    # at 70 so it never reaches CRITICAL without confirmation.
+                    if not cand.get("has_accumulation"):
+                        cand["priority"] = min(cand.get("priority", 70), 70)
 
             # Apply limit
             candidates = candidates[: self.limit]
