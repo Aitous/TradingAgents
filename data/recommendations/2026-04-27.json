@@ -1,0 +1,133 @@
+{
+  "date": "2026-04-27",
+  "llm_provider": "google",
+  "recommendations": [
+    {
+      "ticker": "QCOM",
+      "rank": 1,
+      "company_name": "QUALCOMM Incorporated",
+      "description": "QUALCOMM Incorporated develops and commercializes foundational technologies for the global wireless industry, including semiconductors for mobile and AI devices.",
+      "strategy_match": "options_flow",
+      "scanners": [
+        "options_flow"
+      ],
+      "pipeline": "options_flow",
+      "final_score": 88,
+      "confidence": 9,
+      "risk_level": "moderate",
+      "reason": "The catalyst is a highly impactful reported partnership with OpenAI to develop custom AI-centric smartphone processors. Timing is driven by a 13% daily surge with institutional accumulation confirmed by a highly bullish options volume P/C ratio of 0.297. The risk/reward profile is strong as the stock breaks out on 17.3M rising OBV, showing clear accumulation. The key risk is a technical pullback from the overbought RSI (73.4) or potential 'sell the news' profit-taking in the coming days.",
+      "entry_price": 148.61500549316406,
+      "discovery_date": "2026-04-27",
+      "status": "open"
+    },
+    {
+      "ticker": "INTC",
+      "rank": 2,
+      "company_name": "Intel Corporation",
+      "description": "Intel Corporation designs and manufactures microprocessors and semiconductor components for global computing and technology markets.",
+      "strategy_match": "options_flow",
+      "scanners": [
+        "options_flow",
+        "earnings_beat"
+      ],
+      "pipeline": "options_flow",
+      "final_score": 85,
+      "confidence": 8,
+      "risk_level": "high",
+      "reason": "The edge is a blowout Q1 earnings beat (+1971% EPS surprise) and a major new foundry partnership with Elon Musk's Terafab project. Timing is urgent as the PEAD (Post-Earnings Announcement Drift) window is actively open, supported by a massive +23.6% daily surge. Risk/reward is skewed bullish despite technical extension, backed by a bullish options P/C ratio of 0.64. The primary risk is near-term mean reversion given the highly overbought RSI of 82.2 and extreme +34.5% extension above the 20-period VWAP.",
+      "entry_price": 84.75499725341797,
+      "discovery_date": "2026-04-27",
+      "status": "open"
+    },
+    {
+      "ticker": "CRM",
+      "rank": 3,
+      "company_name": "Salesforce, Inc.",
+      "description": "Salesforce provides enterprise customer relationship management software and enterprise-grade autonomous AI agent platforms.",
+      "strategy_match": "options_flow",
+      "scanners": [
+        "options_flow"
+      ],
+      "pipeline": "options_flow",
+      "final_score": 82,
+      "confidence": 8,
+      "risk_level": "moderate",
+      "reason": "The edge is a newly announced $25 billion accelerated share repurchase program, establishing a hard fundamental floor. An 8.7% intraday drop presents an immediate contrarian value entry, especially with an OBV bullish divergence indicating underlying accumulation. High short interest (10.5%) combined with the buyback creates a potent setup for a rapid short-covering reversal. The main risk is that the steep daily drop reflects undisclosed fundamental weakness not fully offset by the buyback announcement.",
+      "entry_price": 182.8000030517578,
+      "discovery_date": "2026-04-27",
+      "status": "open"
+    },
+    {
+      "ticker": "ACHC",
+      "rank": 4,
+      "company_name": "Acadia Healthcare Company, Inc.",
+      "description": "Acadia Healthcare operates a network of behavioral health facilities across the United States.",
+      "strategy_match": "short_squeeze",
+      "scanners": [
+        "short_squeeze"
+      ],
+      "pipeline": "short_squeeze",
+      "final_score": 80,
+      "confidence": 8,
+      "risk_level": "high",
+      "reason": "The catalyst is an extreme short squeeze setup with 37.2% of the float short and 8.1 days to cover. Timing is critical with a binary earnings event arriving in just 2 days. Risk/reward is asymmetric; a bullish OBV divergence (+85.0M volume) indicates pre-earnings accumulation that could ignite a massive squeeze. The primary risk is binary earnings failure\u2014an earnings miss would likely crush the stock and invalidate the squeeze thesis.",
+      "entry_price": 27.540000915527344,
+      "discovery_date": "2026-04-27",
+      "status": "open"
+    },
+    {
+      "ticker": "ARMK",
+      "rank": 5,
+      "company_name": "Aramark",
+      "description": "Aramark provides food, facilities, and uniform services to education, healthcare, business, and sports clients globally.",
+      "strategy_match": "high_52w_breakout",
+      "scanners": [
+        "high_52w_breakout"
+      ],
+      "pipeline": "high_52w_breakout",
+      "final_score": 78,
+      "confidence": 7,
+      "risk_level": "low",
+      "reason": "The edge is a confirmed 52-week high breakout accompanied by strong fundamentals, including a Piotroski F-Score of 8 and Altman Z-Score of 2.35. Timing is supported by the fresh breakout on 1.8x average volume and a highly bullish options volume P/C ratio of 0.301. The setup offers a low-volatility continuation play (ATR of 2.4%) with unusual call activity concentrated at the $48 strike. The key risk is the upcoming earnings report in 15 days, which could alter the current stable momentum trajectory.",
+      "entry_price": 45.650001525878906,
+      "discovery_date": "2026-04-27",
+      "status": "open"
+    },
+    {
+      "ticker": "VOYA",
+      "rank": 6,
+      "company_name": "Voya Financial, Inc.",
+      "description": "Voya Financial is a retirement, investment, and employee benefits company serving the U.S. market.",
+      "strategy_match": "technical_breakout",
+      "scanners": [
+        "technical_breakout"
+      ],
+      "pipeline": "technical_breakout",
+      "final_score": 75,
+      "confidence": 7,
+      "risk_level": "moderate",
+      "reason": "The edge is a technical breakout triggered by preliminary AUM of $353 billion, signaling strong franchise momentum. Timing is urgent as the stock just closed +3.2% above its 20-day high on 4.1x average volume. The risk/reward is favorable as institutional buying is confirmed by the price holding +10.4% above the 20-period VWAP. The primary risk is the RSI hitting 77.0 (overbought) right before its earnings report in 8 days, which could cap short-term upside.",
+      "entry_price": 81.87999725341797,
+      "discovery_date": "2026-04-27",
+      "status": "open"
+    },
+    {
+      "ticker": "LBRT",
+      "rank": 7,
+      "company_name": "Liberty Energy Inc.",
+      "description": "Liberty Energy provides hydraulic fracturing and wireline services to onshore oil and natural gas exploration and production companies.",
+      "strategy_match": "pead_drift",
+      "scanners": [
+        "earnings_beat"
+      ],
+      "pipeline": "pead_drift",
+      "final_score": 72,
+      "confidence": 7,
+      "risk_level": "moderate",
+      "reason": "The edge is a post-earnings momentum play following a massive +205.6% EPS surprise 5 days ago. Timing is optimal as the PEAD window is open, with the stock confirming its uptrend via a bullish MACD crossover and +1.3% daily gain. Risk/reward is attractive with a strong institutional footprint shown by 91.5M rising OBV and price holding +14.7% above VWAP. The key risk is that the stock is up +23.27% over 5 days, making it susceptible to sudden profit-taking if momentum stalls.",
+      "entry_price": 32.53499984741211,
+      "discovery_date": "2026-04-27",
+      "status": "open"
+    }
+  ]
+}
