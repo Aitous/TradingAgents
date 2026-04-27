@@ -35,7 +35,7 @@ class EnrichmentConfig:
     """Enrichment-stage settings (from discovery.enrichment.*)."""
 
     batch_news_vendor: str = "google"
-    batch_news_batch_size: int = 150
+    batch_news_batch_size: int = 15
     news_lookback_days: float = 0.5
     context_max_snippets: int = 2
     context_snippet_max_chars: int = 140

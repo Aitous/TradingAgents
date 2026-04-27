@@ -76,7 +76,7 @@ DEFAULT_CONFIG = {
         # ========================================
         "enrichment": {
             "batch_news_vendor": "google",  # Vendor for batch news: "openai" or "google"
-            "batch_news_batch_size": 150,  # Tickers per API call
+            "batch_news_batch_size": 15,  # Tickers per API call (larger batches hit Gemini quota)
             "news_lookback_days": 0.5,  # Days of news history for enrichment
             "context_max_snippets": 2,  # Max news snippets per candidate
             "context_snippet_max_chars": 140,  # Max chars per snippet

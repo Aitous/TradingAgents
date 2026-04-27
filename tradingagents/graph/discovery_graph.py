@@ -464,10 +464,11 @@ class DiscoveryGraph:
         pipeline_candidates: Dict[str, List[Dict[str, Any]]] = {}
 
         # Global wall-clock limit: all scanners must finish within this budget.
-        # Using timeout_seconds as per-scanner budget × number of scanners gives a
-        # reasonable upper bound, capped at 5 minutes so a single slow scanner can
-        # never block the whole run indefinitely.
-        global_timeout = min(timeout_seconds * len(enabled_scanners), 300)
+        # Wall-clock budget: worst case is ceil(scanners / workers) rounds, each taking
+        # timeout_seconds. The old 300s hard cap was cutting off the final round for
+        # large scanner sets (21 scanners / 8 workers = 3 rounds × 120s = 360s needed).
+        import math
+        global_timeout = math.ceil(len(enabled_scanners) / max_workers) * timeout_seconds
 
         logger.info(
             f"Running {len(enabled_scanners)} scanners concurrently "

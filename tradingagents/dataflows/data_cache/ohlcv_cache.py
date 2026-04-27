@@ -33,13 +33,13 @@ MAX_ROWS_PER_TICKER = 504
 # a larger cached history down to the requested period on return).
 PERIOD_TO_DAYS: Dict[str, Optional[int]] = {
     "1d": 1,
-    "5d": 5,
-    "1mo": 21,
-    "3mo": 63,
-    "6mo": 130,
-    "1y": 252,
-    "2y": 504,
-    "5y": 1260,
+    "5d": 7,
+    "1mo": 31,
+    "3mo": 92,
+    "6mo": 183,
+    "1y": 365,
+    "2y": 730,
+    "5y": 1826,
     "max": None,  # return everything
 }
 

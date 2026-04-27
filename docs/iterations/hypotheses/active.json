@@ -103,24 +103,6 @@
       "conclusion": null
     },
     {
-      "id": "ml_signal-threshold-50",
-      "scanner": "ml_signal",
-      "title": "Monitor WR after raising min_win_prob 0.35 \u2192 0.50",
-      "description": "ml_signal was configured at min_win_prob=0.35 causing all picks to have sub-50% win probability (44-49% observed). Config raised to 0.50 on 2026-04-21. This statistical hypothesis tracks whether the fix produces \u226550% 7d WR in subsequent picks. Expected: fewer picks but higher quality. Success: 7d WR \u2265 52% over \u226510 picks.",
-      "branch": null,
-      "pr_number": null,
-      "status": "running",
-      "priority": 8,
-      "expected_impact": "high",
-      "hypothesis_type": "statistical",
-      "created_at": "2026-04-21",
-      "min_days": 14,
-      "days_elapsed": 0,
-      "picks_log": [],
-      "baseline_scanner": "ml_signal",
-      "conclusion": null
-    },
-    {
       "id": "momentum-confluence-only-filter",
       "scanner": "momentum",
       "title": "Filter momentum to confluence-only mode",

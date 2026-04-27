@@ -185,9 +185,11 @@ def get_batch_stock_news_google(
     Returns:
         dict: {ticker: "news summary text", ...}
     """
-    # Create LLMs with specified model (don't use cached version)
+    import json as _json
     from typing import List
 
+    from google import genai as _genai
+    from google.genai import types as _gtypes
     from langchain_google_genai import ChatGoogleGenerativeAI
     from pydantic import BaseModel
 
@@ -204,12 +206,12 @@ def get_batch_stock_news_google(
     class PortfolioUpdate(BaseModel):
         items: List[TickerNews]
 
-    # Searcher: Enable web search tool
-    search_llm = ChatGoogleGenerativeAI(
-        model=model, api_key=google_api_key, temperature=1.0
-    ).bind_tools([{"google_search": {}}])
+    # Use google.genai SDK directly for grounded search — bind_tools() creates a
+    # custom function_declaration that Gemini rejects with "Invalid function name".
+    # The native SDK correctly passes the built-in google_search tool.
+    genai_client = _genai.Client(api_key=google_api_key)
 
-    # Formatter: Native JSON mode
+    # Formatter: Native JSON mode via LangChain structured output
     structured_llm = ChatGoogleGenerativeAI(
         model=model, api_key=google_api_key
     ).with_structured_output(PortfolioUpdate, method="json_schema")
@@ -235,13 +237,25 @@ For each ticker, provide a comprehensive summary (5-8 sentences) covering:
 - Market reaction or implications
 - Any forward-looking statements or guidance"""
 
+        if i > 0:
+            import time as _time
+            _time.sleep(5)  # avoid 429 quota exhaustion between batches
+
         try:
-            # Step 1: Perform Google search (grounded response)
-            raw_news = search_llm.invoke(prompt)
+            # Step 1: Grounded Google search via native SDK (avoids bind_tools function_declaration issue)
+            search_response = genai_client.models.generate_content(
+                model=model,
+                contents=prompt,
+                config=_gtypes.GenerateContentConfig(
+                    tools=[_gtypes.Tool(google_search=_gtypes.GoogleSearch())],
+                    temperature=1.0,
+                ),
+            )
+            raw_news = search_response.text or ""
 
             # Step 2: Structure the grounded results
             structured_result = structured_llm.invoke(
-                f"Using this verified news data: {raw_news.content}\n\n"
+                f"Using this verified news data: {raw_news}\n\n"
                 f"Format the news for these tickers into the JSON structure: {batch}\n"
                 f"Include all tickers from the list, even if no news was found."
             )
@@ -257,7 +271,6 @@ For each ticker, provide a comprehensive summary (5-8 sentences) covering:
 
         except Exception as e:
             logger.error(f"Error fetching Google batch news for {batch}: {e}")
-            # On error, set empty string for all tickers in batch
             for ticker in batch:
                 results[ticker.upper()] = ""
 

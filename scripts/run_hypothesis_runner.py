@@ -115,6 +115,48 @@ def save_picks_to_worktree(worktree: str, hypothesis_id: str, scanner: str, pick
         )
 
 
+def run_hypothesis_main_branch(hyp: dict) -> bool:
+    """Track a no-branch hypothesis by reading from the main repo's discovery results.
+
+    Used when branch is None — the change is already deployed on main, so picks
+    come from the main repo's results/discovery/ and data/scanner_picks/ directories.
+    Returns True if the experiment concluded.
+    """
+    hid = hyp["id"]
+    scanner = hyp["scanner"]
+    print(f"\n── Hypothesis (main-branch): {hid} ──", flush=True)
+
+    new_picks = extract_picks(str(ROOT), scanner)
+
+    picks_dir = ROOT / "docs" / "iterations" / "hypotheses" / hid
+    picks_file = picks_dir / "picks.json"
+    existing_picks: list = []
+    if picks_file.exists():
+        try:
+            existing_picks = json.loads(picks_file.read_text()).get("picks", [])
+        except Exception:
+            pass
+
+    seen = {(p["date"], p["ticker"]) for p in existing_picks}
+    merged = existing_picks + [p for p in new_picks if (p["date"], p["ticker"]) not in seen]
+
+    picks_dir.mkdir(parents=True, exist_ok=True)
+    picks_file.write_text(json.dumps({"hypothesis_id": hid, "scanner": scanner, "picks": merged}, indent=2))
+
+    run(["git", "add", str(picks_file)], cwd=str(ROOT))
+    diff = subprocess.run(["git", "diff", "--cached", "--quiet"], cwd=str(ROOT))
+    if diff.returncode != 0:
+        run(["git", "commit", "-m", f"chore(hypotheses): picks {TODAY} for {hid}"], cwd=str(ROOT))
+
+    if TODAY not in hyp.get("picks_log", []):
+        hyp.setdefault("picks_log", []).append(TODAY)
+    hyp["days_elapsed"] = len(hyp["picks_log"])
+
+    if hyp["days_elapsed"] >= hyp["min_days"]:
+        return conclude_hypothesis(hyp)
+    return False
+
+
 def run_hypothesis(hyp: dict) -> bool:
     """Run one hypothesis experiment cycle. Returns True if the experiment concluded."""
     hid = hyp["id"]
@@ -122,6 +164,10 @@ def run_hypothesis(hyp: dict) -> bool:
     if not re.fullmatch(r"[a-zA-Z0-9_\-]+", hid):
         print(f"  Skipping hypothesis with invalid id: {hid!r}", flush=True)
         return False
+
+    if not hyp.get("branch"):
+        return run_hypothesis_main_branch(hyp)
+
     branch = hyp["branch"]
     scanner = hyp["scanner"]
     worktree = f"/tmp/hyp-{hid}"
@@ -523,16 +569,16 @@ def main():
     registry = load_registry()
     filter_id = os.environ.get("FILTER_ID", "").strip()
 
-    # Fast-path: conclude all pending statistical hypotheses immediately.
+    # Fast-path: conclude all statistical hypotheses (pending or running) immediately.
     # They answer questions from existing data — no cap, no worktree, no waiting.
-    statistical_pending = [
+    statistical = [
         h
         for h in registry.get("hypotheses", [])
-        if h["status"] == "pending"
+        if h["status"] in ("pending", "running")
         and h.get("hypothesis_type") == "statistical"
         and (not filter_id or h["id"] == filter_id)
     ]
-    for hyp in statistical_pending:
+    for hyp in statistical:
         try:
             conclude_statistical_hypothesis(hyp)
         except Exception as e:
@@ -542,7 +588,9 @@ def main():
     running = [
         h
         for h in hypotheses
-        if h["status"] == "running" and (not filter_id or h["id"] == filter_id)
+        if h["status"] == "running"
+        and h.get("hypothesis_type", "implementation") != "statistical"
+        and (not filter_id or h["id"] == filter_id)
     ]
 
     if not running:

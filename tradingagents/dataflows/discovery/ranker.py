@@ -402,6 +402,15 @@ IMPORTANT: Return ONLY valid JSON. No markdown wrapping, no commentary outside t
             result = RankingResponse.model_validate(parsed_data)
             logger.info(f"Parsed {len(result.rankings)} rankings from LLM response")
 
+            # Warn if far fewer picks than expected — likely caused by missing signals
+            # (scanner timeouts, news failures). Root cause should be fixed upstream.
+            min_expected = max(3, self.final_recommendations // 5)
+            if len(result.rankings) < min_expected and len(candidates) >= min_expected * 2:
+                logger.warning(
+                    f"Only {len(result.rankings)}/{len(candidates)} candidates ranked "
+                    f"(expected ≥{min_expected}). Check for scanner timeouts or news failures."
+                )
+
             final_ranking_list = [ranking.model_dump() for ranking in result.rankings]
 
             logger.info(f"✅ Selected {len(final_ranking_list)} top recommendations")

@@ -187,6 +187,16 @@ class CandidateFilter:
         universe_tickers = load_universe(self.config)
         full_ohlcv = download_ohlcv_cached(universe_tickers, period="1y", cache_dir=cache_dir)
         ohlcv_data = {t: full_ohlcv[t] for t in candidate_tickers if t in full_ohlcv}
+
+        # Batch-fetch any out-of-universe tickers (Reddit/news scanners surface tickers
+        # not in the Russell 1000) so every candidate gets a cache hit instead of a
+        # sequential per-ticker yfinance call later in the filter loop.
+        missing_tickers = [t for t in candidate_tickers if t not in ohlcv_data]
+        if missing_tickers:
+            logger.info(f"Batch-fetching OHLCV for {len(missing_tickers)} out-of-universe tickers...")
+            extra_ohlcv = download_ohlcv_cached(missing_tickers, period="1y", cache_dir=cache_dir)
+            ohlcv_data.update(extra_ohlcv)
+
         logger.info(f"OHLCV cache loaded for {len(ohlcv_data)}/{len(candidate_tickers)} tickers")
 
         (
@@ -219,6 +229,17 @@ class CandidateFilter:
                 )
             # Export review list
             delisted_cache.export_review_list()
+
+        # Abort if data fetch failure rate is suspiciously high — this is a provider
+        # outage, not a delisting event. Failing loudly prevents a silent 0-pick run
+        # from corrupting hypothesis pick_logs and performance statistics.
+        no_data_count = filtered_reasons.get("no_data", 0)
+        if candidates and no_data_count / len(candidates) >= 0.5:
+            raise RuntimeError(
+                f"Data fetch failure rate too high: {no_data_count}/{len(candidates)} candidates "
+                f"returned no price data. This indicates a data provider outage, not delisted tickers. "
+                f"Aborting to prevent a silent 0-pick run."
+            )
 
         return {
             "filtered_tickers": [c["ticker"] for c in filtered_candidates],
@@ -592,9 +613,12 @@ class CandidateFilter:
                 try:
                     from tradingagents.dataflows.y_finance import get_fundamentals, get_stock_price
 
-                    # Get current price — prefer OHLCV cache, fall back to per-ticker yfinance
+                    # Get current price — prefer OHLCV cache (batch-fetched above),
+                    # fall back to a single yfinance call only for genuine OTC/crypto tickers.
                     current_price = self._price_from_cache(ticker, ohlcv_data)
                     if current_price is None:
+                        import time as _time
+                        _time.sleep(0.5)  # rate-limit guard for stragglers not in any cache
                         current_price = get_stock_price(ticker)
                     cand["current_price"] = current_price
 

@@ -1,3 +1,6 @@
+import time
+from functools import lru_cache
+
 import pandas as pd
 import yfinance as yf
 
@@ -5,6 +8,38 @@ from tradingagents.dataflows.y_finance import suppress_yfinance_warnings
 from tradingagents.utils.logger import get_logger
 
 logger = get_logger(__name__)
+
+_RETRY_DELAYS = (1, 3, 7)  # seconds between retries on 429
+
+
+def _fetch_with_retry(ticker_obj, attr: str):
+    """Fetch a yfinance attribute with exponential backoff on rate-limit errors."""
+    for delay in (None, *_RETRY_DELAYS):
+        if delay:
+            time.sleep(delay)
+        try:
+            result = getattr(ticker_obj, attr)
+            if result is not None and not (hasattr(result, "empty") and result.empty):
+                return result
+            return result
+        except Exception as e:
+            msg = str(e).lower()
+            if "rate" in msg or "too many" in msg or "429" in msg:
+                continue
+            raise
+    return getattr(ticker_obj, attr)
+
+
+@lru_cache(maxsize=512)
+def _get_ticker_fundamentals(ticker: str):
+    """Fetch balance_sheet, financials, cashflow, and info once per ticker per process."""
+    with suppress_yfinance_warnings():
+        stock = yf.Ticker(ticker)
+        bs = _fetch_with_retry(stock, "balance_sheet")
+        inc = _fetch_with_retry(stock, "financials")
+        cf = _fetch_with_retry(stock, "cashflow")
+        info = _fetch_with_retry(stock, "info")
+    return bs, inc, cf, info
 
 
 def calculate_altman_z_score(ticker: str) -> float:
@@ -21,11 +56,7 @@ def calculate_altman_z_score(ticker: str) -> float:
     Returns: float (Z-score). Values < 1.81 indicate distress.
     """
     try:
-        with suppress_yfinance_warnings():
-            stock = yf.Ticker(ticker.upper())
-            bs = stock.balance_sheet
-            inc = stock.financials
-            info = stock.info
+        bs, inc, _, info = _get_ticker_fundamentals(ticker.upper())
 
         if bs.empty or inc.empty:
             return None
@@ -79,11 +110,7 @@ def calculate_piotroski_f_score(ticker: str) -> int:
     Low score (0-3) indicates poor financial health.
     """
     try:
-        with suppress_yfinance_warnings():
-            stock = yf.Ticker(ticker.upper())
-            bs = stock.balance_sheet
-            inc = stock.financials
-            cf = stock.cashflow
+        bs, inc, cf, _ = _get_ticker_fundamentals(ticker.upper())
 
         if (
             bs.empty
