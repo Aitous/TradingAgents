@@ -14,7 +14,7 @@
       "hypothesis_type": "implementation",
       "created_at": "2026-04-10",
       "min_days": 14,
-      "days_elapsed": 12,
+      "days_elapsed": 13,
       "picks_log": [
         "2026-04-10",
         "2026-04-13",
@@ -27,7 +27,8 @@
         "2026-04-22",
         "2026-04-23",
         "2026-04-24",
-        "2026-04-27"
+        "2026-04-27",
+        "2026-04-28"
       ],
       "baseline_scanner": "insider_buying",
       "conclusion": null
@@ -45,7 +46,7 @@
       "hypothesis_type": "implementation",
       "created_at": "2026-04-16",
       "min_days": 10,
-      "days_elapsed": 7,
+      "days_elapsed": 8,
       "picks_log": [
         "2026-04-17",
         "2026-04-20",
@@ -53,7 +54,8 @@
         "2026-04-22",
         "2026-04-23",
         "2026-04-24",
-        "2026-04-27"
+        "2026-04-27",
+        "2026-04-28"
       ],
       "baseline_scanner": "earnings_calendar",
       "conclusion": null
@@ -71,7 +73,7 @@
       "hypothesis_type": "implementation",
       "created_at": "2026-04-16",
       "min_days": 10,
-      "days_elapsed": 7,
+      "days_elapsed": 8,
       "picks_log": [
         "2026-04-17",
         "2026-04-20",
@@ -79,7 +81,8 @@
         "2026-04-22",
         "2026-04-23",
         "2026-04-24",
-        "2026-04-27"
+        "2026-04-27",
+        "2026-04-28"
       ],
       "baseline_scanner": "minervini",
       "conclusion": null
@@ -97,8 +100,10 @@
       "hypothesis_type": "implementation",
       "created_at": "2026-04-20",
       "min_days": 14,
-      "days_elapsed": 0,
-      "picks_log": [],
+      "days_elapsed": 1,
+      "picks_log": [
+        "2026-04-28"
+      ],
       "baseline_scanner": "volume_accumulation",
       "conclusion": null
     },
@@ -115,8 +120,10 @@
       "hypothesis_type": "implementation",
       "created_at": "2026-04-25",
       "min_days": 14,
-      "days_elapsed": 0,
-      "picks_log": [],
+      "days_elapsed": 1,
+      "picks_log": [
+        "2026-04-28"
+      ],
       "baseline_scanner": "momentum",
       "conclusion": null
     },
@@ -133,8 +140,10 @@
       "hypothesis_type": "implementation",
       "created_at": "2026-04-26",
       "min_days": 14,
-      "days_elapsed": 0,
-      "picks_log": [],
+      "days_elapsed": 1,
+      "picks_log": [
+        "2026-04-28"
+      ],
       "baseline_scanner": "options_flow",
       "conclusion": null
     },
@@ -151,8 +160,10 @@
       "hypothesis_type": "implementation",
       "created_at": "2026-04-26",
       "min_days": 14,
-      "days_elapsed": 0,
-      "picks_log": [],
+      "days_elapsed": 1,
+      "picks_log": [
+        "2026-04-28"
+      ],
       "baseline_scanner": "earnings_calendar",
       "conclusion": null
     },
@@ -169,8 +180,10 @@
       "hypothesis_type": "implementation",
       "created_at": "2026-04-26",
       "min_days": 14,
-      "days_elapsed": 0,
-      "picks_log": [],
+      "days_elapsed": 1,
+      "picks_log": [
+        "2026-04-28"
+      ],
       "baseline_scanner": "insider_buying",
       "conclusion": null
     }
