@@ -154,6 +154,15 @@
       "scanner": "insider_buying",
       "return_7d": null,
       "win_7d": null
+    },
+    {
+      "date": "2026-04-28",
+      "ticker": "EFOR",
+      "score": 70,
+      "confidence": 7,
+      "scanner": "insider_buying",
+      "return_7d": null,
+      "win_7d": null
     }
   ]
 }
