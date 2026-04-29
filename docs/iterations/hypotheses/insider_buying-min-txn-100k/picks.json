@@ -163,6 +163,42 @@
       "scanner": "insider_buying",
       "return_7d": null,
       "win_7d": null
+    },
+    {
+      "date": "2026-04-29",
+      "ticker": "CHTR",
+      "score": 78,
+      "confidence": 8,
+      "scanner": "insider_buying",
+      "return_7d": null,
+      "win_7d": null
+    },
+    {
+      "date": "2026-04-29",
+      "ticker": "EFOR",
+      "score": 75,
+      "confidence": 7,
+      "scanner": "insider_buying",
+      "return_7d": null,
+      "win_7d": null
+    },
+    {
+      "date": "2026-04-29",
+      "ticker": "IMDX",
+      "score": 72,
+      "confidence": 7,
+      "scanner": "insider_buying",
+      "return_7d": null,
+      "win_7d": null
+    },
+    {
+      "date": "2026-04-29",
+      "ticker": "DKI",
+      "score": 60,
+      "confidence": 6,
+      "scanner": "insider_buying",
+      "return_7d": null,
+      "win_7d": null
     }
   ]
 }
