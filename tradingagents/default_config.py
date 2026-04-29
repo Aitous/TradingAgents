@@ -241,6 +241,13 @@ DEFAULT_CONFIG = {
                 "limit": 5,
                 "lookback_days": 1,  # Days to look back for rating changes
             },
+            "analyst_revision_breadth": {
+                "enabled": True,
+                "pipeline": "edge",
+                "limit": 10,
+                "min_delta": 2,
+                "min_analysts": 5,
+            },
             # Social - Community signals
             "reddit_trending": {
                 "enabled": True,

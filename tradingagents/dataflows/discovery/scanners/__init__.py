@@ -2,6 +2,7 @@
 
 # Import all scanners to trigger registration
 from . import (
+    analyst_revision_breadth,  # noqa: F401
     analyst_upgrades,  # noqa: F401
     atr_compression,  # noqa: F401
     dark_pool_flow,  # noqa: F401

@@ -66,6 +66,7 @@ Exact signal names that have been researched, implemented, and backtested — do
 
 | Title | File | Date | Summary |
 |-------|------|------|---------|
+| Analyst Recommendation Revision Breadth | research/2026-04-28-analyst-revision-breadth.md | 2026-04-28 | Net analyst buy count delta (current vs prior month) via Finnhub recommendation_trends; Blitz et al. 2022: >6% gross alpha; distinct from analyst_upgrades (news NLP); implemented as analyst_revision_breadth scanner |
 | RSI(2) Mean Reversion Oversold Bounce | research/2026-04-15-rsi-mean-reversion.md | 2026-04-15 | Connors RSI(2)<10 + price above 200d SMA = 75-79% win rate over 25y backtest; only contrarian signal in pipeline; implemented as rsi_oversold scanner |
 | OBV Divergence Accumulation | research/2026-04-14-obv-divergence.md | 2026-04-14 | OBV rising while price flat/down = multi-week institutional accumulation; qualitative 68% win rate; implemented as obv_divergence scanner |
 | Short Interest Squeeze Scanner | research/2026-04-12-short-interest-squeeze.md | 2026-04-12 | High SI (>20%) + DTC >5 as squeeze-risk discovery; implemented as short_squeeze scanner |
