@@ -267,6 +267,7 @@ DEFAULT_CONFIG = {
                 "max_candidates": 25,  # Hard cap on earnings candidates
                 "max_days_until_earnings": 7,  # Only include earnings within N days
                 "min_market_cap": 0,  # Minimum market cap in billions (0 = no filter)
+                "min_short_interest_pct": 20.0,  # Hypothesis: only surface high-SI earnings setups
             },
             "short_squeeze": {
                 "enabled": True,
