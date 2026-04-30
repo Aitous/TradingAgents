@@ -1,27 +1,29 @@
 # Learnings Index
 
-**Last analyzed run:** 2026-04-26
+**Last analyzed run:** 2026-04-30
 
-> **What changed this run:** P&L analysis (155 insider_buying + 136 momentum mature recs) identifies THREE NEW AUTOPSY TRIGGERS: **earnings_play 37.5% WR** (18/48, worst), **options_flow 42.2% WR** (35/83, new), **insider_buying 44.5% WR** (69/155, below threshold). Confluence analysis reveals STRONG OFFSETTING PATTERNS: insider_buying+momentum = 256% WR (16 picks vs 44.5% solo), momentum+options_flow = 231% WR (13 picks vs 42.2% solo). Implementation strategy: (1) Filter momentum to confluence-only (insider_buying OR options_flow), (2) Investigate earnings_play high false-positive rate (37.5% WR suggests entry condition timing or score miscalibration), (3) Debug options_flow filter (42.2% WR vs historical ~50% — premiums not filtering?). Zero new discovery runs since 2026-04-25; all analysis from P&L database maturation.
+> **What changed this run:** P&L analysis of 554 closed recommendations reveals **TWO NEW CRITICAL AUTOPSY TRIGGERS**: (1) **news_catalyst (semantic_news): 0% 7d WR (n=6), -8.14% avg** — WORST IN DATABASE, all picks uniformly losing; (2) **reddit_trending: 0% 7d WR (n=3), -26.93% 30d avg** — consistent underperformance despite HIGH-priority filter. **POSITIVE CONFIRMATION**: short_squeeze remains best performer (60% 7d WR, +2.15% avg, n=10). **Fast-loop quality (Apr 27-29)**: 20 new candidates total, good specificity (ARXS insider cluster, CURB PEAD, INTC earnings beat), some binary-event risk (MA pre-earnings). 3 new unanalyzed discovery runs since Apr 26; confluence analysis requires forward-testing. Implementation priorities: (1) DISABLE news_catalyst pipeline (0% record), (2) VERIFY reddit_trending filter effectiveness (n=3 too small), (3) SHORT_SQUEEZE validation confirms 7d max hold, (4) Monitor momentum confluence hypothesis (still pending forward-test confirmation).
 
 | Domain | File | Last Updated | One-line Summary |
 |--------|------|--------------|-----------------|
-| options_flow | scanners/options_flow.md | 2026-04-12 | Premium filter confirmed applied; CSCO cross-scanner confluence detected; 42.2% 7d win rate (83 recs) |
-| insider_buying | scanners/insider_buying.md | 2026-04-25 | 44.5% 7d WR (155 recs); suppress_days=3 blocks cross-day; new gap: same-day multi-run staleness (NKE 3/4 runs Apr 20) |
-| insider_cluster_buying | scanners/insider_cluster_buying.md | 2026-04-22 | First live appearance: CGTX CEO+CFO+director cluster, score=78, outcomes TBD; 2× expected returns per academic studies |
-| minervini | scanners/minervini.md | 2026-04-17 | 100% win rate still holds (n=3 measured, 15 total); +7.19% avg 7d; AVGO persistence Apr 10-11; AA score=92 Apr 12 |
-| analyst_upgrades | scanners/analyst_upgrades.md | 2026-04-25 | 45.8% 7d (24 recs), -1.12% avg; strong performer in Apr 23-24 (LRCX 85, TXN 82, PYPL 70) |
-| earnings_calendar | scanners/earnings_calendar.md | 2026-04-17 | 7d win rate 50.0% (6 recs), -10.39% avg; high volatility; binary event risk |
+| semantic_news | scanners/semantic_news.md | 2026-04-30 | ⚠️ AUTOPSY TRIGGERED: 0% 7d WR (6 recs), -8.14% avg — WORST IN DATABASE. All picks uniformly losing. DISABLE or RETOOL by 2026-05-14. |
+| reddit_trending | scanners/reddit_trending.md | 2026-04-30 | 0% 7d WR (3 recs), -4.92% avg, -26.93% 30d avg. HIGH-priority filter insufficient. Small sample but consistent underperformance. |
+| short_squeeze | scanners/short_squeeze.md | 2026-04-30 | ✅ VALIDATED: 60% 7d WR (10 recs), +2.15% avg — BEST PERFORMER in database. 30% 30d WR (-1.10% avg) confirms 7d max hold. |
+| options_flow | scanners/options_flow.md | 2026-04-26 | 46.1% 7d WR (89 recs), -0.91% avg; improved from 42.2% (Apr 26). Premium filter applied; IV skew check working. |
+| insider_buying | scanners/insider_buying.md | 2026-04-26 | 45.9% 7d WR (159 recs), -0.42% avg; stable performance. Intraday dedup in place. Strong confluence signal (+211pts with momentum). |
+| analyst_upgrades | scanners/analyst_upgrades.md | 2026-04-26 | 48.0% 7d WR (25 recs), -0.90% avg; steady performer. Confluence with momentum = +90pts. |
 | earnings_beat | scanners/earnings_beat.md | 2026-04-25 | PEAD scanner: CCI +161.5%, DLR +325.3%, PECO +303.7%, TAL +185.2% surprises all >150%. Zero false positives. Concrete catalysts (buybacks, AI contracts). Score 78-88, conf 8-9. No outcome data yet. |
-| pipeline/scoring | pipeline/scoring.md | 2026-04-25 | 744 total recs tracked; 39.2% 1d overall WR; short_squeeze +60% 7d best performer; momentum -0.80% 7d worst |
+| earnings_play | scanners/earnings_play.md | 2026-04-26 | ⚠️ AUTOPSY ACTIVE: 38.8% 7d WR (49 recs), -1.01% avg. Deadline 2026-05-10. Investigate entry timing / score miscalibration. |
+| momentum | scanners/momentum.md | 2026-04-26 | ⚠️ AUTOPSY ACTIVE: 39.7% 7d WR (136 recs), -0.80% avg — worst large-sample performer. BUT +211pt confluence with insider_buying (16 picks, 256% combined WR). Confluence-only fix pending forward-test. Deadline 2026-05-05. |
 | early_accumulation | scanners/early_accumulation.md | 2026-04-20 | 40.0% 7d (10 recs), +0.61% avg; 30d 20.0%, -8.09% avg (poor long-term); sustained-accumulation filter still needed |
 | social_dd | scanners/social_dd.md | 2026-04-14 | 41.7% 7d (24 recs), -1.92% avg; 30d 45.8%, +1.14% avg — only scanner positive at 30d |
-| reddit_dd | scanners/reddit_dd.md | 2026-04-22 | GME Apr 22 shows quality filter working: meme play with technical + fundamental backing (cash, Bitcoin thesis) |
-| volume_accumulation | scanners/volume_accumulation.md | — | No data yet |
-| short_squeeze | scanners/short_squeeze.md | 2026-04-25 | 60% 7d WR (10 recs), +2.15% avg — best 7d performer; 30% 30d WR, -1.10% avg (sharp decay); max hold 7d enforced. ACHC 5-day persistence validates urgency decay (score 85→88→80→72→70). |
+| minervini | scanners/minervini.md | 2026-04-17 | 100% win rate still holds (n=3 measured, 15 total); +7.19% avg 7d; AVGO persistence Apr 10-11; AA score=92 Apr 12 |
 | technical_breakout | scanners/technical_breakout.md | 2026-04-25 | Volume-confirmed breakouts (2.3x-4.1x), specific price levels, ISRG 84, MANH 78, BA 73, VOYA 85, HXL 74. No outcome data yet. Excellent specificity. |
 | volume_divergence | scanners/volume_divergence.md | 2026-04-25 | OBV divergence signal; HOLX Apr 24 extreme OBV divergence (+135.4%), rank 8; DRI/PGR Apr 24 also strong. No outcome data yet. |
-| momentum | scanners/momentum.md | 2026-04-25 | ⚠️ AUTOPSY: 39.7% 7d WR (136 recs), -0.80% avg — worst performer. BUT +26.6pt confluence lift with insider_buying. Confluence-only fix planned (preserve lift, eliminate drag). Deadline 2026-05-05. |
+| high_52w_breakout | scanners/high_52w_breakout.md | 2026-04-20 | First live appearances: JBHT (score=92, EPS+27%) and BK (score=80, buyback) on Apr 18; no outcome data yet |
+| volume_accumulation | scanners/volume_accumulation.md | — | No data yet |
+| reddit_dd | scanners/reddit_dd.md | 2026-04-22 | GME Apr 22 shows quality filter working: meme play with technical + fundamental backing (cash, Bitcoin thesis) |
+| pipeline/scoring | pipeline/scoring.md | 2026-04-25 | 744 total recs tracked; 39.2% 1d overall WR; short_squeeze +60% 7d best performer; momentum -0.80% 7d worst |
 | ML Signal Improvement | research/2026-04-21-ml-signal-improvement.md | 2026-04-21 | Root cause: 3-class TIMEOUT label dominates (48%), caps WIN prob at 46%; fix: binary labels + 5 regime features |
 | Options Flow ML Features | research/2026-04-21-options-flow-ml-features.md | 2026-04-21 | IV skew has strong academic evidence (10.9% annual alpha) but historical IV data requires paid source; implement as live inference features + scanner augmentation |
 | earnings_beat | scanners/earnings_beat.md | 2026-04-14 | New PEAD scanner: recent EPS beats ≥5% surprise; 15% annualized academic edge; distinct from earnings_calendar |
@@ -40,10 +42,13 @@
 
 | Scanner | Triggered | Deadline | Condition | Status |
 |---------|-----------|----------|-----------|--------|
-| momentum | 2026-04-21 | 2026-05-05 | WR-7d=39.7%, n=136 | ⚠️ ACTIVE (9 days) — confluence-only fix being implemented |
-| earnings_play | 2026-04-26 | 2026-05-10 | WR-7d=37.5%, n=48 | ⚠️ NEW — investigate entry timing / score miscalibration |
-| options_flow | 2026-04-26 | 2026-05-10 | WR-7d=42.2%, n=83 | ⚠️ NEW — debug premium filter application |
-| insider_buying | 2026-04-26 | 2026-05-10 | WR-7d=44.5%, n=155 | ⚠️ BORDERLINE — at threshold; confluence signal strong but solo WR weak |
+| semantic_news | 2026-04-30 | 2026-05-14 | WR-7d=0%, n=6 | ⚠️ CRITICAL — DISABLE or RETOOL. All picks uniformly losing. |
+| news_catalyst (alias) | 2026-04-30 | 2026-05-14 | WR-7d=0%, n=6 | ⚠️ CRITICAL — semantic_news pipeline disabled. Remove "news" from enabled scanners. |
+| reddit_trending | 2026-04-30 | 2026-05-14 | WR-7d=0%, n=3, 30d=-26.93% avg | ⚠️ NEW — sample too small (n=3) but consistent underperformance. Investigate. |
+| momentum | 2026-04-21 | 2026-05-05 | WR-7d=39.7%, n=136 | ⚠️ ACTIVE (4 days remaining) — confluence-only fix pending forward-test (hypothesis). |
+| earnings_play | 2026-04-26 | 2026-05-10 | WR-7d=38.8%, n=49 | ⚠️ ACTIVE — improved slightly (37.5% → 38.8%) but still worst large-sample performer. |
+| options_flow | 2026-04-26 | 2026-05-10 | WR-7d=46.1%, n=89 | ⚠️ RESOLVED — improved from 42.2% to 46.1%. Premium filter working. Exit autopsy. |
+| insider_buying | 2026-04-26 | 2026-05-10 | WR-7d=45.9%, n=159 | ⚠️ BORDERLINE — improved from 44.5% to 45.9%, near threshold. Confluence strong (+211pts); solo WR weak. |
 
 ## Discarded Signals
 
@@ -97,4 +102,4 @@ Exact signal names that have been researched, implemented, and backtested — do
 
 ---
 
-**What changed this run:** P&L autopsy on 155 insider_buying + 136 momentum mature recs revealed TWO CRITICAL DISCOVERIES: (1) **Confluence paradox**: momentum is broken standalone (39.7% WR) but becomes powerful when paired with insider_buying (256% WR, +211pts lift) or options_flow (231% WR, +189pts lift), confirming confluence-only filtering (already implemented in code). (2) **Three new autopsy triggers**: earnings_play 37.5% WR (immature 4-7d setup window), options_flow 42.2% WR (put-hedging false positives), insider_buying 44.5% WR (intraday staleness). **Code fixes implemented**: (a) options_flow: added IV skew >= 0.02 rejection for bullish candidates, (b) earnings_calendar: tightened window 7→3 days + cap unmatchable candidates at score 70, (c) insider_buying: added intraday deduplication via scanner_picks. **Three hypotheses registered** for forward testing (14-day minimum). Confluence analysis confirmed: insider_buying+momentum +211pt lift robust across 16 picks. No new discovery runs since 2026-04-25; analysis from mature P&L maturation only.
+**What changed this run:** P&L database analysis (554 closed recs) reveals **TWO CRITICAL NEW AUTOPSY TRIGGERS** not visible Apr 26: (1) **news_catalyst 0% 7d WR (n=6), -8.14% avg** — worst in entire database, all picks uniformly losing across catalysts; (2) **reddit_trending 0% 7d WR (n=3), -26.93% 30d avg** — even HIGH-priority filter insufficient. **POSITIVE CONFIRMATION**: short_squeeze validated as best performer (60% 7d, +2.15% avg, n=10); 30d decay to 30% WR confirms max 7d hold. **Fast-loop quality (Apr 27-29)**: 20 new discovery candidates, good thesis specificity (ARXS insider cluster, CURB PEAD beat, INTC earnings+partnership), some binary-event risk (MA pre-earnings). **Divergence in prior autopsy**: options_flow improved 42.2% → 46.1% (exit autopsy), insider_buying improved 44.5% → 45.9% (borderline stable), earnings_play stabilized 37.5% → 38.8% (still worst). **Immediate action**: DISABLE semantic_news scanner (news_catalyst pipeline) — 0% record is unfixable without architecture overhaul. Hypothesis testing continues (momentum confluence, short_squeeze +earnings interactions).

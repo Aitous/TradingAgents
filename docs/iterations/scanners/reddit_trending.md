@@ -13,6 +13,16 @@ MEDIUM priority candidates.
 
 ## Evidence Log
 
+### 2026-04-30 — P&L review (small sample, consistent underperformance)
+- 3 closed recommendations; 0% 7d win rate, -4.92% avg return, -26.93% 30d avg.
+- Sample size too small for robust signal (n=3), but directionality consistently negative.
+- Even with HIGH priority filter in place, picks underperform significantly.
+- All picks appear to be momentum trades that failed on retracement — suggests mention
+  velocity alone is not sufficient to predict price continuation.
+- Suggests the underlying Reddit mention signal either (a) lags price moves, or (b)
+  has zero predictive power for absolute returns.
+- Confidence: **medium** — small sample (n=3), but consistent loss pattern across all picks.
+
 ### 2026-04-11 — P&L review
 - 22 recommendations, 1d win rate 13.6%, 7d win rate 16.7%, 30d win rate 15.4%.
 - Avg 30d return: -10.64%. Second worst strategy after news_catalyst (-17.5%).
