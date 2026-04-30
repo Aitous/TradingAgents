@@ -2,62 +2,6 @@
   "max_active": 8,
   "hypotheses": [
     {
-      "id": "earnings_calendar-min-short-interest",
-      "scanner": "earnings_calendar",
-      "title": "Require short interest >= 20% for earnings plays",
-      "description": "Hypothesis: earnings_calendar has a 37.7% 7d win rate and -2.05% avg return \u2014 worst performer. APLD (30.6% SI) was consistently the highest-scoring earnings candidate in recent runs. Requiring short interest >= 20% forces the scanner to surface only setups where a positive earnings surprise can trigger forced short covering, converting a weak calendar signal into a squeeze catalyst.",
-      "branch": "hypothesis/earnings_calendar-min-short-interest",
-      "pr_number": 22,
-      "status": "running",
-      "priority": 9,
-      "expected_impact": "high",
-      "hypothesis_type": "implementation",
-      "created_at": "2026-04-16",
-      "min_days": 10,
-      "days_elapsed": 9,
-      "picks_log": [
-        "2026-04-17",
-        "2026-04-20",
-        "2026-04-21",
-        "2026-04-22",
-        "2026-04-23",
-        "2026-04-24",
-        "2026-04-27",
-        "2026-04-28",
-        "2026-04-29"
-      ],
-      "baseline_scanner": "earnings_calendar",
-      "conclusion": null
-    },
-    {
-      "id": "minervini-min-pct-from-high",
-      "scanner": "minervini",
-      "title": "Add 7% floor on distance from 52w high",
-      "description": "Hypothesis: Minervini picks 10-25% below their 52w high significantly outperform picks already within 5% of the high (+10-11% vs +5.7% avg 20d return in 2240-pick backtest). Adding min_pct_from_high=7 filters stocks pressing prior-high resistance, where stalls and pullbacks are most likely.",
-      "branch": "hypothesis/minervini-min-pct-from-high",
-      "pr_number": 554,
-      "status": "running",
-      "priority": 6,
-      "expected_impact": "high",
-      "hypothesis_type": "implementation",
-      "created_at": "2026-04-16",
-      "min_days": 10,
-      "days_elapsed": 9,
-      "picks_log": [
-        "2026-04-17",
-        "2026-04-20",
-        "2026-04-21",
-        "2026-04-22",
-        "2026-04-23",
-        "2026-04-24",
-        "2026-04-27",
-        "2026-04-28",
-        "2026-04-29"
-      ],
-      "baseline_scanner": "minervini",
-      "conclusion": null
-    },
-    {
       "id": "early_accumulation-sustained-filter",
       "scanner": "volume_accumulation",
       "title": "Require 2+ days of elevated volume for early_accumulation signals",
@@ -70,10 +14,11 @@
       "hypothesis_type": "implementation",
       "created_at": "2026-04-20",
       "min_days": 14,
-      "days_elapsed": 2,
+      "days_elapsed": 3,
       "picks_log": [
         "2026-04-28",
-        "2026-04-29"
+        "2026-04-29",
+        "2026-04-30"
       ],
       "baseline_scanner": "volume_accumulation",
       "conclusion": null
@@ -91,10 +36,11 @@
       "hypothesis_type": "implementation",
       "created_at": "2026-04-25",
       "min_days": 14,
-      "days_elapsed": 2,
+      "days_elapsed": 3,
       "picks_log": [
         "2026-04-28",
-        "2026-04-29"
+        "2026-04-29",
+        "2026-04-30"
       ],
       "baseline_scanner": "momentum",
       "conclusion": null
@@ -112,10 +58,11 @@
       "hypothesis_type": "implementation",
       "created_at": "2026-04-26",
       "min_days": 14,
-      "days_elapsed": 2,
+      "days_elapsed": 3,
       "picks_log": [
         "2026-04-28",
-        "2026-04-29"
+        "2026-04-29",
+        "2026-04-30"
       ],
       "baseline_scanner": "options_flow",
       "conclusion": null
@@ -133,10 +80,11 @@
       "hypothesis_type": "implementation",
       "created_at": "2026-04-26",
       "min_days": 14,
-      "days_elapsed": 2,
+      "days_elapsed": 3,
       "picks_log": [
         "2026-04-28",
-        "2026-04-29"
+        "2026-04-29",
+        "2026-04-30"
       ],
       "baseline_scanner": "earnings_calendar",
       "conclusion": null
@@ -154,10 +102,11 @@
       "hypothesis_type": "implementation",
       "created_at": "2026-04-26",
       "min_days": 14,
-      "days_elapsed": 2,
+      "days_elapsed": 3,
       "picks_log": [
         "2026-04-28",
-        "2026-04-29"
+        "2026-04-29",
+        "2026-04-30"
       ],
       "baseline_scanner": "insider_buying",
       "conclusion": null
