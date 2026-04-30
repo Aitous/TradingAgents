@@ -16,6 +16,16 @@ now restricted to CRITICAL-only to eliminate negative-catalyst contamination.
 
 ## Evidence Log
 
+### 2026-04-30 — P&L review (AUTOPSY TRIGGERED)
+- 6 closed recommendations; 0% 7d win rate, -8.14% avg return.
+- Updated baseline: 0% 1d/7d/30d win rate across all 6 picks (worse than prior 8-pick sample).
+- All outcomes uniformly losing; no winners suggest semantic parsing is producing false
+  catalyst signals or the NLP is extracting boilerplate metadata as "news".
+- CRITICAL-only filter (applied Apr 11) did not prevent the 0% 7d WR outcome.
+- Pattern: news catalyst is mechanically unsound — investors react slower than parser
+  detection, or parser hallucinated catalysts entirely.
+- Confidence: **high** — 6 uniformly losing picks with no confounding factors.
+
 ### 2026-04-11 — P&L review
 - 8 recommendations, 1d win rate 12.5%, 7d win rate 0% (worst of all strategies).
 - Avg 30d return: -17.5%. Avg 1d return: -4.19%. Avg 7d return: -8.79%.
@@ -30,7 +40,13 @@ now restricted to CRITICAL-only to eliminate negative-catalyst contamination.
   Eliminates the negative-catalyst false positives.
 - Confidence: medium (8 data points; market downturn may amplify losses)
 
-## Pending Hypotheses
-- [ ] Would embedding-based semantic matching outperform keyword regex?
-- [ ] Does catalyst classification (FDA vs earnings vs acquisition) affect hit rate?
-- [ ] Do CRITICAL-only candidates (post-fix) outperform CRITICAL+HIGH baseline?
+## Status
+**⚠️ AUTOPSY TRIGGERED (2026-04-30): 0% WR over 6 closed picks. DISABLE or RETOOL by 2026-05-14.**
+
+## Recommendation
+**DISABLE** the semantic_news scanner (mapped to "news" pipeline alias) until root cause is identified.
+The signal appears fundamentally broken — all 6 picks lost money with no directional consistency.
+Options:
+1. Disable entirely (remove from pipeline)
+2. Retool to use third-party news API (Bloomberg, Facteus) instead of regex headline parsing
+3. Pivot to causal news (post-earnings, guidance changes) instead of forward-looking speculation

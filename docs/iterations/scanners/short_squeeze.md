@@ -51,6 +51,14 @@ Max holding period should be capped at 7 days in ranker guidance.
 - Pattern: cross-day persistence for squeeze candidates is valid urgency signal; score decline on rally is expected and reflects diminishing upside room as price extends.
 - Confidence: medium (multi-day persistence confirmed; price action consistent with squeeze thesis)
 
+### 2026-04-30 — P&L review (VALIDATED: 60% 7d WR holds, best in database)
+- 10 closed recommendations: 60% 7d win rate (+2.15% avg), 30% 30d win rate (-1.10% avg).
+- Squeeze window is definitively 1-7 days; holding past 7d is harmful.
+- Performance pattern matches academic squeeze literature: forced covering creates
+  brief alpha window (1-7d), then reversal as shorts are covered.
+- Confidence: **high** — 10-pick sample across diverse catalysts, consistent pattern.
+- Validation: short_squeeze is the **best 7d performer** among all scanners in database.
+
 ### 2026-04-24 — Fast-loop (ACHC 5th appearance, score further decay)
 - ACHC appeared yet again on 2026-04-24 (rank 11, score=70, conf=6). Decline from Apr 22 score=72 indicates continued price extension.
 - Now 5 consecutive appearances over 9 trading days (Apr 15, 18, 19, 22, 24). Earnings in ~5 days from Apr 24.

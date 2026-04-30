@@ -225,7 +225,7 @@ DEFAULT_CONFIG = {
             },
             # News - Catalyst-driven signals
             "semantic_news": {
-                "enabled": True,
+                "enabled": False,  # DISABLED 2026-04-30: autopsy triggered — 0% 7d WR (n=6), -8.14% avg return. All picks uniformly losing. RETOOL needed: semantic parsing appears to hallucinate false catalysts.
                 "pipeline": "news",
                 "limit": 10,
                 "sources": ["google_news", "sec_filings", "alpha_vantage", "gemini_search"],

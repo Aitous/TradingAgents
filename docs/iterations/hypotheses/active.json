@@ -161,6 +161,24 @@
       ],
       "baseline_scanner": "insider_buying",
       "conclusion": null
+    },
+    {
+      "id": "short_squeeze-insider_buying-confluence",
+      "scanner": "short_squeeze",
+      "title": "Boost priority when short_squeeze confluences with insider_buying",
+      "description": "Learning from 2026-04-30 P&L review: short_squeeze is the best standalone performer (60% 7d WR, +2.15% avg, n=10). insider_buying is positive (45.9% 7d, n=159). When both signals co-occur (high SI + recent insider purchases within 3-day window), we hypothesis that institutional confidence (insider buying) triggers forced short covering, creating compound alpha. This is distinct from momentum confluence: instead of suppressing a weak signal, we're amplifying two strong signals. Expected outcome: >65% 7d WR for short_squeeze+insider_buying combined picks.",
+      "branch": null,
+      "pr_number": null,
+      "status": "running",
+      "priority": 5,
+      "expected_impact": "medium",
+      "hypothesis_type": "implementation",
+      "created_at": "2026-04-30",
+      "min_days": 14,
+      "days_elapsed": 0,
+      "picks_log": [],
+      "baseline_scanner": "short_squeeze",
+      "conclusion": null
     }
   ]
 }
