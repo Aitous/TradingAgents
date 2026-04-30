@@ -265,8 +265,12 @@ DEFAULT_CONFIG = {
                 "pipeline": "events",
                 "limit": 10,
                 "max_candidates": 25,  # Hard cap on earnings candidates
-                "max_days_until_earnings": 7,  # Only include earnings within N days
+                "max_days_until_earnings": 3,  # Only include earnings within N days
                 "min_market_cap": 0,  # Minimum market cap in billions (0 = no filter)
+                # Quality filters (2026-04-30)
+                "iv_min_expansion": 0.20,  # Require 20% IV expansion vs 10d HV to boost score
+                "si_max_surprise_pct": 10.0,  # Hard reject if short interest % > this threshold
+                "require_iv_expansion": False,  # If True, reject candidates without IV expansion; if False, only boost score
             },
             "short_squeeze": {
                 "enabled": True,
